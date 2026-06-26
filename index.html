@@ -533,7 +533,12 @@ function initGoogleAuth() {
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: (resp) => {
-      if (!resp.error) accessToken = resp.access_token;
+      if (!resp.error) {
+        accessToken = resp.access_token;
+        // Si había una sync pendiente, ejecutarla ahora
+        const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+        if (cfg.folderId) syncDrive();
+      }
     },
   });
 
@@ -608,7 +613,13 @@ async function syncDrive() {
   const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
   const folderId = cfg.folderId;
   if (!folderId) { showToast('Configura primero la carpeta de Drive', 'error'); showView('drive'); return; }
-  if (!accessToken) { showToast('Inicia sesi\u00F3n primero', 'error'); return; }
+  if (!accessToken) {
+    // Pedir token de Drive con popup
+    showToast('Conectando con Drive...', '');
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+    // El callback de tokenClient llamará a syncDrive de nuevo cuando tenga el token
+    return;
+  }
 
   setSyncState('loading', 'Sincronizando con Drive...');
 
@@ -1234,3 +1245,4 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
