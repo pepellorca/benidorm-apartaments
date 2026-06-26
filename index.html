@@ -1098,19 +1098,9 @@ function guardarCheckin() {
   const idx=prev.findIndex(c=>c.reservaId===id);
   if(idx>=0)prev[idx]=data;else prev.push(data);
   localStorage.setItem('bnd_checkins',JSON.stringify(prev));
-  // Enviar a Google Sheets
+  // Enviar a Google Sheets via JSONP (evita CORS)
   showToast('Guardando en Google Sheets...','');
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  }).then(() => {
-    showToast('\u2713 Check-in guardado en Google Sheets', 'success');
-  }).catch(err => {
-    showToast('\u2713 Guardado localmente (sin conexi\u00F3n a Sheets)', 'success');
-    console.warn('Sheets error:', err);
-  });
+  enviarASheets_(data);
   document.getElementById('ci-form-block').style.display='none';
   document.getElementById('ci-reserva').value='';
   selectedReservaId=null;
@@ -1308,6 +1298,36 @@ function mostrarConfigApiKey() {
   const key = getOpenAIKey();
   document.getElementById('apikey-input').value = key ? key.slice(0,8) + '...' : '';
   document.getElementById('modal-apikey').classList.add('open');
+}
+
+// ═══════════════════════════════════════════════
+// ENVÍO A GOOGLE SHEETS
+// ═══════════════════════════════════════════════
+function enviarASheets_(data) {
+  // Usamos un iframe oculto para enviar el POST sin problemas de CORS
+  const payload = encodeURIComponent(JSON.stringify(data));
+  const url = APPS_SCRIPT_URL + '?data=' + payload;
+
+  // Crear script tag JSONP
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(resp) {
+    delete window[cb];
+    document.getElementById('jsonp-' + cb)?.remove();
+    if (resp && resp.ok) {
+      showToast('\u2713 Check-in guardado en Google Sheets', 'success');
+    } else {
+      showToast('\u2713 Guardado localmente', 'success');
+    }
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-' + cb;
+  s.src = APPS_SCRIPT_URL + '?callback=' + cb + '&data=' + payload;
+  s.onerror = function() {
+    delete window[cb];
+    s.remove();
+    showToast('\u2713 Guardado localmente (verificar conexi\u00F3n)', 'success');
+  };
+  document.head.appendChild(s);
 }
 
 // ═══════════════════════════════════════════════
