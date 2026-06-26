@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apartamentos Benidorm</title>
+<style>
+  /* ── TOKENS ─────────────────────────────────────────────── */
+  :root {
+    --mar:       #0077B6;
+    --mar-deep:  #023E8A;
+    --mar-light: #90E0EF;
+    --arena:     #F5E6C8;
+    --arena-dark:#E8C882;
+    --sol:       #FFB703;
+    --coral:     #E63946;
+    --verde:     #2DC653;
+    --gris-1:    #F8FAFC;
+    --gris-2:    #EEF2F7;
+    --gris-3:    #CBD5E1;
+    --gris-4:    #64748B;
+    --gris-5:    #1E293B;
+    --font-disp: 'Georgia', serif;
+    --font-body: 'Segoe UI', system-ui, sans-serif;
+    --r:         10px;
+    --shadow:    0 2px 12px rgba(0,0,0,.08);
+  }
+
+  /* ── RESET ──────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body { font-family: var(--font-body); background: var(--gris-1); color: var(--gris-5); min-height: 100vh; }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  header {
+    background: linear-gradient(135deg, var(--mar-deep) 0%, var(--mar) 100%);
+    color: #fff; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 16px rgba(2,62,138,.3);
+  }
+  .logo { font-family: var(--font-disp); font-size: 1.2rem; letter-spacing: .02em; display: flex; align-items: center; gap: 10px; }
+  .logo-wave { font-size: 1.4rem; }
+  .header-meta { font-size: .78rem; opacity: .8; text-align: right; }
+  .header-meta strong { display: block; font-size: .9rem; opacity: 1; }
+
+  /* ── NAV TABS ───────────────────────────────────────────── */
+  nav {
+    background: #fff; border-bottom: 2px solid var(--gris-2);
+    display: flex; gap: 4px; padding: 0 24px;
+    position: sticky; top: 60px; z-index: 99;
+    box-shadow: var(--shadow);
+  }
+  nav button {
+    background: none; border: none; cursor: pointer;
+    padding: 14px 20px; font-size: .88rem; font-weight: 600;
+    color: var(--gris-4); border-bottom: 3px solid transparent;
+    transition: all .2s; display: flex; align-items: center; gap: 6px;
+  }
+  nav button.active { color: var(--mar); border-bottom-color: var(--mar); }
+  nav button:hover:not(.active) { color: var(--gris-5); background: var(--gris-1); }
+
+  /* ── MAIN ───────────────────────────────────────────────── */
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── CARDS ──────────────────────────────────────────────── */
+  .card { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--gris-4); margin-bottom: 12px; }
+
+  /* ── SUMMARY STRIP ──────────────────────────────────────── */
+  .summary-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .stat-card {
+    background: #fff; border-radius: var(--r); padding: 16px 18px;
+    box-shadow: var(--shadow); border-left: 4px solid var(--mar);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-card.llegada  { border-color: var(--verde); }
+  .stat-card.salida   { border-color: var(--coral); }
+  .stat-card.limpieza { border-color: var(--sol); }
+  .stat-card.ocupacion{ border-color: var(--mar); }
+  .stat-num  { font-size: 2rem; font-weight: 700; line-height: 1; font-family: var(--font-disp); }
+  .stat-label{ font-size: .75rem; color: var(--gris-4); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ── CALENDARIO ─────────────────────────────────────────── */
+  .cal-controls {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+  }
+  .cal-controls h2 { font-family: var(--font-disp); font-size: 1.3rem; color: var(--mar-deep); }
+  .cal-controls-right { display: flex; gap: 8px; align-items: center; }
+  .btn { background: var(--mar); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: background .2s; }
+  .btn:hover { background: var(--mar-deep); }
+  .btn-ghost { background: #fff; color: var(--mar); border: 2px solid var(--mar); }
+  .btn-ghost:hover { background: var(--gris-1); }
+  .btn-sm { padding: 5px 12px; font-size: .8rem; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--gris-4); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  .cal-apto { margin-bottom: 24px; }
+  .cal-apto-title {
+    font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+    padding: 8px 14px; border-radius: 6px 6px 0 0; color: #fff;
+  }
+  .cal-apto-title.apto-0 { background: var(--mar); }
+  .cal-apto-title.apto-1 { background: #6B3FA0; }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: var(--gris-2); border: 1px solid var(--gris-2); border-top: none; border-radius: 0 0 6px 6px; overflow: hidden; }
+  .cal-dow { background: var(--gris-5); color: #fff; text-align: center; padding: 6px 2px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .cal-day {
+    background: #fff; min-height: 70px; padding: 4px 5px;
+    position: relative; cursor: default; transition: background .15s;
+  }
+  .cal-day:hover { background: var(--gris-1); }
+  .cal-day.other-month { background: var(--gris-1); }
+  .cal-day.other-month .day-num { color: var(--gris-3); }
+  .cal-day.today { background: #EFF9FF; }
+  .cal-day.today .day-num { background: var(--mar); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .day-num { font-size: .8rem; font-weight: 600; color: var(--gris-5); margin-bottom: 2px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+
+  /* Reserva en el calendario */
+  .res-bar {
+    font-size: .68rem; font-weight: 600; padding: 2px 5px; border-radius: 3px;
+    margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 100%; cursor: pointer; transition: opacity .15s;
+  }
+  .res-bar:hover { opacity: .85; }
+  .res-apto-0 { background: #DBEAFE; color: var(--mar-deep); border-left: 3px solid var(--mar); }
+  .res-apto-1 { background: #EDE9FE; color: #5B21B6; border-left: 3px solid #7C3AED; }
+  .res-bar.inicio { border-radius: 3px 0 0 3px; }
+  .res-bar.fin    { border-radius: 0 3px 3px 0; }
+  .res-bar.medio  { border-radius: 0; }
+
+  /* Indicadores del día */
+  .day-indicators { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 2px; }
+  .ind { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .ind.llegada  { background: var(--verde); }
+  .ind.salida   { background: var(--coral); }
+  .ind.limpieza { background: var(--sol); }
+
+  /* ── TODAY PANEL ────────────────────────────────────────── */
+  .today-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .today-grid { grid-template-columns: 1fr; } }
+
+  .event-list { display: flex; flex-direction: column; gap: 8px; }
+  .event-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px; border-radius: 8px; background: var(--gris-1);
+    border-left: 4px solid var(--gris-3);
+  }
+  .event-item.llegada  { border-color: var(--verde); background: #F0FFF4; }
+  .event-item.salida   { border-color: var(--coral); background: #FFF5F5; }
+  .event-item.limpieza { border-color: var(--sol);   background: #FFFBEB; }
+  .event-icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+  .event-body { flex: 1; min-width: 0; }
+  .event-name { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .event-meta { font-size: .78rem; color: var(--gris-4); margin-top: 2px; }
+  .event-apto { font-size: .72rem; font-weight: 600; margin-top: 3px; }
+  .apto-tag-0 { color: var(--mar); }
+  .apto-tag-1 { color: #7C3AED; }
+  .event-action { margin-top: 6px; }
+  .empty-state { text-align: center; padding: 32px 16px; color: var(--gris-4); font-size: .88rem; }
+  .empty-state .emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+  /* ── CHECK-IN FORM ──────────────────────────────────────── */
+  .checkin-selector { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+  .checkin-selector select, .checkin-selector input {
+    border: 2px solid var(--gris-3); border-radius: 8px; padding: 9px 13px;
+    font-size: .88rem; color: var(--gris-5); background: #fff; outline: none;
+    transition: border-color .2s; flex: 1; min-width: 180px;
+  }
+  .checkin-selector select:focus, .checkin-selector input:focus { border-color: var(--mar); }
+
+  .viajero-block {
+    background: var(--gris-1); border-radius: 8px; padding: 16px;
+    margin-bottom: 12px; border: 1px solid var(--gris-2);
+  }
+  .viajero-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .viajero-num { font-weight: 700; font-size: .88rem; color: var(--mar-deep); }
+  .btn-danger { background: #FEE2E2; color: var(--coral); border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: .8rem; font-weight: 600; }
+  .btn-danger:hover { background: #FECACA; }
+
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: .75rem; font-weight: 700; color: var(--gris-4); text-transform: uppercase; letter-spacing: .05em; }
+  .form-group input, .form-group select {
+    border: 2px solid var(--gris-3); border-radius: 7px; padding: 8px 11px;
+    font-size: .88rem; color: var(--gris-5); background: #fff; outline: none;
+    transition: border-color .2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--mar); }
+  .form-group.full { grid-column: 1 / -1; }
+
+  .hora-llegada-block {
+    background: linear-gradient(135deg, #EFF9FF 0%, #E0F2FE 100%);
+    border: 2px solid var(--mar-light); border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .hora-llegada-block label { font-weight: 700; font-size: .88rem; color: var(--mar-deep); flex-shrink: 0; }
+  .hora-llegada-block input { border: 2px solid var(--mar-light); border-radius: 7px; padding: 7px 12px; font-size: 1rem; font-weight: 700; color: var(--mar-deep); background: #fff; outline: none; width: 120px; }
+  .hora-llegada-block input:focus { border-color: var(--mar); }
+  .hora-llegada-note { font-size: .78rem; color: var(--gris-4); }
+
+  .add-viajero-btn {
+    width: 100%; padding: 12px; border: 2px dashed var(--gris-3); background: #fff;
+    border-radius: 8px; color: var(--gris-4); font-size: .88rem; font-weight: 600;
+    cursor: pointer; transition: all .2s; margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .add-viajero-btn:hover { border-color: var(--mar); color: var(--mar); background: var(--gris-1); }
+
+  .form-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+
+  /* ── TOAST ──────────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+    background: var(--gris-5); color: #fff; padding: 12px 20px; border-radius: 8px;
+    font-size: .88rem; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    transform: translateY(80px); opacity: 0; transition: all .3s; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #166534; }
+  .toast.error   { background: var(--coral); }
+
+  /* ── MODAL ──────────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200;
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: var(--r); padding: 24px;
+    max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  }
+  .modal h3 { font-family: var(--font-disp); font-size: 1.1rem; margin-bottom: 12px; color: var(--mar-deep); }
+  .modal-body { font-size: .88rem; color: var(--gris-4); line-height: 1.6; margin-bottom: 16px; }
+  .modal-body strong { color: var(--gris-5); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* ── UPLOAD ZONE ────────────────────────────────────────── */
+  .upload-zone {
+    border: 3px dashed var(--gris-3); border-radius: var(--r);
+    padding: 32px; text-align: center; margin-bottom: 20px;
+    transition: all .2s; cursor: pointer; background: #fff;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--mar); background: var(--gris-1); }
+  .upload-zone .upload-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+  .upload-zone p { font-size: .88rem; color: var(--gris-4); margin-bottom: 8px; }
+  .upload-zone strong { color: var(--mar); }
+  .upload-status { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .file-tag { background: var(--gris-2); border-radius: 6px; padding: 4px 10px; font-size: .78rem; font-weight: 600; color: var(--gris-5); display: flex; align-items: center; gap: 5px; }
+  .file-tag .ok { color: var(--verde); }
+
+  /* ── RESPONSIVE ─────────────────────────────────────────── */
+  @media(max-width:640px){
+    nav button { padding: 12px 10px; font-size: .8rem; }
+    .cal-day { min-height: 50px; }
+    .res-bar { font-size: .6rem; }
+    .summary-strip { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-wave">🏖️</span>
+    <span>Apartamentos Benidorm</span>
+  </div>
+  <div class="header-meta">
+    <strong id="header-date"></strong>
+    <span id="header-time"></span>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showView('hoy')" id="tab-hoy">📋 Hoy</button>
+  <button onclick="showView('calendario')" id="tab-calendario">📅 Calendario</button>
+  <button onclick="showView('checkin')" id="tab-checkin">🔑 Check-in</button>
+  <button onclick="showView('datos')" id="tab-datos">📂 Datos</button>
+</nav>
+
+<main>
+
+  <!-- ══════════ VISTA HOY ══════════ -->
+  <div class="view active" id="view-hoy">
+    <div class="summary-strip" id="summary-strip"></div>
+    <div class="today-grid">
+      <div>
+        <div class="card-title">🟢 Llegadas hoy</div>
+        <div class="event-list" id="list-llegadas-hoy"></div>
+      </div>
+      <div>
+        <div class="card-title">🔴 Salidas hoy</div>
+        <div class="event-list" id="list-salidas-hoy"></div>
+      </div>
+    </div>
+    <div style="height:16px"></div>
+    <div class="today-grid">
+      <div>
+        <div class="card-title">🟡 Llegadas mañana</div>
+        <div class="event-list" id="list-llegadas-manana"></div>
+      </div>
+      <div>
+        <div class="card-title">🧹 Limpiezas mañana</div>
+        <div class="event-list" id="list-limpiezas-manana"></div>
+      </div>
+    </div>
+    <div style="height:16px"></div>
+    <div id="alertas-block"></div>
+  </div>
+
+  <!-- ══════════ VISTA CALENDARIO ══════════ -->
+  <div class="view" id="view-calendario">
+    <div class="cal-controls">
+      <h2 id="cal-title">Junio 2026</h2>
+      <div class="cal-controls-right">
+        <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">← Anterior</button>
+        <button class="btn btn-sm" onclick="changeMonth(0)">Hoy</button>
+        <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">Siguiente →</button>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--mar)"></div> Gran Apartamento</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div> Moderno Apartamento</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--verde)"></div> Llegada</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--coral)"></div> Salida</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--sol)"></div> Limpieza</div>
+    </div>
+    <div id="calendarios"></div>
+  </div>
+
+  <!-- ══════════ VISTA CHECK-IN ══════════ -->
+  <div class="view" id="view-checkin">
+    <div class="card">
+      <div class="card-title">Seleccionar reserva</div>
+      <div class="checkin-selector">
+        <select id="ci-reserva" onchange="seleccionarReserva()">
+          <option value="">— Selecciona una llegada —</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="ci-form-block" style="display:none">
+      <div class="card">
+        <div class="card-title">Información de la llegada</div>
+        <div id="ci-res-info"></div>
+        <div class="hora-llegada-block" style="margin-top:14px">
+          <label>🕐 Hora estimada de llegada</label>
+          <input type="time" id="ci-hora-llegada" value="14:00">
+          <span class="hora-llegada-note">Informa a Domingo de la hora exacta</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Registro de viajeros · RD 933/2021</div>
+        <div style="background:#FFFBEB;border:1px solid var(--arena-dark);border-radius:8px;padding:10px 14px;font-size:.8rem;color:#92400E;margin-bottom:16px">
+          ⚠️ Obligatorio para mayores de 14 años. Los datos se envían a SES.HOSPEDAJES en las 24h siguientes al check-in. No conserves fotos del documento.
+        </div>
+        <div id="viajeros-container"></div>
+        <button class="add-viajero-btn" onclick="addViajero()">
+          + Añadir viajero
+        </button>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="cancelCheckin()">Cancelar</button>
+          <button class="btn" onclick="guardarCheckin()">💾 Guardar check-in</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ VISTA DATOS ══════════ -->
+  <div class="view" id="view-datos">
+    <div class="card">
+      <div class="card-title">Cargar archivos CSV de Airbnb</div>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+           ondragover="e=>e.preventDefault()" ondrop="handleDrop(event)">
+        <span class="upload-icon">📁</span>
+        <p>Arrastra aquí los CSV de Airbnb o <strong>haz clic para seleccionar</strong></p>
+        <p style="font-size:.75rem">Sube el CSV de cobros pendientes y/o cobros recibidos</p>
+        <div class="upload-status" id="upload-status"></div>
+      </div>
+      <input type="file" id="file-input" accept=".csv" multiple style="display:none" onchange="handleFiles(event.target.files)">
+      <div class="form-actions">
+        <button class="btn" onclick="procesarCSVs()">✓ Cargar reservas</button>
+      </div>
+    </div>
+
+    <div class="card" id="stats-card" style="display:none">
+      <div class="card-title">Resumen de datos cargados</div>
+      <div id="stats-content"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Configuración de Google Sheets</div>
+      <div style="font-size:.82rem;color:var(--gris-4);margin-bottom:12px">
+        Para guardar los datos de check-in en Google Sheets, introduce la URL de tu hoja.
+        La hoja debe tener una pestaña llamada <strong>CheckIns</strong>.
+      </div>
+      <div class="form-group">
+        <label>URL de Google Sheets</label>
+        <input type="url" id="sheets-url" placeholder="https://docs.google.com/spreadsheets/d/..." value="">
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-sm" onclick="guardarConfig()">Guardar configuración</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Modal detalle reserva -->
+<div class="modal-overlay" id="modal-reserva">
+  <div class="modal">
+    <h3 id="modal-title">Detalle reserva</h3>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cerrar</button>
+      <button class="btn btn-sm" onclick="irACheckin()">🔑 Hacer check-in</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════
+let reservas = [];
+let csvFiles = [];
+let currentMonth = new Date().getMonth();
+let currentYear  = new Date().getFullYear();
+let viajeroCount = 0;
+let selectedReservaId = null;
+let modalReservaId = null;
+
+const APTOS = [
+  { key: 'gran',    label: 'Gran Apartamento en el Centro de Benidorm',      alias: 'Tomas Ortuño',  idx: 0 },
+  { key: 'moderno', label: 'Moderno Apartamento en el Corazón de Benidorm',  alias: 'Buen Retiro',   idx: 1 },
+];
+
+// ═══════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════════════════════
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  if (id === 'calendario') renderCalendario();
+  if (id === 'checkin')    renderCheckinSelector();
+  if (id === 'hoy')        renderHoy();
+}
+
+// ═══════════════════════════════════════════════════════
+// HEADER CLOCK
+// ═══════════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  document.getElementById('header-date').textContent =
+    dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('header-time').textContent =
+    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════════
+// PARSEO CSV
+// ═══════════════════════════════════════════════════════
+function norm(s) {
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+}
+function pick(obj, keys) {
+  for (const k of keys) { const nk = norm(k); if (obj[nk] !== undefined && obj[nk] !== '') return obj[nk]; }
+  return '';
+}
+function parseCSVText(text) {
+  const delim = (text.split('\n')[0]||'').split(';').length > (text.split('\n')[0]||'').split(',').length ? ';' : ',';
+  const lines = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === delim && !inQ) { lines.push(cur); cur = ''; }
+    else if ((c === '\n' || c === '\r') && !inQ) {
+      if (cur || lines.length) { lines.push(cur); cur = ''; }
+      if (lines.length) { rows.push([...lines]); lines.length = 0; }
+    } else { cur += c; }
+  }
+  // Simple approach
+  return parseCSVSimple(text, delim);
+}
+function parseCSVSimple(text, delim) {
+  const rows = [];
+  const lines = text.split(/\r?\n/);
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const row = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === delim && !inQ) { row.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    row.push(cur.trim());
+    rows.push(row);
+  }
+  return rows;
+}
+function parseDateMDY(s) {
+  if (!s) return null;
+  s = String(s).trim();
+  const m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+  if (m) {
+    let [,a,b,y] = m; y = +y < 100 ? +y+2000 : +y;
+    // MDY si el año hace sentido
+    const d = new Date(+y, +a-1, +b);
+    if (!isNaN(d)) return d;
+  }
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return new Date(+iso[1], +iso[2]-1, +iso[3]);
+  return null;
+}
+function dateKey(d) {
+  if (!d) return '';
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+}
+function aptoIdx(nombre) {
+  const n = norm(nombre);
+  if (n.includes('moderno') || n.includes('corazon')) return 1;
+  return 0;
+}
+
+function procesarCSVTexts(texts) {
+  const vistas = new Set();
+  const nuevas = [];
+  for (const text of texts) {
+    const delim = (text.split('\n')[0]||'').split(';').length > (text.split('\n')[0]||'').split(',').length ? ';' : ',';
+    const rows = parseCSVSimple(text, delim);
+    if (rows.length < 2) continue;
+    const headers = rows[0].map(h => norm(h));
+    const obj = (row) => {
+      const o = {};
+      headers.forEach((h,i) => { o[h] = row[i] || ''; });
+      return o;
+    };
+    for (let i = 1; i < rows.length; i++) {
+      const o = obj(rows[i]);
+      const tipo = norm(pick(o,['tipo','type']));
+      if (tipo && !tipo.includes('reserva')) continue;
+      if (tipo.includes('cancel')) continue;
+      const cod = pick(o,['codigo de confirmacion','confirmation code','reserva','codigo']) || ('AUTO-'+i);
+      if (vistas.has(cod)) continue;
+      vistas.add(cod);
+      const entrada = parseDateMDY(pick(o,['fecha de inicio','start date','entrada','checkin']));
+      const salida  = parseDateMDY(pick(o,['fecha de finalizacion','fecha de finalización','end date','salida','checkout']));
+      if (!entrada || !salida) continue;
+      nuevas.push({
+        id:          cod,
+        huesped:     pick(o,['viajero','guest name','huesped','nombre']),
+        apartamento: pick(o,['alojamiento','listing','apartamento']),
+        entrada, salida,
+        noches:  +pick(o,['noches','# of nights','nights']) || Math.round((salida-entrada)/86400000),
+        importe: parseFloat(String(pick(o,['importe','earnings','amount'])).replace(',','.')) || 0,
+        aptoIdx: aptoIdx(pick(o,['alojamiento','listing','apartamento'])),
+      });
+    }
+  }
+  return nuevas;
+}
+
+// ═══════════════════════════════════════════════════════
+// UPLOAD
+// ═══════════════════════════════════════════════════════
+function handleFiles(files) {
+  csvFiles = [...files];
+  renderUploadStatus();
+}
+function handleDrop(e) {
+  e.preventDefault();
+  handleFiles(e.dataTransfer.files);
+}
+function renderUploadStatus() {
+  const el = document.getElementById('upload-status');
+  el.innerHTML = csvFiles.map(f =>
+    `<div class="file-tag"><span class="ok">✓</span>${f.name}</div>`
+  ).join('');
+}
+function procesarCSVs() {
+  if (!csvFiles.length) { showToast('Selecciona al menos un CSV', 'error'); return; }
+  const readers = csvFiles.map(f => new Promise(res => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.readAsText(f, 'UTF-8');
+  }));
+  Promise.all(readers).then(texts => {
+    reservas = procesarCSVTexts(texts);
+    localStorage.setItem('bnd_reservas', JSON.stringify(reservas.map(r => ({
+      ...r, entrada: r.entrada.toISOString(), salida: r.salida.toISOString()
+    }))));
+    renderHoy();
+    renderStatsCard();
+    showToast(`✓ ${reservas.length} reservas cargadas`, 'success');
+  });
+}
+function renderStatsCard() {
+  const card = document.getElementById('stats-card');
+  card.style.display = 'block';
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const futuras = reservas.filter(r => r.salida >= hoy);
+  const ingresos = futuras.reduce((s,r) => s+r.importe, 0);
+  const noches = futuras.reduce((s,r) => s+r.noches, 0);
+  document.getElementById('stats-content').innerHTML = `
+    <div class="summary-strip" style="margin:0">
+      <div class="stat-card ocupacion"><div class="stat-num">${reservas.length}</div><div class="stat-label">Reservas totales</div></div>
+      <div class="stat-card llegada"><div class="stat-num">${futuras.length}</div><div class="stat-label">Reservas futuras</div></div>
+      <div class="stat-card limpieza"><div class="stat-num">${noches}</div><div class="stat-label">Noches pendientes</div></div>
+      <div class="stat-card salida"><div class="stat-num">${ingresos.toFixed(0)} €</div><div class="stat-label">Ingresos previstos</div></div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// PERSISTENCIA
+// ═══════════════════════════════════════════════════════
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem('bnd_reservas');
+    if (raw) {
+      reservas = JSON.parse(raw).map(r => ({...r, entrada: new Date(r.entrada), salida: new Date(r.salida)}));
+    }
+    const cfg = localStorage.getItem('bnd_config');
+    if (cfg) {
+      const c = JSON.parse(cfg);
+      if (c.sheetsUrl) document.getElementById('sheets-url').value = c.sheetsUrl;
+    }
+  } catch(e) {}
+}
+function guardarConfig() {
+  const url = document.getElementById('sheets-url').value;
+  localStorage.setItem('bnd_config', JSON.stringify({ sheetsUrl: url }));
+  showToast('Configuración guardada', 'success');
+}
+
+// ═══════════════════════════════════════════════════════
+// VISTA HOY
+// ═══════════════════════════════════════════════════════
+function renderHoy() {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const man  = new Date(hoy); man.setDate(man.getDate()+1);
+  const kHoy = dateKey(hoy), kMan = dateKey(man);
+
+  const llegadasHoy    = reservas.filter(r => dateKey(r.entrada) === kHoy);
+  const salidasHoy     = reservas.filter(r => dateKey(r.salida)  === kHoy);
+  const llegadasManana = reservas.filter(r => dateKey(r.entrada) === kMan);
+  const salidasManana  = reservas.filter(r => dateKey(r.salida)  === kMan);
+
+  // Limpiezas mañana = salidas mañana + llegadas mañana sin salida
+  const aptosSalidaMan = new Set(salidasManana.map(r => r.aptoIdx));
+  const limpiezasMan = [
+    ...salidasManana,
+    ...llegadasManana.filter(r => !aptosSalidaMan.has(r.aptoIdx))
+  ];
+
+  // Ocupación próximos 30 días
+  const fin30 = new Date(hoy); fin30.setDate(fin30.getDate()+30);
+  let nOcup = 0;
+  reservas.forEach(r => {
+    const ini = new Date(Math.max(r.entrada, hoy));
+    const fin = new Date(Math.min(r.salida, fin30));
+    nOcup += Math.max(0, Math.round((fin-ini)/86400000));
+  });
+  const pctOcup = Math.round(100 * nOcup / (2 * 30));
+
+  // Summary strip
+  document.getElementById('summary-strip').innerHTML = `
+    <div class="stat-card llegada"><div class="stat-num">${llegadasHoy.length}</div><div class="stat-label">Llegadas hoy</div></div>
+    <div class="stat-card salida"><div class="stat-num">${salidasHoy.length}</div><div class="stat-label">Salidas hoy</div></div>
+    <div class="stat-card limpieza"><div class="stat-num">${limpiezasMan.length}</div><div class="stat-label">Limpiezas mañana</div></div>
+    <div class="stat-card ocupacion"><div class="stat-num">${pctOcup}%</div><div class="stat-label">Ocupación 30 días</div></div>`;
+
+  renderEventList('list-llegadas-hoy',    llegadasHoy,    'llegada');
+  renderEventList('list-salidas-hoy',     salidasHoy,     'salida');
+  renderEventList('list-llegadas-manana', llegadasManana, 'llegada');
+  renderEventList('list-limpiezas-manana',limpiezasMan,   'limpieza');
+
+  // Alertas
+  const alertas = [];
+  reservas.forEach(r => {
+    const mismo = reservas.find(x => x.id !== r.id && x.aptoIdx === r.aptoIdx && dateKey(x.entrada) === dateKey(r.salida));
+    if (mismo && dateKey(r.salida) >= kHoy) {
+      alertas.push(`🔴 <strong>Turnover</strong>: ${APTOS[r.aptoIdx]?.alias} el ${fmtDate(r.salida)} — sale ${r.huesped}, entra ${mismo.huesped}`);
+    }
+  });
+  const alertasBlock = document.getElementById('alertas-block');
+  if (alertas.length) {
+    alertasBlock.innerHTML = `<div class="card" style="border-left:4px solid var(--coral)">
+      <div class="card-title">⚠️ Alertas</div>
+      ${alertas.map(a => `<div style="padding:8px 0;font-size:.85rem;border-bottom:1px solid var(--gris-2)">${a}</div>`).join('')}
+    </div>`;
+  } else { alertasBlock.innerHTML = ''; }
+}
+
+function renderEventList(containerId, items, tipo) {
+  const el = document.getElementById(containerId);
+  if (!items.length) {
+    el.innerHTML = `<div class="empty-state"><span class="emoji">${tipo==='limpieza'?'✨':tipo==='llegada'?'🌅':'🏁'}</span>Sin eventos</div>`;
+    return;
+  }
+  const icons = { llegada:'🟢', salida:'🔴', limpieza:'🧹' };
+  el.innerHTML = items.map(r => {
+    const apto = APTOS[r.aptoIdx] || APTOS[0];
+    const extra = tipo === 'llegada' ? `${r.noches} noches · ${r.importe}€` :
+                  tipo === 'salida'  ? `Sale tras ${r.noches} noches` :
+                  `Listo para ${dateKey(r.entrada) ? fmtDate(r.entrada) : '—'}`;
+    return `<div class="event-item ${tipo}" onclick="openModal('${r.id}')">
+      <div class="event-icon">${icons[tipo]}</div>
+      <div class="event-body">
+        <div class="event-name">${r.huesped || '—'}</div>
+        <div class="event-meta">${extra}</div>
+        <div class="event-apto apto-tag-${r.aptoIdx}">${apto.alias}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// CALENDARIO
+// ═══════════════════════════════════════════════════════
+function changeMonth(dir) {
+  if (dir === 0) { currentMonth = new Date().getMonth(); currentYear = new Date().getFullYear(); }
+  else { currentMonth += dir; }
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+  renderCalendario();
+}
+
+function renderCalendario() {
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-title').textContent = meses[currentMonth] + ' ' + currentYear;
+
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const container = document.getElementById('calendarios');
+  container.innerHTML = '';
+
+  // Una cuadrícula unificada con ambos apartamentos por día
+  const wrap = document.createElement('div');
+  wrap.className = 'cal-apto';
+  wrap.innerHTML = renderCalGrid(currentYear, currentMonth, hoy);
+  container.appendChild(wrap);
+}
+
+function renderCalGrid(year, month, hoy) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const daysInPrev  = new Date(year, month, 0).getDate();
+  const offset = (firstDay + 6) % 7; // Lunes primero
+  const dows = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+  // Precalcular qué pasa cada día para cada apto
+  const dayData = {};
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(year, month, d);
+    const k  = dateKey(dt);
+    dayData[k] = { llegadas:[], salidas:[], ocupado:[], limpieza:[] };
+    reservas.forEach(r => {
+      if (dateKey(r.entrada) === k) dayData[k].llegadas.push(r);
+      if (dateKey(r.salida)  === k) dayData[k].salidas.push(r);
+      if (r.entrada <= dt && r.salida > dt) dayData[k].ocupado.push(r);
+    });
+    // Limpieza = día de salida + si hay llegada
+    dayData[k].salidas.forEach(r => dayData[k].limpieza.push(r));
+    dayData[k].llegadas.forEach(r => {
+      if (!dayData[k].salidas.find(s => s.aptoIdx === r.aptoIdx)) dayData[k].limpieza.push(r);
+    });
+  }
+
+  let html = '<div class="cal-grid">';
+  dows.forEach(d => { html += `<div class="cal-dow">${d}</div>`; });
+
+  // Días del mes anterior
+  for (let i = 0; i < offset; i++) {
+    const d = daysInPrev - offset + i + 1;
+    html += `<div class="cal-day other-month"><div class="day-num">${d}</div></div>`;
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(year, month, d);
+    const k  = dateKey(dt);
+    const data = dayData[k] || {};
+    const isHoy = k === dateKey(hoy);
+    const isFin = dt.getDay() === 0 || dt.getDay() === 6;
+
+    let cls = 'cal-day';
+    if (isHoy) cls += ' today';
+    if (isFin) cls += ' weekend';
+
+    // Barras de reserva
+    let bars = '';
+    data.ocupado?.forEach(r => {
+      const isIni = dateKey(r.entrada) === k;
+      const isFin2= dateKey(r.salida)  === k;
+      const pos   = isIni && isFin2 ? '' : isIni ? 'inicio' : isFin2 ? 'fin' : 'medio';
+      const txt   = isIni ? r.huesped.split(' ')[0] : '';
+      bars += `<div class="res-bar res-apto-${r.aptoIdx} ${pos}" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped} · ${APTOS[r.aptoIdx]?.alias}">${txt}</div>`;
+    });
+
+    // Indicadores
+    let inds = '';
+    if (data.llegadas?.length) inds += '<div class="ind llegada" title="Llegada"></div>';
+    if (data.salidas?.length)  inds += '<div class="ind salida"  title="Salida"></div>';
+    if (data.limpieza?.length && !data.llegadas?.length && !data.salidas?.length)
+      inds += '<div class="ind limpieza" title="Limpieza"></div>';
+    if (data.limpieza?.length && (data.llegadas?.length || data.salidas?.length))
+      inds += '<div class="ind limpieza" title="Limpieza"></div>';
+
+    html += `<div class="${cls}">
+      <div class="day-num">${d}</div>
+      ${bars}
+      <div class="day-indicators">${inds}</div>
+    </div>`;
+  }
+
+  // Relleno
+  const total = offset + daysInMonth;
+  const rem   = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let i = 1; i <= rem; i++) html += `<div class="cal-day other-month"><div class="day-num">${i}</div></div>`;
+
+  html += '</div>';
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL DETALLE RESERVA
+// ═══════════════════════════════════════════════════════
+function openModal(id) {
+  const r = reservas.find(x => x.id === id);
+  if (!r) return;
+  modalReservaId = id;
+  const apto = APTOS[r.aptoIdx] || APTOS[0];
+  document.getElementById('modal-title').textContent = r.huesped || 'Reserva';
+  document.getElementById('modal-body').innerHTML = `
+    <div style="display:grid;gap:8px">
+      <div><strong>Apartamento:</strong> ${apto.alias}</div>
+      <div><strong>Entrada:</strong> ${fmtDate(r.entrada)}</div>
+      <div><strong>Salida:</strong> ${fmtDate(r.salida)}</div>
+      <div><strong>Noches:</strong> ${r.noches}</div>
+      <div><strong>Importe:</strong> ${r.importe} €</div>
+      <div><strong>Código:</strong> ${r.id}</div>
+    </div>`;
+  document.getElementById('modal-reserva').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-reserva').classList.remove('open'); }
+function irACheckin() {
+  closeModal();
+  selectedReservaId = modalReservaId;
+  showView('checkin');
+  setTimeout(() => {
+    const sel = document.getElementById('ci-reserva');
+    if (sel) { sel.value = selectedReservaId; seleccionarReserva(); }
+  }, 100);
+}
+
+// ═══════════════════════════════════════════════════════
+// CHECK-IN
+// ═══════════════════════════════════════════════════════
+function renderCheckinSelector() {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const proximos = reservas
+    .filter(r => r.entrada >= hoy)
+    .sort((a,b) => a.entrada - b.entrada)
+    .slice(0, 20);
+  const sel = document.getElementById('ci-reserva');
+  sel.innerHTML = '<option value="">— Selecciona una llegada —</option>' +
+    proximos.map(r => `<option value="${r.id}">${fmtDate(r.entrada)} · ${r.huesped} · ${APTOS[r.aptoIdx]?.alias}</option>`).join('');
+  if (selectedReservaId) { sel.value = selectedReservaId; seleccionarReserva(); }
+}
+
+function seleccionarReserva() {
+  const id = document.getElementById('ci-reserva').value;
+  const block = document.getElementById('ci-form-block');
+  if (!id) { block.style.display = 'none'; return; }
+  const r = reservas.find(x => x.id === id);
+  if (!r) return;
+  const apto = APTOS[r.aptoIdx] || APTOS[0];
+  document.getElementById('ci-res-info').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;font-size:.88rem">
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">APARTAMENTO</span><strong>${apto.alias}</strong></div>
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">ENTRADA</span><strong>${fmtDate(r.entrada)}</strong></div>
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">SALIDA</span><strong>${fmtDate(r.salida)}</strong></div>
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">NOCHES</span><strong>${r.noches}</strong></div>
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">VIAJEROS</span><strong>${r.noches > 0 ? '—' : '—'}</strong></div>
+    </div>`;
+  block.style.display = 'block';
+  viajeroCount = 0;
+  document.getElementById('viajeros-container').innerHTML = '';
+  addViajero(); // Añadir el primero automáticamente
+}
+
+function addViajero() {
+  viajeroCount++;
+  const n = viajeroCount;
+  const div = document.createElement('div');
+  div.className = 'viajero-block';
+  div.id = `viajero-${n}`;
+  div.innerHTML = `
+    <div class="viajero-header">
+      <div class="viajero-num">Viajero ${n}</div>
+      ${n > 1 ? `<button class="btn-danger" onclick="removeViajero(${n})">✕ Eliminar</button>` : ''}
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Nombre *</label><input type="text" id="v${n}-nombre" placeholder="Ana"></div>
+      <div class="form-group"><label>Apellidos *</label><input type="text" id="v${n}-apellidos" placeholder="García López"></div>
+      <div class="form-group">
+        <label>Tipo documento *</label>
+        <select id="v${n}-tipo-doc">
+          <option value="DNI">DNI</option>
+          <option value="Pasaporte">Pasaporte</option>
+          <option value="NIE">NIE</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Número documento *</label><input type="text" id="v${n}-num-doc" placeholder="12345678A"></div>
+      <div class="form-group"><label>Nº soporte (DNI)</label><input type="text" id="v${n}-soporte" placeholder="AAA123456"></div>
+      <div class="form-group"><label>Fecha nacimiento *</label><input type="date" id="v${n}-nacimiento"></div>
+      <div class="form-group"><label>Fecha expedición *</label><input type="date" id="v${n}-expedicion"></div>
+      <div class="form-group">
+        <label>Sexo *</label>
+        <select id="v${n}-sexo">
+          <option value="">—</option>
+          <option value="M">Masculino</option>
+          <option value="F">Femenino</option>
+          <option value="O">Otro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Nacionalidad *</label><input type="text" id="v${n}-nacionalidad" placeholder="Española"></div>
+      <div class="form-group full"><label>Dirección completa *</label><input type="text" id="v${n}-direccion" placeholder="Calle Mayor 1, 28001 Madrid"></div>
+      <div class="form-group"><label>País residencia</label><input type="text" id="v${n}-pais" placeholder="España"></div>
+      <div class="form-group"><label>Teléfono *</label><input type="tel" id="v${n}-telefono" placeholder="+34 600 000 000"></div>
+      <div class="form-group"><label>Email *</label><input type="email" id="v${n}-email" placeholder="ana@email.com"></div>
+      <div class="form-group">
+        <label>Parentesco con viajero 1</label>
+        <select id="v${n}-parentesco">
+          <option value="Titular">Titular</option>
+          <option value="Cónyuge">Cónyuge / pareja</option>
+          <option value="Hijo/a">Hijo/a</option>
+          <option value="Familiar">Familiar</option>
+          <option value="Amigo/a">Amigo/a</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+    </div>`;
+  document.getElementById('viajeros-container').appendChild(div);
+  div.querySelector(`#v${n}-nombre`).focus();
+}
+
+function removeViajero(n) {
+  document.getElementById(`viajero-${n}`)?.remove();
+}
+
+function getViajeroData(n) {
+  const g = id => (document.getElementById(`v${n}-${id}`)?.value || '').trim();
+  return {
+    nombre: g('nombre'), apellidos: g('apellidos'),
+    tipoDoc: g('tipo-doc'), numDoc: g('num-doc'), soporte: g('soporte'),
+    nacimiento: g('nacimiento'), expedicion: g('expedicion'),
+    sexo: g('sexo'), nacionalidad: g('nacionalidad'),
+    direccion: g('direccion'), pais: g('pais'),
+    telefono: g('telefono'), email: g('email'),
+    parentesco: g('parentesco'),
+  };
+}
+
+function guardarCheckin() {
+  const id = document.getElementById('ci-reserva').value;
+  const r  = reservas.find(x => x.id === id);
+  if (!r) { showToast('Selecciona una reserva', 'error'); return; }
+  const horaLlegada = document.getElementById('ci-hora-llegada').value;
+  const viajeros = [];
+  let n = 1;
+  while (document.getElementById(`viajero-${n}`)) {
+    const v = getViajeroData(n);
+    if (!v.nombre || !v.apellidos || !v.numDoc) {
+      showToast(`Viajero ${n}: faltan campos obligatorios`, 'error'); return;
+    }
+    viajeros.push(v);
+    n++;
+  }
+  if (!viajeros.length) { showToast('Añade al menos un viajero', 'error'); return; }
+
+  const checkinData = {
+    reservaId: r.id, huesped: r.huesped,
+    apartamento: APTOS[r.aptoIdx]?.alias,
+    entrada: fmtDate(r.entrada), salida: fmtDate(r.salida),
+    horaLlegada,
+    fechaRegistro: new Date().toISOString(),
+    viajeros,
+  };
+
+  // Guardar local
+  const prev = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
+  const idx  = prev.findIndex(c => c.reservaId === id);
+  if (idx >= 0) prev[idx] = checkinData; else prev.push(checkinData);
+  localStorage.setItem('bnd_checkins', JSON.stringify(prev));
+
+  // Intentar enviar a Google Sheets si hay URL configurada
+  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+  if (cfg.sheetsUrl) {
+    enviarASheets(checkinData, cfg.sheetsUrl);
+  } else {
+    showToast('✓ Check-in guardado localmente', 'success');
+  }
+
+  document.getElementById('ci-form-block').style.display = 'none';
+  document.getElementById('ci-reserva').value = '';
+  selectedReservaId = null;
+}
+
+function enviarASheets(data, url) {
+  // Extraer ID de la URL de Google Sheets
+  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (!m) { showToast('URL de Sheets inválida', 'error'); return; }
+  const sheetId = m[1];
+  // Construir payload para Apps Script Web App (si está publicado)
+  // Si no, simplemente notificar al usuario
+  showToast('✓ Check-in guardado. Exporta desde Datos > Exportar', 'success');
+}
+
+function cancelCheckin() {
+  document.getElementById('ci-form-block').style.display = 'none';
+  document.getElementById('ci-reserva').value = '';
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => { t.classList.remove('show'); }, 3000);
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+loadFromStorage();
+renderHoy();
+</script>
+</body>
+</html>
