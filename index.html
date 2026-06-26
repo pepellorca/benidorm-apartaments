@@ -222,6 +222,32 @@
   .toast.success { background: #166534; }
   .toast.error   { background: var(--coral); }
 
+
+  /* OCR / FOTO DOCUMENTO */
+  .ocr-block {
+    background: linear-gradient(135deg, #F0FFF4, #DCFCE7);
+    border: 2px solid var(--verde); border-radius: 10px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .ocr-block h4 { font-size: .85rem; font-weight: 700; color: #166534; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .ocr-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .btn-ocr { background: #166534; color: #fff; border: none; border-radius: 7px; padding: 10px 16px; font-size: .85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: background .2s; }
+  .btn-ocr:hover { background: #14532D; }
+  .btn-ocr-secondary { background: #fff; color: #166534; border: 2px solid #166534; border-radius: 7px; padding: 10px 16px; font-size: .85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: all .2s; }
+  .btn-ocr-secondary:hover { background: #F0FFF4; }
+  .ocr-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 6px; border: 1px solid var(--gris-3); display: none; margin-bottom: 8px; }
+  .ocr-status { font-size: .8rem; color: #166534; display: none; align-items: center; gap: 6px; }
+  .ocr-spinner { width: 14px; height: 14px; border: 2px solid #BBF7D0; border-top-color: #166534; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* API KEY MODAL */
+  .apikey-modal { background: #fff; border-radius: var(--r); padding: 24px; max-width: 440px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+  .apikey-modal h3 { font-family: var(--font-disp); font-size: 1.1rem; margin-bottom: 8px; color: var(--mar-deep); }
+  .apikey-modal p { font-size: .83rem; color: var(--gris-4); margin-bottom: 16px; line-height: 1.5; }
+  .apikey-input { width: 100%; border: 2px solid var(--gris-3); border-radius: 7px; padding: 10px 12px; font-size: .88rem; outline: none; margin-bottom: 12px; font-family: monospace; }
+  .apikey-input:focus { border-color: var(--mar); }
+  .apikey-note { font-size: .75rem; color: var(--gris-4); background: var(--gris-1); border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; }
+
   @media(max-width:640px){
     nav button { padding: 12px 10px; font-size: .8rem; }
     .cal-day { min-height: 55px; }
@@ -370,6 +396,21 @@
         <button class="btn" onclick="syncDrive()" id="btn-sync-main">&#8635; Sincronizar con Drive</button>
       </div>
 
+      <div class="card">
+        <div class="card-title">&#128247; Configuraci&#243;n OCR (lectura de documentos)</div>
+        <p style="font-size:.85rem;color:var(--gris-4);margin-bottom:12px">
+          Para leer DNI y pasaportes con la c&#225;mara necesitas una clave de OpenAI. 
+          Se guarda solo en este dispositivo.
+        </p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div id="apikey-status" style="font-size:.82rem;color:var(--gris-4)">
+            Estado: <span id="apikey-estado">&#10005; No configurada</span>
+          </div>
+          <button class="btn btn-sm" onclick="mostrarConfigApiKey()">&#128273; Configurar clave</button>
+          <button class="btn-danger btn-sm" onclick="borrarApiKey()" style="padding:5px 12px;font-size:.8rem">Eliminar clave</button>
+        </div>
+      </div>
+
       <div class="card" id="stats-card" style="display:none">
         <div class="card-title">Reservas cargadas</div>
         <div id="stats-content"></div>
@@ -389,6 +430,27 @@
     </div>
   </div>
 </div>
+
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="modal-apikey">
+  <div class="apikey-modal">
+    <h3>&#128273; Clave de OpenAI</h3>
+    <p>Para leer documentos con IA necesitas tu clave de OpenAI. Se guarda solo en este dispositivo y nunca se sube a ning&#250;n servidor.</p>
+    <input type="password" class="apikey-input" id="apikey-input" placeholder="sk-...">
+    <div class="apikey-note">
+      &#128274; La clave se guarda en tu navegador (localStorage). Nadie m&#225;s puede verla.
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="closeApiKeyModal()">Cancelar</button>
+      <button class="btn btn-sm" onclick="guardarApiKey()">Guardar y continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Input oculto para cámara -->
+<input type="file" id="ocr-camera-input" accept="image/*" capture="environment" style="display:none" onchange="procesarFotoDocumento(event, currentOcrViajero)">
+<input type="file" id="ocr-file-input" accept="image/*" style="display:none" onchange="procesarFotoDocumento(event, currentOcrViajero)">
 
 <div class="toast" id="toast"></div>
 
@@ -609,6 +671,7 @@ function showView(id) {
   document.getElementById('view-' + id).classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
+  if (id === 'drive') actualizarEstadoApiKey();
   if (id === 'checkin')    renderCheckinSelector();
   if (id === 'hoy')        renderHoy();
 }
@@ -904,6 +967,18 @@ function addViajero() {
       <div class="viajero-num">Viajero ${n}</div>
       ${n>1?`<button class="btn-danger" onclick="removeViajero(${n})">&#10005; Eliminar</button>`:''}
     </div>
+    <div class="ocr-block">
+      <h4>&#128247; Leer documento con c&#225;mara</h4>
+      <div class="ocr-actions">
+        <button class="btn-ocr" onclick="abrirCamara(${n})">&#128247; Hacer foto</button>
+        <button class="btn-ocr-secondary" onclick="abrirArchivo(${n})">&#128193; Subir imagen</button>
+      </div>
+      <img class="ocr-preview" id="ocr-preview-${n}">
+      <div class="ocr-status" id="ocr-status-${n}">
+        <div class="ocr-spinner"></div>
+        <span>Leyendo documento...</span>
+      </div>
+    </div>
     <div class="form-grid">
       <div class="form-group"><label>Nombre *</label><input type="text" id="v${n}-nombre" placeholder="Ana"></div>
       <div class="form-group"><label>Apellidos *</label><input type="text" id="v${n}-apellidos" placeholder="Garc\u00EDa L\u00F3pez"></div>
@@ -960,6 +1035,189 @@ function showToast(msg,type=''){
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 
+
+// ═══════════════════════════════════════════════
+// OCR - FOTO DOCUMENTO
+// ═══════════════════════════════════════════════
+let currentOcrViajero = null;
+let pendingOcrCallback = null;
+
+function abrirCamara(n) {
+  currentOcrViajero = n;
+  document.getElementById('ocr-camera-input').value = '';
+  document.getElementById('ocr-camera-input').click();
+}
+
+function abrirArchivo(n) {
+  currentOcrViajero = n;
+  document.getElementById('ocr-file-input').value = '';
+  document.getElementById('ocr-file-input').click();
+}
+
+function closeApiKeyModal() {
+  document.getElementById('modal-apikey').classList.remove('open');
+  pendingOcrCallback = null;
+}
+
+function guardarApiKey() {
+  const key = document.getElementById('apikey-input').value.trim();
+  if (!key.startsWith('sk-')) { showToast('Clave inválida — debe empezar por sk-', 'error'); return; }
+  localStorage.setItem('bnd_openai_key', key);
+  document.getElementById('modal-apikey').classList.remove('open');
+  showToast('✓ Clave guardada', 'success');
+  if (pendingOcrCallback) { pendingOcrCallback(); pendingOcrCallback = null; }
+}
+
+function getOpenAIKey() {
+  return localStorage.getItem('bnd_openai_key') || '';
+}
+
+function pedirApiKeyYContinuar(callback) {
+  const key = getOpenAIKey();
+  if (key) { callback(); return; }
+  pendingOcrCallback = callback;
+  document.getElementById('modal-apikey').classList.add('open');
+  document.getElementById('apikey-input').focus();
+}
+
+async function procesarFotoDocumento(event, n) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Mostrar preview
+  const preview = document.getElementById(`ocr-preview-${n}`);
+  const status  = document.getElementById(`ocr-status-${n}`);
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+
+  pedirApiKeyYContinuar(async () => {
+    status.style.display = 'flex';
+    try {
+      // Convertir imagen a base64
+      const base64 = await fileToBase64(file);
+      const key = getOpenAIKey();
+
+      const prompt = `Analiza esta imagen de un documento de identidad (DNI español, pasaporte o NIE) y extrae los siguientes datos en formato JSON. Si un campo no es visible o no existe, pon null. 
+      Devuelve SOLO el JSON, sin texto adicional:
+      {
+        "nombre": "nombre de pila",
+        "apellidos": "apellidos completos",
+        "tipo_doc": "DNI | Pasaporte | NIE",
+        "num_doc": "número del documento",
+        "num_soporte": "número de soporte (solo DNI, empieza por letras)",
+        "fecha_nacimiento": "YYYY-MM-DD",
+        "fecha_expedicion": "YYYY-MM-DD",
+        "sexo": "M | F",
+        "nacionalidad": "nacionalidad en español",
+        "pais": "país de residencia"
+      }`;
+
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          max_tokens: 400,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: `data:${file.type};base64,${base64}`, detail: 'high' } }
+            ]
+          }]
+        })
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error?.message || 'Error OpenAI ' + resp.status);
+      }
+
+      const data = await resp.json();
+      const text = data.choices[0].message.content.trim();
+      const clean = text.replace(/```json|```/g, '').trim();
+      const campos = JSON.parse(clean);
+
+      // Rellenar formulario
+      rellenarViajero(n, campos);
+
+      // Borrar imagen de memoria (no la almacenamos)
+      URL.revokeObjectURL(preview.src);
+      preview.style.display = 'none';
+      status.style.display = 'none';
+
+      showToast('✓ Datos leídos correctamente — revisa y confirma', 'success');
+
+    } catch(e) {
+      status.style.display = 'none';
+      preview.style.display = 'none';
+      if (e.message.includes('401') || e.message.includes('invalid_api_key')) {
+        localStorage.removeItem('bnd_openai_key');
+        showToast('Clave de OpenAI inválida — inténtalo de nuevo', 'error');
+      } else {
+        showToast('Error al leer el documento: ' + e.message, 'error');
+      }
+    }
+  });
+}
+
+function rellenarViajero(n, d) {
+  const set = (field, val) => {
+    const el = document.getElementById(`v${n}-${field}`);
+    if (el && val) el.value = val;
+  };
+  set('nombre',       d.nombre);
+  set('apellidos',    d.apellidos);
+  set('num-doc',      d.num_doc);
+  set('soporte',      d.num_soporte);
+  set('nacimiento',   d.fecha_nacimiento);
+  set('expedicion',   d.fecha_expedicion);
+  set('nacionalidad', d.nacionalidad);
+  set('pais',         d.pais);
+  // Tipo documento
+  const tipoEl = document.getElementById(`v${n}-tipo-doc`);
+  if (tipoEl && d.tipo_doc) {
+    const opts = [...tipoEl.options];
+    const match = opts.find(o => o.value === d.tipo_doc);
+    if (match) tipoEl.value = d.tipo_doc;
+  }
+  // Sexo
+  const sexoEl = document.getElementById(`v${n}-sexo`);
+  if (sexoEl && d.sexo) sexoEl.value = d.sexo;
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// API KEY CONFIG en pestaña Drive
+// ═══════════════════════════════════════════════
+function borrarApiKey() {
+  localStorage.removeItem('bnd_openai_key');
+  actualizarEstadoApiKey();
+  showToast('Clave eliminada', 'success');
+}
+
+function actualizarEstadoApiKey() {
+  const key = getOpenAIKey();
+  const el = document.getElementById('apikey-estado');
+  if (el) el.innerHTML = key
+    ? '<span style="color:var(--verde)">&#10003; Configurada</span>'
+    : '&#10005; No configurada';
+}
+
+function mostrarConfigApiKey() {
+  const key = getOpenAIKey();
+  document.getElementById('apikey-input').value = key ? key.slice(0,8) + '...' : '';
+  document.getElementById('modal-apikey').classList.add('open');
+}
+
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
@@ -970,3 +1228,4 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
