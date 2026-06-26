@@ -41,7 +41,7 @@
     box-shadow: 0 2px 16px rgba(2,62,138,.3);
     gap: 8px;
   }
-  .logo { font-family: var(--font-disp); font-size: 1rem; letter-spacing: .02em; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+  .logo { font-family: var(--font-disp); font-size: .95rem; letter-spacing: .01em; display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
   .header-right { display: flex; align-items: center; gap: 16px; }
   .header-meta { font-size: .7rem; opacity: .8; text-align: right; white-space: nowrap; flex-shrink: 0; }
   .header-meta strong { display: block; font-size: .78rem; opacity: 1; }
@@ -141,9 +141,9 @@
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--gris-4); }
   .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
 
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: var(--gris-2); border: 1px solid var(--gris-2); border-radius: 6px; overflow: hidden; }
-  .cal-dow { background: var(--gris-5); color: #fff; text-align: center; padding: 6px 2px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
-  .cal-day { background: #fff; min-height: 80px; padding: 4px 5px; position: relative; cursor: default; transition: background .15s; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; background: var(--gris-2); border: 1px solid var(--gris-2); border-radius: 6px; overflow: hidden; width: 100%; }
+  .cal-dow { background: var(--gris-5); color: #fff; text-align: center; padding: 6px 1px; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+  .cal-day { background: #fff; min-height: 70px; padding: 3px 3px; position: relative; cursor: default; transition: background .15s; overflow: hidden; }
   .cal-day:hover { background: var(--gris-1); }
   .cal-day.other-month { background: var(--gris-1); }
   .cal-day.other-month .day-num { color: var(--gris-3); }
@@ -940,7 +940,7 @@ function renderCalGrid(year, month, hoy) {
   const daysInMonth=new Date(year,month+1,0).getDate();
   const daysInPrev=new Date(year,month,0).getDate();
   const offset=(firstDay+6)%7;
-  const dows=['Lun','Mar','Mi\u00E9','Jue','Vie','S\u00E1b','Dom'];
+  const dows=['L','M','X','J','V','S','D'];
 
   const dayData={};
   for(let d=1;d<=daysInMonth;d++){
