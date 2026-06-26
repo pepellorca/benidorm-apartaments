@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apartamentos Benidorm</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aptos Benidorm">
+<meta name="theme-color" content="#023E8A">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPgogIDwhLS0gRm9uZG8gYXp1bCBtYXJpbm8gY29uIGVzcXVpbmFzIHJlZG9uZGVhZGFzIC0tPgogIDxyZWN0IHdpZHRoPSIxMDI0IiBoZWlnaHQ9IjEwMjQiIHJ4PSIyMjQiIGZpbGw9IiMwMjNFOEEiLz4KICA8IS0tIFRlamFkbyAodHJpw6FuZ3VsbykgLS0+CiAgPHBvbHlnb24gcG9pbnRzPSI1MTIsMTgwIDE4MCw1MDAgODQ0LDUwMCIgZmlsbD0id2hpdGUiLz4KICA8IS0tIEN1ZXJwbyBkZSBsYSBjYXNhIC0tPgogIDxyZWN0IHg9IjI1MCIgeT0iNDkwIiB3aWR0aD0iNTI0IiBoZWlnaHQ9IjMwMCIgcng9IjEyIiBmaWxsPSJ3aGl0ZSIvPgogIDwhLS0gUHVlcnRhIC0tPgogIDxyZWN0IHg9IjQzMiIgeT0iNTkwIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjIwMCIgcng9IjEwIiBmaWxsPSIjMDIzRThBIi8+CiAgPCEtLSBWZW50YW5hIGl6cXVpZXJkYSAtLT4KICA8cmVjdCB4PSIyOTAiIHk9IjU3MCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSI5MCIgcng9IjgiIGZpbGw9IiMwMjNFOEEiLz4KICA8bGluZSB4MT0iMzQwIiB5MT0iNTcwIiB4Mj0iMzQwIiB5Mj0iNjYwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8bGluZSB4MT0iMjkwIiB5MT0iNjE1IiB4Mj0iMzkwIiB5Mj0iNjE1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8IS0tIFZlbnRhbmEgZGVyZWNoYSAtLT4KICA8cmVjdCB4PSI2MzQiIHk9IjU3MCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSI5MCIgcng9IjgiIGZpbGw9IiMwMjNFOEEiLz4KICA8bGluZSB4MT0iNjg0IiB5MT0iNTcwIiB4Mj0iNjg0IiB5Mj0iNjYwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8bGluZSB4MT0iNjM0IiB5MT0iNjE1IiB4Mj0iNzM0IiB5Mj0iNjE1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8IS0tIE9sYXMgLS0+CiAgPHBhdGggZD0iTTEwMCw4MjAgUTE4MCw3OTAgMjYwLDgyMCBRMzQwLDg1MCA0MjAsODIwIFE1MDAsNzkwIDU4MCw4MjAgUTY2MCw4NTAgNzQwLDgyMCBRODIwLDc5MCA5MDAsODIwIEw5MDAsODgwIEwxMDAsODgwIFoiIGZpbGw9IiM5MEUwRUYiIG9wYWNpdHk9IjAuNSIvPgogIDxwYXRoIGQ9Ik0xMDAsODUwIFEyMDAsODIwIDMwMCw4NTAgUTQwMCw4ODAgNTAwLDg1MCBRNjAwLDgyMCA3MDAsODUwIFE4MDAsODgwIDkwMCw4NTAgTDkwMCw5MjAgTDEwMCw5MjAgWiIgZmlsbD0iIzkwRTBFRiIgb3BhY2l0eT0iMC4zNSIvPgo8L3N2Zz4=">
 <!-- Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- Google API Client -->
@@ -257,6 +262,26 @@
   .apikey-input:focus { border-color: var(--mar); }
   .apikey-note { font-size: .75rem; color: var(--gris-4); background: var(--gris-1); border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; }
 
+  /* MENSAJES AIRBNB */
+  .msg-panel { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .msg-panel-header { background: linear-gradient(135deg, #1F3A5F, #0077B6); color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .msg-panel-header h3 { font-size: .95rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .msg-panel-body { padding: 0; max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+  .msg-panel-body.open { max-height: 2000px; }
+  .msg-item { border-bottom: 1px solid var(--gris-2); padding: 16px 20px; }
+  .msg-item:last-child { border-bottom: none; }
+  .msg-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+  .msg-item-title { font-weight: 700; font-size: .88rem; color: var(--gris-5); display: flex; align-items: center; gap: 6px; }
+  .msg-tipo { font-size: .72rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; }
+  .msg-tipo.bienvenida { background: #DCFCE7; color: #166534; }
+  .msg-tipo.despedida  { background: #FEF9C3; color: #854D0E; }
+  .msg-texto { background: var(--gris-1); border-radius: 8px; padding: 12px 14px; font-size: .83rem; line-height: 1.7; color: var(--gris-5); white-space: pre-wrap; border-left: 3px solid var(--mar); margin-bottom: 10px; }
+  .btn-copiar { background: var(--mar); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: .8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background .2s; }
+  .btn-copiar:hover { background: var(--mar-deep); }
+  .btn-copiar.copiado { background: var(--verde); }
+  .msg-toggle-icon { transition: transform .3s; font-size: .8rem; }
+  .msg-toggle-icon.open { transform: rotate(180deg); }
+
   /* RENDIMIENTO */
   .rend-table th { background: var(--gris-5); color: #fff; padding: 8px 10px; text-align: center; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
   .rend-table td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--gris-2); font-size: .83rem; }
@@ -348,6 +373,7 @@
     <!-- HOY -->
     <div class="view active" id="view-hoy">
       <div class="summary-strip" id="summary-strip"></div>
+      <div id="mensajes-airbnb-block"></div>
       <div class="today-grid">
         <div><div class="card-title">&#128994; Llegadas hoy</div><div class="event-list" id="list-llegadas-hoy"></div></div>
         <div><div class="card-title">&#128308; Salidas hoy</div><div class="event-list" id="list-salidas-hoy"></div></div>
@@ -908,6 +934,9 @@ function renderHoy() {
     if(mismo&&dateKey(r.salida)>=kHoy)
       alertas.push(`&#128308; <strong>Turnover</strong>: ${APTOS[r.aptoIdx]?.alias} el ${fmtDate(r.salida)} \u2014 sale ${r.huesped}, entra ${mismo.huesped}`);
   });
+  // Mensajes para Airbnb
+  renderMensajesAirbnb();
+
   document.getElementById('alertas-block').innerHTML = alertas.length ?
     `<div class="card" style="border-left:4px solid var(--coral)"><div class="card-title">Alertas</div>${alertas.map(a=>`<div style="padding:8px 0;font-size:.85rem;border-bottom:1px solid var(--gris-2)">${a}</div>`).join('')}</div>` : '';
 }
@@ -1333,6 +1362,157 @@ function mostrarConfigApiKey() {
   const key = getOpenAIKey();
   document.getElementById('apikey-input').value = key ? key.slice(0,8) + '...' : '';
   document.getElementById('modal-apikey').classList.add('open');
+}
+
+// ═══════════════════════════════════════════════
+// MENSAJES PARA AIRBNB EN VISTA HOY
+// ═══════════════════════════════════════════════
+function renderMensajesAirbnb() {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const man = new Date(hoy); man.setDate(man.getDate()+1);
+  const kMan = dateKey(man);
+
+  const llegadasManana = reservas.filter(r => dateKey(r.entrada) === kMan);
+  const salidasManana  = reservas.filter(r => dateKey(r.salida)  === kMan);
+  const block = document.getElementById('mensajes-airbnb-block');
+
+  if (!llegadasManana.length && !salidasManana.length) {
+    block.innerHTML = '';
+    return;
+  }
+
+  let msgs = [];
+
+  // Mensajes de bienvenida (llegadas mañana)
+  llegadasManana.forEach(r => {
+    const apto = APTOS[r.aptoIdx] || APTOS[0];
+    const nombre = r.huesped.split(' ')[0];
+    const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+    const texto = `Buenos días ${nombre},
+
+` +
+      `Os esperamos mañana en el apartamento. ¿Sobre qué hora tenéis pensado llegar para tenerlo todo preparado?
+
+` +
+      `Os detallo la información para la entrega de llaves:
+
+` +
+      `👉 Mi padre, Domingo estará en la puerta para recibiros y hacer la entrega en persona.
+
+` +
+      `📍 Ubicación del apartamento:
+${cfg['maps_' + r.aptoIdx] || '(ver dirección en el Maestro)'}
+
+` +
+      `🕐 Check-in a partir de las 14:00
+` +
+      `🕐 Check-out antes de las 11:00
+
+` +
+      `🛂 Para completar el registro necesitamos los datos del pasaporte de cada huésped ` +
+      `(nombre completo, número de pasaporte, fecha de expedición, fecha de nacimiento y nacionalidad) o una foto.
+
+` +
+      `Si necesitáis cualquier cosa no dudéis en escribirme.
+
+` +
+      `¡Hasta mañana!
+Pepe`;
+    msgs.push({ tipo: 'bienvenida', huesped: r.huesped, apto: apto.alias, texto });
+  });
+
+  // Mensajes de despedida (salidas mañana)
+  salidasManana.forEach(r => {
+    const apto = APTOS[r.aptoIdx] || APTOS[0];
+    const nombre = r.huesped.split(' ')[0];
+    const texto = `Hola ${nombre},
+
+` +
+      `Ha sido un placer tenerte con nosotros en ${r.apartamento}.
+
+` +
+      `Esperamos que hayas disfrutado de tu estancia en Benidorm y que todo haya sido de tu agrado.
+
+` +
+      `Si ha habido alguna cosa que no ha estado a la altura, me encantaría saberlo para mejorarlo para próximas visitas.
+
+` +
+      `Recuerda que el check-out es mañana antes de las 11:00. ` +
+      `Por favor, deja las llaves dentro del apartamento en el mueble de la entrada.
+
+` +
+      `Si queréis repetir, ya sabéis donde estamos 😊
+
+` +
+      `¡Hasta pronto!
+Pepe`;
+    msgs.push({ tipo: 'despedida', huesped: r.huesped, apto: apto.alias, texto });
+  });
+
+  const html = `<div class="msg-panel">
+    <div class="msg-panel-header" onclick="toggleMensajes()">
+      <h3>✉️ Mensajes para Airbnb <span style="font-size:.78rem;opacity:.8;font-weight:400">(${msgs.length} pendientes)</span></h3>
+      <span class="msg-toggle-icon" id="msg-toggle-icon">▼</span>
+    </div>
+    <div class="msg-panel-body" id="msg-panel-body">
+      ${msgs.map((m, i) => `
+        <div class="msg-item">
+          <div class="msg-item-header">
+            <div class="msg-item-title">
+              ${m.tipo === 'bienvenida' ? '🟢' : '🟡'}
+              ${m.huesped}
+              <span style="color:var(--gris-4);font-weight:400">·</span>
+              <span style="color:var(--gris-4);font-size:.8rem">${m.apto}</span>
+            </div>
+            <span class="msg-tipo ${m.tipo}">${m.tipo === 'bienvenida' ? 'Bienvenida' : 'Despedida'}</span>
+          </div>
+          <div class="msg-texto" id="msg-texto-${i}">${m.texto}</div>
+          <button class="btn-copiar" id="btn-copiar-${i}" onclick="copiarMensaje(${i})">
+            📋 Copiar mensaje
+          </button>
+        </div>`).join('')}
+    </div>
+  </div>`;
+
+  block.innerHTML = html;
+  // Auto-abrir si hay mensajes
+  setTimeout(() => toggleMensajes(true), 100);
+}
+
+function toggleMensajes(forceOpen) {
+  const body = document.getElementById('msg-panel-body');
+  const icon = document.getElementById('msg-toggle-icon');
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  if (forceOpen === true || !isOpen) {
+    body.classList.add('open');
+    if (icon) { icon.textContent = '▲'; icon.classList.add('open'); }
+  } else {
+    body.classList.remove('open');
+    if (icon) { icon.textContent = '▼'; icon.classList.remove('open'); }
+  }
+}
+
+function copiarMensaje(i) {
+  const el = document.getElementById('msg-texto-' + i);
+  const btn = document.getElementById('btn-copiar-' + i);
+  if (!el || !btn) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copiado');
+    setTimeout(() => { btn.innerHTML = '📋 Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
+  }).catch(() => {
+    // Fallback para Safari
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copiado');
+    setTimeout(() => { btn.innerHTML = '📋 Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
+  });
 }
 
 // ═══════════════════════════════════════════════
