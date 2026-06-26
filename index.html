@@ -1408,18 +1408,32 @@ function renderMensajesAirbnb() {
     var checkout = m['check-out'] || m['checkout'] || '11:00';
     var persona = m['persona entrada'] || m['persona de entrada'] || 'Mi padre, Domingo';
     var tel = m['telefono contacto'] || m['telefono'] || '';
-    var texto = 'Buenos dias ' + nombre + ',\n\n'
-      + 'Os esperamos manana en el apartamento. Sobre que hora teneis pensado llegar para tenerlo todo preparado?\n\n'
-      + 'Os detallo la informacion para la entrega de llaves:\n\n'
-      + persona + ' estara en la puerta para recibiros y hacer la entrega en persona.\n\n'
-      + 'Ubicacion del apartamento:\n' + (maps || '(ver enlace en el email)') + '\n\n'
-      + 'Check-in a partir de las ' + checkin + '\n'
-      + 'Check-out antes de las ' + checkout + '\n\n'
-      + 'Para completar el registro necesitamos los datos del pasaporte de cada huesped '
-      + '(nombre completo, numero de pasaporte, fecha de expedicion, fecha de nacimiento y nacionalidad) o una foto.\n\n'
-      + 'Si necesitais cualquier cosa no dudeis en escribirme.' + (tel ? ' Tel: ' + tel : '') + '\n\n'
-      + 'Hasta manana!\nPepe';
-    msgs.push({ tipo: 'bienvenida', huesped: r.huesped, apto: apto.alias, texto: texto });
+    var lineas = [
+      'Buenos d\u00EDas ' + nombre + ',',
+      '',
+      'Os esperamos ma\u00F1ana en el apartamento. \u00BFSobre qu\u00E9 hora ten\u00E9is pensado llegar para tenerlo todo preparado?',
+      '',
+      'Os detallo la informaci\u00F3n para la entrega de llaves:',
+      '',
+      '\uD83D\uDC49 ' + persona + ' estar\u00E1 en la puerta para recibiros y hacer la entrega en persona.',
+      '',
+      '\uD83D\uDCCD Ubicaci\u00F3n del apartamento:',
+      maps || '(ver enlace en el email)',
+      '',
+      '\uD83D\uDD50 Check-in a partir de las ' + checkin,
+      '\uD83D\uDD50 Check-out antes de las ' + checkout,
+      '',
+      '\uD83D\uDCF6 WiFi: ' + (m['wifi'] || m['wifi red'] || m['ssid'] || '(ver en el apartamento)'),
+      '\uD83D\uDD11 Contrase\u00F1a: ' + (m['contrasena'] || m['contrase\u00F1a'] || m['wifi password'] || m['clave wifi'] || '(ver en el apartamento)'),
+      '',
+      '\uD83D\uDEC2 Para completar el registro necesitamos los datos del pasaporte de cada hu\u00E9sped (nombre completo, n\u00FAmero de pasaporte, fecha de expedici\u00F3n, fecha de nacimiento y nacionalidad) o una foto.',
+      '',
+      'Si necesit\u00E1is cualquier cosa no dud\u00E9is en escribirme.' + (tel ? ' Tel: ' + tel : ''),
+      '',
+      '\u00A1Hasta ma\u00F1ana!',
+      'Pepe'
+    ];
+    msgs.push({ tipo: 'bienvenida', huesped: r.huesped, apto: apto.alias, texto: lineas.join('\n') });
   });
 
   // DESPEDIDA - salidas mañana
@@ -1428,15 +1442,23 @@ function renderMensajesAirbnb() {
     var nombre = r.huesped.split(' ')[0];
     var m = getMaestroApto(r.aptoIdx);
     var checkout = m['check-out'] || m['checkout'] || '11:00';
-    var texto = 'Hola ' + nombre + ',\n\n'
-      + 'Ha sido un placer tenerte con nosotros en ' + r.apartamento + '.\n\n'
-      + 'Esperamos que hayas disfrutado de tu estancia en Benidorm y que todo haya sido de tu agrado.\n\n'
-      + 'Si ha habido alguna cosa que no ha estado a la altura, me encantaria saberlo para mejorarlo para proximas visitas.\n\n'
-      + 'Recuerda que el check-out es manana antes de las ' + checkout + '. '
-      + 'Por favor, deja las llaves dentro del apartamento en el mueble de la entrada.\n\n'
-      + 'Si quereis repetir, ya sabeis donde estamos\n\n'
-      + 'Hasta pronto!\nPepe';
-    msgs.push({ tipo: 'despedida', huesped: r.huesped, apto: apto.alias, texto: texto });
+    var lineas = [
+      'Hola ' + nombre + ',',
+      '',
+      'Ha sido un placer tenerte con nosotros en ' + r.apartamento + '.',
+      '',
+      'Esperamos que hayas disfrutado de tu estancia en Benidorm y que todo haya sido de tu agrado.',
+      '',
+      'Si ha habido alguna cosa que no ha estado a la altura, me encantar\u00EDa saberlo para mejorarlo para pr\u00F3ximas visitas.',
+      '',
+      'Recuerda que el check-out es ma\u00F1ana antes de las ' + checkout + '. Por favor, deja las llaves dentro del apartamento en el mueble de la entrada.',
+      '',
+      'Si quer\u00E9is repetir, ya sab\u00E9is donde estamos \uD83D\uDE0A',
+      '',
+      '\u00A1Hasta pronto!',
+      'Pepe'
+    ];
+    msgs.push({ tipo: 'despedida', huesped: r.huesped, apto: apto.alias, texto: lineas.join('\n') });
   });
 
   const html = `<div class="msg-panel">
