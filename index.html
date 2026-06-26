@@ -248,6 +248,18 @@
   .apikey-input:focus { border-color: var(--mar); }
   .apikey-note { font-size: .75rem; color: var(--gris-4); background: var(--gris-1); border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; }
 
+  /* RENDIMIENTO */
+  .rend-table th { background: var(--gris-5); color: #fff; padding: 8px 10px; text-align: center; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .rend-table td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--gris-2); font-size: .83rem; }
+  .rend-table tr:hover td { background: var(--gris-1); }
+  .rend-table .apto-0 { color: var(--mar); font-weight: 600; }
+  .rend-table .apto-1 { color: #7C3AED; font-weight: 600; }
+  .rend-table .total { font-weight: 700; background: var(--gris-1); }
+  .rend-table .mes-header { background: var(--gris-2); font-weight: 700; font-size: .8rem; }
+  .bar-wrap { background: var(--gris-2); border-radius: 4px; height: 6px; margin-top: 4px; }
+  .bar-fill { height: 6px; border-radius: 4px; background: var(--mar); transition: width .4s; }
+  .bar-fill.p1 { background: #7C3AED; }
+
   @media(max-width:640px){
     nav button { padding: 12px 10px; font-size: .8rem; }
     .cal-day { min-height: 55px; }
@@ -255,6 +267,7 @@
     .summary-strip { grid-template-columns: repeat(2,1fr); }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -301,6 +314,7 @@
     <button class="active" onclick="showView('hoy')" id="tab-hoy">&#128203; Hoy</button>
     <button onclick="showView('calendario')" id="tab-calendario">&#128197; Calendario</button>
     <button onclick="showView('checkin')" id="tab-checkin">&#128273; Check-in</button>
+    <button onclick="showView('rendimiento')" id="tab-rendimiento">&#128200; Rendimiento</button>
     <button onclick="showView('drive')" id="tab-drive">&#128194; Drive</button>
   </nav>
 
@@ -372,6 +386,41 @@
             <button class="btn btn-ghost" onclick="cancelCheckin()">Cancelar</button>
             <button class="btn" onclick="guardarCheckin()">&#128190; Guardar check-in</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RENDIMIENTO -->
+    <div class="view" id="view-rendimiento">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <h2 style="font-family:var(--font-disp);font-size:1.3rem;color:var(--mar-deep)">&#128200; Rendimiento</h2>
+          <select id="rend-year" onchange="renderRendimiento()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.88rem;outline:none">
+          </select>
+        </div>
+        <button class="btn" onclick="exportarExcel()">&#11015;&#65039; Descargar Excel</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="summary-strip" id="rend-kpis" style="margin-bottom:20px"></div>
+
+      <!-- Tabla mensual -->
+      <div class="card">
+        <div class="card-title">Desglose mensual</div>
+        <div style="overflow-x:auto">
+          <table id="rend-tabla" style="width:100%;border-collapse:collapse;font-size:.85rem"></table>
+        </div>
+      </div>
+
+      <!-- Por apartamento -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">
+        <div class="card" id="rend-apto-0">
+          <div class="card-title" style="color:var(--mar)">&#127968; Tomas Ortu&#241;o</div>
+          <div id="rend-stats-0"></div>
+        </div>
+        <div class="card" id="rend-apto-1">
+          <div class="card-title" style="color:#7C3AED">&#127968; Buen Retiro</div>
+          <div id="rend-stats-1"></div>
         </div>
       </div>
     </div>
@@ -528,7 +577,7 @@ function initGoogleAuth() {
     auto_select: false,
   });
 
-  // Inicializar token client para Drive API
+  // Inicializar token client para Drive API — SIEMPRE, antes de comprobar sesión
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
@@ -538,6 +587,8 @@ function initGoogleAuth() {
         // Si había una sync pendiente, ejecutarla ahora
         const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
         if (cfg.folderId) syncDrive();
+      } else {
+        showToast('Error al conectar con Drive: ' + resp.error, 'error');
       }
     },
   });
@@ -549,8 +600,8 @@ function initGoogleAuth() {
       const s = JSON.parse(saved);
       if (s && s.expiry && Date.now() < s.expiry && s.user && EMAILS_AUTORIZADOS.includes(s.user.email)) {
         mostrarApp(s.user);
-        // Renovar access token para Drive silenciosamente (sin popup)
-        try { tokenClient.requestAccessToken({ prompt: '', hint: s.user.email }); } catch(e) {}
+        // Intentar renovar access token de Drive en silencio
+        try { tokenClient.requestAccessToken({ prompt: '', login_hint: s.user.email }); } catch(e) {}
         return;
       }
     } catch(e) {}
@@ -614,10 +665,13 @@ async function syncDrive() {
   const folderId = cfg.folderId;
   if (!folderId) { showToast('Configura primero la carpeta de Drive', 'error'); showView('drive'); return; }
   if (!accessToken) {
+    if (!tokenClient) {
+      showToast('Recarga la página e inicia sesión de nuevo', 'error');
+      return;
+    }
     // Pedir token de Drive con popup
     showToast('Conectando con Drive...', '');
     tokenClient.requestAccessToken({ prompt: 'consent' });
-    // El callback de tokenClient llamará a syncDrive de nuevo cuando tenga el token
     return;
   }
 
@@ -689,6 +743,7 @@ function showView(id) {
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
   if (id === 'drive') actualizarEstadoApiKey();
+  if (id === 'rendimiento') renderRendimiento();
   if (id === 'checkin')    renderCheckinSelector();
   if (id === 'hoy')        renderHoy();
 }
@@ -1236,6 +1291,191 @@ function mostrarConfigApiKey() {
 }
 
 // ═══════════════════════════════════════════════
+// RENDIMIENTO
+// ═══════════════════════════════════════════════
+function getAniosDisponibles() {
+  const anios = new Set();
+  const anioActual = new Date().getFullYear();
+  anios.add(anioActual);
+  reservas.forEach(r => {
+    anios.add(r.entrada.getFullYear());
+    anios.add(r.salida.getFullYear());
+  });
+  return [...anios].sort((a,b) => b-a);
+}
+
+function calcMetricasMes(anio, mes, aptoIdx) {
+  // mes: 0-11
+  const inicio = new Date(anio, mes, 1);
+  const fin    = new Date(anio, mes+1, 0); // último día del mes
+  const diasMes = fin.getDate();
+  let noches = 0, ingresos = 0, reservasN = 0;
+  reservas.filter(r => r.aptoIdx === aptoIdx).forEach(r => {
+    const ini = new Date(Math.max(r.entrada, inicio));
+    const fn  = new Date(Math.min(r.salida, new Date(anio, mes+1, 1)));
+    const n   = Math.max(0, Math.round((fn - ini) / 86400000));
+    if (n > 0) { noches += n; ingresos += r.importe * (n / r.noches); reservasN++; }
+  });
+  return { noches, ingresos: Math.round(ingresos), ocupacion: Math.round(100*noches/diasMes), adr: noches ? Math.round(ingresos/noches) : 0, reservas: reservasN, diasMes };
+}
+
+function renderRendimiento() {
+  const sel = document.getElementById('rend-year');
+  const anios = getAniosDisponibles();
+
+  // Poblar selector si está vacío
+  if (sel.options.length === 0 || sel.options.length !== anios.length) {
+    sel.innerHTML = anios.map(a => `<option value="${a}">${a}</option>`).join('');
+  }
+  const anio = parseInt(sel.value) || new Date().getFullYear();
+
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const mesesFull = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  // Calcular métricas anuales por apartamento
+  let totales = [
+    { noches:0, ingresos:0, reservas:0, diasDisp: 0 },
+    { noches:0, ingresos:0, reservas:0, diasDisp: 0 }
+  ];
+  const datosMes = [];
+
+  for (let m = 0; m < 12; m++) {
+    const d0 = calcMetricasMes(anio, m, 0);
+    const d1 = calcMetricasMes(anio, m, 1);
+    datosMes.push([d0, d1]);
+    totales[0].noches   += d0.noches;   totales[0].ingresos += d0.ingresos; totales[0].reservas += d0.reservas; totales[0].diasDisp += d0.diasMes;
+    totales[1].noches   += d1.noches;   totales[1].ingresos += d1.ingresos; totales[1].reservas += d1.reservas; totales[1].diasDisp += d1.diasMes;
+  }
+
+  const ocup0 = Math.round(100*totales[0].noches/totales[0].diasDisp);
+  const ocup1 = Math.round(100*totales[1].noches/totales[1].diasDisp);
+  const totalIngresos = totales[0].ingresos + totales[1].ingresos;
+  const totalNoches   = totales[0].noches   + totales[1].noches;
+
+  // KPIs
+  document.getElementById('rend-kpis').innerHTML = `
+    <div class="stat-card ocupacion"><div class="stat-num">${ocup0}%</div><div class="stat-label">Ocupaci&#243;n Tomas Ortu&#241;o</div></div>
+    <div class="stat-card ocupacion" style="border-color:#7C3AED"><div class="stat-num">${ocup1}%</div><div class="stat-label">Ocupaci&#243;n Buen Retiro</div></div>
+    <div class="stat-card llegada"><div class="stat-num">${totalNoches}</div><div class="stat-label">Noches totales</div></div>
+    <div class="stat-card salida"><div class="stat-num">${totalIngresos.toLocaleString('es-ES')} &#8364;</div><div class="stat-label">Ingresos totales</div></div>`;
+
+  // Tabla mensual
+  let html = '<table class="rend-table" style="width:100%;border-collapse:collapse">';
+  html += '<thead><tr><th>Mes</th><th>Apto</th><th>Reservas</th><th>Noches</th><th>Ocupaci&#243;n</th><th>Ingresos</th><th>ADR</th></tr></thead><tbody>';
+
+  for (let m = 0; m < 12; m++) {
+    const [d0, d1] = datosMes[m];
+    const totalMes = d0.ingresos + d1.ingresos;
+    if (d0.noches === 0 && d1.noches === 0 && new Date(anio, m+1, 1) > new Date()) continue;
+    html += `<tr><td rowspan="2" style="font-weight:700;background:var(--gris-1)">${meses[m]}</td>
+      <td class="apto-0">Tomas Ortu&#241;o</td><td>${d0.reservas}</td><td>${d0.noches}</td>
+      <td><div>${d0.ocupacion}%</div><div class="bar-wrap"><div class="bar-fill" style="width:${d0.ocupacion}%"></div></div></td>
+      <td>${d0.ingresos.toLocaleString('es-ES')} &#8364;</td><td>${d0.adr} &#8364;</td></tr>`;
+    html += `<tr><td class="apto-1">Buen Retiro</td><td>${d1.reservas}</td><td>${d1.noches}</td>
+      <td><div>${d1.ocupacion}%</div><div class="bar-wrap"><div class="bar-fill p1" style="width:${d1.ocupacion}%"></div></div></td>
+      <td>${d1.ingresos.toLocaleString('es-ES')} &#8364;</td><td>${d1.adr} &#8364;</td></tr>`;
+  }
+
+  // Fila totales
+  html += `<tr class="total"><td colspan="2">TOTAL ${anio}</td>
+    <td>${totales[0].reservas+totales[1].reservas}</td>
+    <td>${totalNoches}</td>
+    <td>${Math.round(100*totalNoches/(totales[0].diasDisp+totales[1].diasDisp))}%</td>
+    <td>${totalIngresos.toLocaleString('es-ES')} &#8364;</td>
+    <td>${totalNoches ? Math.round(totalIngresos/totalNoches) : 0} &#8364;</td></tr>`;
+  html += '</tbody></table>';
+  document.getElementById('rend-tabla').outerHTML = html.replace('<table ', '<table id="rend-tabla" ');
+  // Fix: insertar directamente
+  document.querySelector('[style*="overflow-x:auto"]').innerHTML = html;
+
+  // Stats por apartamento
+  [0,1].forEach(idx => {
+    const t = totales[idx];
+    const alias = idx === 0 ? 'Tomas Ortuño' : 'Buen Retiro';
+    document.getElementById('rend-stats-'+idx).innerHTML = `
+      <div style="display:grid;gap:8px;font-size:.85rem">
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--gris-4)">Reservas</span><strong>${t.reservas}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--gris-4)">Noches</span><strong>${t.noches}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--gris-4)">Ocupaci&#243;n</span><strong>${idx===0?ocup0:ocup1}%</strong></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--gris-4)">Ingresos</span><strong>${t.ingresos.toLocaleString('es-ES')} &#8364;</strong></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--gris-4)">ADR</span><strong>${t.noches ? Math.round(t.ingresos/t.noches) : 0} &#8364;</strong></div>
+      </div>`;
+  });
+}
+
+// ═══════════════════════════════════════════════
+// EXPORTAR EXCEL
+// ═══════════════════════════════════════════════
+function exportarExcel() {
+  if (!reservas.length) { showToast('No hay reservas cargadas', 'error'); return; }
+  const anio = parseInt(document.getElementById('rend-year')?.value) || new Date().getFullYear();
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const wb = XLSX.utils.book_new();
+
+  // Hojas por apartamento
+  [0,1].forEach(idx => {
+    const alias = idx === 0 ? 'Tomas Ortuño' : 'Buen Retiro';
+    const rs = reservas
+      .filter(r => r.aptoIdx === idx)
+      .sort((a,b) => a.entrada - b.entrada);
+    const rows = [['Huésped','Entrada','Salida','Noches','Importe (EUR)','Código']];
+    rs.forEach(r => rows.push([
+      r.huesped, fmtDate(r.entrada), fmtDate(r.salida),
+      r.noches, r.importe, r.id
+    ]));
+    rows.push([]);
+    rows.push(['TOTAL','','',
+      rs.reduce((s,r)=>s+r.noches,0),
+      rs.reduce((s,r)=>s+r.importe,0).toFixed(2), ''
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:22},{wch:12},{wch:12},{wch:8},{wch:14},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws, alias);
+  });
+
+  // Hoja resumen anual
+  const resRows = [['Apartamento','Mes','Reservas','Noches','Ocupación %','Ingresos (EUR)','ADR (EUR)']];
+  for (let m = 0; m < 12; m++) {
+    [0,1].forEach(idx => {
+      const d = calcMetricasMes(anio, m, idx);
+      if (d.noches > 0 || new Date(anio, m+1, 1) <= new Date()) {
+        resRows.push([
+          idx===0 ? 'Tomas Ortuño' : 'Buen Retiro',
+          meses[m], d.reservas, d.noches, d.ocupacion, d.ingresos, d.adr
+        ]);
+      }
+    });
+  }
+  // Totales
+  resRows.push([]);
+  [0,1].forEach(idx => {
+    let tn=0, ti=0, tr=0;
+    for(let m=0;m<12;m++){const d=calcMetricasMes(anio,m,idx);tn+=d.noches;ti+=d.ingresos;tr+=d.reservas;}
+    resRows.push([
+      idx===0?'Tomas Ortuño':'Buen Retiro',
+      'TOTAL '+anio, tr, tn, tn?Math.round(100*tn/365):0, ti, tn?Math.round(ti/tn):0
+    ]);
+  });
+  const wsRes = XLSX.utils.aoa_to_sheet(resRows);
+  wsRes['!cols'] = [{wch:18},{wch:12},{wch:10},{wch:8},{wch:12},{wch:14},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, wsRes, 'Resumen '+anio);
+
+  // Hoja comparativa
+  const compRows = [['Mes','Noches T.O.','Noches B.R.','Ingresos T.O.','Ingresos B.R.','Total mes']];
+  for (let m = 0; m < 12; m++) {
+    const d0 = calcMetricasMes(anio, m, 0);
+    const d1 = calcMetricasMes(anio, m, 1);
+    compRows.push([meses[m], d0.noches, d1.noches, d0.ingresos, d1.ingresos, d0.ingresos+d1.ingresos]);
+  }
+  const wsComp = XLSX.utils.aoa_to_sheet(compRows);
+  wsComp['!cols'] = [{wch:10},{wch:12},{wch:12},{wch:14},{wch:14},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, wsComp, 'Comparativa');
+
+  XLSX.writeFile(wb, 'Apartamentos_Benidorm_' + anio + '.xlsx');
+  showToast('✓ Excel descargado', 'success');
+}
+
+// ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 window.addEventListener('load', () => {
@@ -1245,4 +1485,3 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
-
