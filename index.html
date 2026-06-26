@@ -280,7 +280,7 @@
 
   /* HEADER RESPONSIVE */
   @media(max-width:500px){
-    .header-meta { display: none; }
+    .header-meta span { display: none; }
     .user-name-text { display: none; }
     .logo-text { font-size: .88rem; }
   }
@@ -995,13 +995,7 @@ function renderCalGrid(year, month, hoy) {
       bars += `<div class="res-bar res-salida" onclick="event.stopPropagation();openModal('${r.id}')" title="Sale: ${r.huesped}">&#128308; ${nombre}</div>`;
     });
 
-    // Barras de salida para reservas que terminan hoy pero no están en ocupado
-    data.salidas?.forEach(r=>{
-      const yaEnBarras = data.ocupado?.some(x => x.id === r.id);
-      if (!yaEnBarras) {
-        bars += `<div class="res-bar salida-dia" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped}">${r.huesped.split(' ')[0]}</div>`;
-      }
-    });
+    // Las salidas ya se muestran en el bucle de ocupado con isFin
     let inds='';
     // Solo mostrar indicador de limpieza - llegada/salida ya se ve en las barras de color
     if(data.limpieza?.length) inds+='<div class="ind limpieza" title="Limpieza"></div>';
