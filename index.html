@@ -397,6 +397,11 @@
 // CONFIG
 // ═══════════════════════════════════════════════
 const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
+const EMAILS_AUTORIZADOS = [
+  'pepe.llorca@gmail.com',
+  'pere.llorca@gmail.com',
+  'domingo.llorca@gmail.com',
+];
 const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
 const APTOS = [
@@ -446,11 +451,12 @@ function initGoogleAuth() {
   const saved = localStorage.getItem('bnd_token');
   if (saved) {
     const { token, expiry, user } = JSON.parse(saved);
-    if (Date.now() < expiry) {
+    if (Date.now() < expiry && user.email && EMAILS_AUTORIZADOS.includes(user.email)) {
       accessToken = token;
       onSignedIn(user);
       return;
     }
+    localStorage.removeItem('bnd_token');
   }
 }
 
@@ -470,10 +476,20 @@ function onSignedIn(savedUser) {
     if (savedUser.picture) av.innerHTML = `<img src="${savedUser.picture}" alt="">`;
     else av.textContent = (savedUser.name || 'U')[0];
   } else {
-    // Obtener info del usuario
+    // Obtener info del usuario y verificar acceso
     fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: 'Bearer ' + accessToken }
     }).then(r => r.json()).then(u => {
+      // Verificar email autorizado
+      if (!EMAILS_AUTORIZADOS.includes(u.email)) {
+        google.accounts.oauth2.revoke(accessToken);
+        accessToken = null;
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('user-badge').style.display = 'none';
+        alert('Acceso no autorizado. Esta app es de uso privado.');
+        return;
+      }
       document.getElementById('user-name').textContent = u.given_name || u.name || 'Usuario';
       const av = document.getElementById('user-avatar');
       if (u.picture) av.innerHTML = `<img src="${u.picture}" alt="">`;
@@ -481,7 +497,7 @@ function onSignedIn(savedUser) {
       // Guardar sesión 1 hora
       localStorage.setItem('bnd_token', JSON.stringify({
         token: accessToken, expiry: Date.now() + 3600000,
-        user: { name: u.given_name || u.name, picture: u.picture }
+        user: { name: u.given_name || u.name, picture: u.picture, email: u.email }
       }));
     });
   }
