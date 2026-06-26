@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apartamentos Benidorm</title>
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- Google API Client -->
+<script src="https://apis.google.com/js/api.js"></script>
 <style>
-  /* ── TOKENS ─────────────────────────────────────────────── */
   :root {
     --mar:       #0077B6;
     --mar-deep:  #023E8A;
@@ -22,16 +25,14 @@
     --gris-5:    #1E293B;
     --font-disp: 'Georgia', serif;
     --font-body: 'Segoe UI', system-ui, sans-serif;
-    --r:         10px;
-    --shadow:    0 2px 12px rgba(0,0,0,.08);
+    --r: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,.08);
   }
-
-  /* ── RESET ──────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { font-size: 15px; }
   body { font-family: var(--font-body); background: var(--gris-1); color: var(--gris-5); min-height: 100vh; }
 
-  /* ── HEADER ─────────────────────────────────────────────── */
+  /* HEADER */
   header {
     background: linear-gradient(135deg, var(--mar-deep) 0%, var(--mar) 100%);
     color: #fff; padding: 0 24px;
@@ -40,11 +41,53 @@
     box-shadow: 0 2px 16px rgba(2,62,138,.3);
   }
   .logo { font-family: var(--font-disp); font-size: 1.2rem; letter-spacing: .02em; display: flex; align-items: center; gap: 10px; }
-  .logo-wave { font-size: 1.4rem; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
   .header-meta { font-size: .78rem; opacity: .8; text-align: right; }
   .header-meta strong { display: block; font-size: .9rem; opacity: 1; }
+  .user-badge { background: rgba(255,255,255,.2); border-radius: 20px; padding: 4px 12px; font-size: .78rem; display: flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,.3); transition: background .2s; }
+  .user-badge:hover { background: rgba(255,255,255,.3); }
+  .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; overflow: hidden; }
+  .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* ── NAV TABS ───────────────────────────────────────────── */
+  /* LOGIN SCREEN */
+  .login-screen {
+    min-height: calc(100vh - 60px); display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    background: #fff; border-radius: 16px; padding: 48px 40px; text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,.12); max-width: 420px; width: 100%;
+  }
+  .login-icon { font-size: 3rem; display: block; margin-bottom: 16px; }
+  .login-card h1 { font-family: var(--font-disp); font-size: 1.6rem; color: var(--mar-deep); margin-bottom: 8px; }
+  .login-card p { color: var(--gris-4); font-size: .9rem; margin-bottom: 32px; line-height: 1.6; }
+  .btn-google {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    background: #fff; border: 2px solid var(--gris-3); border-radius: 8px;
+    padding: 12px 24px; font-size: .95rem; font-weight: 600; color: var(--gris-5);
+    cursor: pointer; width: 100%; transition: all .2s; margin-bottom: 12px;
+  }
+  .btn-google:hover { border-color: var(--mar); background: var(--gris-1); }
+  .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .login-note { font-size: .75rem; color: var(--gris-4); margin-top: 16px; }
+
+  /* DRIVE SYNC BAR */
+  .sync-bar {
+    background: linear-gradient(90deg, #EFF9FF, #E0F2FE);
+    border-bottom: 1px solid var(--mar-light);
+    padding: 8px 24px; display: flex; align-items: center; justify-content: space-between;
+    font-size: .82rem; color: var(--mar-deep); flex-wrap: wrap; gap: 8px;
+  }
+  .sync-bar.hidden { display: none; }
+  .sync-info { display: flex; align-items: center; gap: 8px; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--verde); flex-shrink: 0; }
+  .sync-dot.loading { background: var(--sol); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--coral); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .btn-sync { background: var(--mar); color: #fff; border: none; border-radius: 6px; padding: 5px 14px; font-size: .78rem; font-weight: 600; cursor: pointer; transition: background .2s; }
+  .btn-sync:hover { background: var(--mar-deep); }
+
+  /* NAV */
   nav {
     background: #fff; border-bottom: 2px solid var(--gris-2);
     display: flex; gap: 4px; padding: 0 24px;
@@ -53,32 +96,25 @@
   }
   nav button {
     background: none; border: none; cursor: pointer;
-    padding: 14px 20px; font-size: .88rem; font-weight: 600;
+    padding: 14px 18px; font-size: .88rem; font-weight: 600;
     color: var(--gris-4); border-bottom: 3px solid transparent;
     transition: all .2s; display: flex; align-items: center; gap: 6px;
   }
   nav button.active { color: var(--mar); border-bottom-color: var(--mar); }
   nav button:hover:not(.active) { color: var(--gris-5); background: var(--gris-1); }
 
-  /* ── MAIN ───────────────────────────────────────────────── */
+  /* MAIN */
   main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
   .view { display: none; }
   .view.active { display: block; }
 
-  /* ── CARDS ──────────────────────────────────────────────── */
+  /* CARDS */
   .card { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
   .card-title { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--gris-4); margin-bottom: 12px; }
 
-  /* ── SUMMARY STRIP ──────────────────────────────────────── */
-  .summary-strip {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px; margin-bottom: 20px;
-  }
-  .stat-card {
-    background: #fff; border-radius: var(--r); padding: 16px 18px;
-    box-shadow: var(--shadow); border-left: 4px solid var(--mar);
-    display: flex; flex-direction: column; gap: 4px;
-  }
+  /* STATS */
+  .summary-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: #fff; border-radius: var(--r); padding: 16px 18px; box-shadow: var(--shadow); border-left: 4px solid var(--mar); display: flex; flex-direction: column; gap: 4px; }
   .stat-card.llegada  { border-color: var(--verde); }
   .stat-card.salida   { border-color: var(--coral); }
   .stat-card.limpieza { border-color: var(--sol); }
@@ -86,11 +122,8 @@
   .stat-num  { font-size: 2rem; font-weight: 700; line-height: 1; font-family: var(--font-disp); }
   .stat-label{ font-size: .75rem; color: var(--gris-4); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
 
-  /* ── CALENDARIO ─────────────────────────────────────────── */
-  .cal-controls {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
-  }
+  /* CALENDARIO */
+  .cal-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
   .cal-controls h2 { font-family: var(--font-disp); font-size: 1.3rem; color: var(--mar-deep); }
   .cal-controls-right { display: flex; gap: 8px; align-items: center; }
   .btn { background: var(--mar); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: background .2s; }
@@ -103,57 +136,34 @@
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--gris-4); }
   .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
 
-  .cal-apto { margin-bottom: 24px; }
-  .cal-apto-title {
-    font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
-    padding: 8px 14px; border-radius: 6px 6px 0 0; color: #fff;
-  }
-  .cal-apto-title.apto-0 { background: var(--mar); }
-  .cal-apto-title.apto-1 { background: #6B3FA0; }
-
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: var(--gris-2); border: 1px solid var(--gris-2); border-top: none; border-radius: 0 0 6px 6px; overflow: hidden; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: var(--gris-2); border: 1px solid var(--gris-2); border-radius: 6px; overflow: hidden; }
   .cal-dow { background: var(--gris-5); color: #fff; text-align: center; padding: 6px 2px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
-  .cal-day {
-    background: #fff; min-height: 70px; padding: 4px 5px;
-    position: relative; cursor: default; transition: background .15s;
-  }
+  .cal-day { background: #fff; min-height: 80px; padding: 4px 5px; position: relative; cursor: default; transition: background .15s; }
   .cal-day:hover { background: var(--gris-1); }
   .cal-day.other-month { background: var(--gris-1); }
   .cal-day.other-month .day-num { color: var(--gris-3); }
   .cal-day.today { background: #EFF9FF; }
-  .cal-day.today .day-num { background: var(--mar); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-  .day-num { font-size: .8rem; font-weight: 600; color: var(--gris-5); margin-bottom: 2px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .cal-day.today .day-num-inner { background: var(--mar); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .day-num { font-size: .8rem; font-weight: 600; color: var(--gris-5); margin-bottom: 2px; display: flex; align-items: center; }
+  .day-num-inner { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
 
-  /* Reserva en el calendario */
-  .res-bar {
-    font-size: .68rem; font-weight: 600; padding: 2px 5px; border-radius: 3px;
-    margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 100%; cursor: pointer; transition: opacity .15s;
-  }
-  .res-bar:hover { opacity: .85; }
+  .res-bar { font-size: .68rem; font-weight: 600; padding: 2px 5px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; cursor: pointer; transition: opacity .15s; }
+  .res-bar:hover { opacity: .8; }
   .res-apto-0 { background: #DBEAFE; color: var(--mar-deep); border-left: 3px solid var(--mar); }
   .res-apto-1 { background: #EDE9FE; color: #5B21B6; border-left: 3px solid #7C3AED; }
-  .res-bar.inicio { border-radius: 3px 0 0 3px; }
-  .res-bar.fin    { border-radius: 0 3px 3px 0; }
-  .res-bar.medio  { border-radius: 0; }
 
-  /* Indicadores del día */
-  .day-indicators { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 2px; }
+  .day-indicators { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
   .ind { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .ind.llegada  { background: var(--verde); }
   .ind.salida   { background: var(--coral); }
   .ind.limpieza { background: var(--sol); }
 
-  /* ── TODAY PANEL ────────────────────────────────────────── */
+  /* EVENTOS */
   .today-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media(max-width:600px){ .today-grid { grid-template-columns: 1fr; } }
-
   .event-list { display: flex; flex-direction: column; gap: 8px; }
-  .event-item {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 12px 14px; border-radius: 8px; background: var(--gris-1);
-    border-left: 4px solid var(--gris-3);
-  }
+  .event-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 8px; background: var(--gris-1); border-left: 4px solid var(--gris-3); cursor: pointer; transition: transform .15s; }
+  .event-item:hover { transform: translateX(2px); }
   .event-item.llegada  { border-color: var(--verde); background: #F0FFF4; }
   .event-item.salida   { border-color: var(--coral); background: #FFF5F5; }
   .event-item.limpieza { border-color: var(--sol);   background: #FFFBEB; }
@@ -164,104 +174,57 @@
   .event-apto { font-size: .72rem; font-weight: 600; margin-top: 3px; }
   .apto-tag-0 { color: var(--mar); }
   .apto-tag-1 { color: #7C3AED; }
-  .event-action { margin-top: 6px; }
-  .empty-state { text-align: center; padding: 32px 16px; color: var(--gris-4); font-size: .88rem; }
-  .empty-state .emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+  .empty-state { text-align: center; padding: 24px 16px; color: var(--gris-4); font-size: .85rem; }
+  .empty-state .emoji { font-size: 1.8rem; display: block; margin-bottom: 6px; }
 
-  /* ── CHECK-IN FORM ──────────────────────────────────────── */
-  .checkin-selector { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
-  .checkin-selector select, .checkin-selector input {
-    border: 2px solid var(--gris-3); border-radius: 8px; padding: 9px 13px;
-    font-size: .88rem; color: var(--gris-5); background: #fff; outline: none;
-    transition: border-color .2s; flex: 1; min-width: 180px;
-  }
-  .checkin-selector select:focus, .checkin-selector input:focus { border-color: var(--mar); }
-
-  .viajero-block {
-    background: var(--gris-1); border-radius: 8px; padding: 16px;
-    margin-bottom: 12px; border: 1px solid var(--gris-2);
-  }
-  .viajero-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-  .viajero-num { font-weight: 700; font-size: .88rem; color: var(--mar-deep); }
-  .btn-danger { background: #FEE2E2; color: var(--coral); border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: .8rem; font-weight: 600; }
-  .btn-danger:hover { background: #FECACA; }
-
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-group label { font-size: .75rem; font-weight: 700; color: var(--gris-4); text-transform: uppercase; letter-spacing: .05em; }
-  .form-group input, .form-group select {
-    border: 2px solid var(--gris-3); border-radius: 7px; padding: 8px 11px;
-    font-size: .88rem; color: var(--gris-5); background: #fff; outline: none;
-    transition: border-color .2s;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: var(--mar); }
-  .form-group.full { grid-column: 1 / -1; }
-
-  .hora-llegada-block {
-    background: linear-gradient(135deg, #EFF9FF 0%, #E0F2FE 100%);
-    border: 2px solid var(--mar-light); border-radius: 8px;
-    padding: 14px 16px; margin-bottom: 16px;
-    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  }
+  /* CHECK-IN */
+  .checkin-selector select { border: 2px solid var(--gris-3); border-radius: 8px; padding: 9px 13px; font-size: .88rem; color: var(--gris-5); background: #fff; outline: none; transition: border-color .2s; width: 100%; }
+  .checkin-selector select:focus { border-color: var(--mar); }
+  .hora-llegada-block { background: linear-gradient(135deg, #EFF9FF 0%, #E0F2FE 100%); border: 2px solid var(--mar-light); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .hora-llegada-block label { font-weight: 700; font-size: .88rem; color: var(--mar-deep); flex-shrink: 0; }
   .hora-llegada-block input { border: 2px solid var(--mar-light); border-radius: 7px; padding: 7px 12px; font-size: 1rem; font-weight: 700; color: var(--mar-deep); background: #fff; outline: none; width: 120px; }
   .hora-llegada-block input:focus { border-color: var(--mar); }
   .hora-llegada-note { font-size: .78rem; color: var(--gris-4); }
-
-  .add-viajero-btn {
-    width: 100%; padding: 12px; border: 2px dashed var(--gris-3); background: #fff;
-    border-radius: 8px; color: var(--gris-4); font-size: .88rem; font-weight: 600;
-    cursor: pointer; transition: all .2s; margin-bottom: 16px;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .add-viajero-btn:hover { border-color: var(--mar); color: var(--mar); background: var(--gris-1); }
-
+  .viajero-block { background: var(--gris-1); border-radius: 8px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--gris-2); }
+  .viajero-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .viajero-num { font-weight: 700; font-size: .88rem; color: var(--mar-deep); }
+  .btn-danger { background: #FEE2E2; color: var(--coral); border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: .8rem; font-weight: 600; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: .75rem; font-weight: 700; color: var(--gris-4); text-transform: uppercase; letter-spacing: .05em; }
+  .form-group input, .form-group select { border: 2px solid var(--gris-3); border-radius: 7px; padding: 8px 11px; font-size: .88rem; color: var(--gris-5); background: #fff; outline: none; transition: border-color .2s; }
+  .form-group input:focus, .form-group select:focus { border-color: var(--mar); }
+  .form-group.full { grid-column: 1 / -1; }
+  .add-viajero-btn { width: 100%; padding: 12px; border: 2px dashed var(--gris-3); background: #fff; border-radius: 8px; color: var(--gris-4); font-size: .88rem; font-weight: 600; cursor: pointer; transition: all .2s; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .add-viajero-btn:hover { border-color: var(--mar); color: var(--mar); }
   .form-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
 
-  /* ── TOAST ──────────────────────────────────────────────── */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px; z-index: 1000;
-    background: var(--gris-5); color: #fff; padding: 12px 20px; border-radius: 8px;
-    font-size: .88rem; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.2);
-    transform: translateY(80px); opacity: 0; transition: all .3s; pointer-events: none;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { background: #166534; }
-  .toast.error   { background: var(--coral); }
+  /* DRIVE FOLDER PICKER */
+  .folder-config { background: linear-gradient(135deg, #F0F9FF, #E0F2FE); border: 2px solid var(--mar-light); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .folder-config h3 { font-size: .9rem; font-weight: 700; color: var(--mar-deep); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .folder-config p { font-size: .82rem; color: var(--gris-4); margin-bottom: 14px; line-height: 1.5; }
+  .folder-id-input { display: flex; gap: 8px; }
+  .folder-id-input input { flex: 1; border: 2px solid var(--mar-light); border-radius: 7px; padding: 8px 12px; font-size: .85rem; outline: none; transition: border-color .2s; }
+  .folder-id-input input:focus { border-color: var(--mar); }
 
-  /* ── MODAL ──────────────────────────────────────────────── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200;
-    display: none; align-items: center; justify-content: center; padding: 16px;
-  }
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px; }
   .modal-overlay.open { display: flex; }
-  .modal {
-    background: #fff; border-radius: var(--r); padding: 24px;
-    max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.2);
-  }
+  .modal { background: #fff; border-radius: var(--r); padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
   .modal h3 { font-family: var(--font-disp); font-size: 1.1rem; margin-bottom: 12px; color: var(--mar-deep); }
   .modal-body { font-size: .88rem; color: var(--gris-4); line-height: 1.6; margin-bottom: 16px; }
   .modal-body strong { color: var(--gris-5); }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
-  /* ── UPLOAD ZONE ────────────────────────────────────────── */
-  .upload-zone {
-    border: 3px dashed var(--gris-3); border-radius: var(--r);
-    padding: 32px; text-align: center; margin-bottom: 20px;
-    transition: all .2s; cursor: pointer; background: #fff;
-  }
-  .upload-zone:hover, .upload-zone.drag { border-color: var(--mar); background: var(--gris-1); }
-  .upload-zone .upload-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
-  .upload-zone p { font-size: .88rem; color: var(--gris-4); margin-bottom: 8px; }
-  .upload-zone strong { color: var(--mar); }
-  .upload-status { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .file-tag { background: var(--gris-2); border-radius: 6px; padding: 4px 10px; font-size: .78rem; font-weight: 600; color: var(--gris-5); display: flex; align-items: center; gap: 5px; }
-  .file-tag .ok { color: var(--verde); }
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; z-index: 1000; background: var(--gris-5); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: .88rem; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.2); transform: translateY(80px); opacity: 0; transition: all .3s; pointer-events: none; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #166534; }
+  .toast.error   { background: var(--coral); }
 
-  /* ── RESPONSIVE ─────────────────────────────────────────── */
   @media(max-width:640px){
     nav button { padding: 12px 10px; font-size: .8rem; }
-    .cal-day { min-height: 50px; }
+    .cal-day { min-height: 55px; }
     .res-bar { font-size: .6rem; }
     .summary-strip { grid-template-columns: repeat(2,1fr); }
   }
@@ -270,187 +233,360 @@
 <body>
 
 <header>
-  <div class="logo">
-    <span class="logo-wave">🏖️</span>
-    <span>Apartamentos Benidorm</span>
-  </div>
-  <div class="header-meta">
-    <strong id="header-date"></strong>
-    <span id="header-time"></span>
+  <div class="logo">&#127944; Apartamentos Benidorm</div>
+  <div class="header-right">
+    <div class="header-meta">
+      <strong id="header-date"></strong>
+      <span id="header-time"></span>
+    </div>
+    <div class="user-badge" id="user-badge" onclick="signOut()" style="display:none">
+      <div class="user-avatar" id="user-avatar">P</div>
+      <span id="user-name">Pepe</span>
+    </div>
   </div>
 </header>
 
-<nav>
-  <button class="active" onclick="showView('hoy')" id="tab-hoy">📋 Hoy</button>
-  <button onclick="showView('calendario')" id="tab-calendario">📅 Calendario</button>
-  <button onclick="showView('checkin')" id="tab-checkin">🔑 Check-in</button>
-  <button onclick="showView('datos')" id="tab-datos">📂 Datos</button>
-</nav>
+<!-- Login Screen -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <span class="login-icon">&#127944;</span>
+    <h1>Apartamentos Benidorm</h1>
+    <p>Gestión de reservas, check-ins y limpiezas.<br>Inicia sesión con tu cuenta de Google para acceder.</p>
+    <button class="btn-google" onclick="signIn()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuar con Google
+    </button>
+    <p class="login-note">Solo pueden acceder las cuentas autorizadas por Pepe Llorca</p>
+  </div>
+</div>
 
-<main>
-
-  <!-- ══════════ VISTA HOY ══════════ -->
-  <div class="view active" id="view-hoy">
-    <div class="summary-strip" id="summary-strip"></div>
-    <div class="today-grid">
-      <div>
-        <div class="card-title">🟢 Llegadas hoy</div>
-        <div class="event-list" id="list-llegadas-hoy"></div>
-      </div>
-      <div>
-        <div class="card-title">🔴 Salidas hoy</div>
-        <div class="event-list" id="list-salidas-hoy"></div>
-      </div>
+<!-- App (hidden until login) -->
+<div id="app" style="display:none">
+  <div class="sync-bar hidden" id="sync-bar">
+    <div class="sync-info">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-text">Conectado a Google Drive</span>
     </div>
-    <div style="height:16px"></div>
-    <div class="today-grid">
-      <div>
-        <div class="card-title">🟡 Llegadas mañana</div>
-        <div class="event-list" id="list-llegadas-manana"></div>
-      </div>
-      <div>
-        <div class="card-title">🧹 Limpiezas mañana</div>
-        <div class="event-list" id="list-limpiezas-manana"></div>
-      </div>
-    </div>
-    <div style="height:16px"></div>
-    <div id="alertas-block"></div>
+    <button class="btn-sync" onclick="syncDrive()">&#8635; Actualizar</button>
   </div>
 
-  <!-- ══════════ VISTA CALENDARIO ══════════ -->
-  <div class="view" id="view-calendario">
-    <div class="cal-controls">
-      <h2 id="cal-title">Junio 2026</h2>
-      <div class="cal-controls-right">
-        <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">← Anterior</button>
-        <button class="btn btn-sm" onclick="changeMonth(0)">Hoy</button>
-        <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">Siguiente →</button>
-      </div>
-    </div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--mar)"></div> Gran Apartamento</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div> Moderno Apartamento</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--verde)"></div> Llegada</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--coral)"></div> Salida</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--sol)"></div> Limpieza</div>
-    </div>
-    <div id="calendarios"></div>
-  </div>
+  <nav>
+    <button class="active" onclick="showView('hoy')" id="tab-hoy">&#128203; Hoy</button>
+    <button onclick="showView('calendario')" id="tab-calendario">&#128197; Calendario</button>
+    <button onclick="showView('checkin')" id="tab-checkin">&#128273; Check-in</button>
+    <button onclick="showView('drive')" id="tab-drive">&#128194; Drive</button>
+  </nav>
 
-  <!-- ══════════ VISTA CHECK-IN ══════════ -->
-  <div class="view" id="view-checkin">
-    <div class="card">
-      <div class="card-title">Seleccionar reserva</div>
-      <div class="checkin-selector">
-        <select id="ci-reserva" onchange="seleccionarReserva()">
-          <option value="">— Selecciona una llegada —</option>
-        </select>
+  <main>
+    <!-- HOY -->
+    <div class="view active" id="view-hoy">
+      <div class="summary-strip" id="summary-strip"></div>
+      <div class="today-grid">
+        <div><div class="card-title">&#128994; Llegadas hoy</div><div class="event-list" id="list-llegadas-hoy"></div></div>
+        <div><div class="card-title">&#128308; Salidas hoy</div><div class="event-list" id="list-salidas-hoy"></div></div>
       </div>
+      <div style="height:16px"></div>
+      <div class="today-grid">
+        <div><div class="card-title">&#128994; Llegadas ma&#241;ana</div><div class="event-list" id="list-llegadas-manana"></div></div>
+        <div><div class="card-title">&#129529; Limpiezas ma&#241;ana</div><div class="event-list" id="list-limpiezas-manana"></div></div>
+      </div>
+      <div style="height:16px"></div>
+      <div id="alertas-block"></div>
     </div>
 
-    <div id="ci-form-block" style="display:none">
+    <!-- CALENDARIO -->
+    <div class="view" id="view-calendario">
+      <div class="cal-controls">
+        <h2 id="cal-title"></h2>
+        <div class="cal-controls-right">
+          <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">&#8592; Anterior</button>
+          <button class="btn btn-sm" onclick="changeMonth(0)">Hoy</button>
+          <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">Siguiente &#8594;</button>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--mar)"></div> Tomas Ortu&#241;o</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div> Buen Retiro</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--verde)"></div> Llegada</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--coral)"></div> Salida</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sol)"></div> Limpieza</div>
+      </div>
+      <div id="calendarios"></div>
+    </div>
+
+    <!-- CHECK-IN -->
+    <div class="view" id="view-checkin">
       <div class="card">
-        <div class="card-title">Información de la llegada</div>
-        <div id="ci-res-info"></div>
-        <div class="hora-llegada-block" style="margin-top:14px">
-          <label>🕐 Hora estimada de llegada</label>
-          <input type="time" id="ci-hora-llegada" value="14:00">
-          <span class="hora-llegada-note">Informa a Domingo de la hora exacta</span>
+        <div class="card-title">Seleccionar reserva</div>
+        <div class="checkin-selector">
+          <select id="ci-reserva" onchange="seleccionarReserva()">
+            <option value="">&#8212; Selecciona una llegada &#8212;</option>
+          </select>
+        </div>
+      </div>
+      <div id="ci-form-block" style="display:none">
+        <div class="card">
+          <div class="card-title">Informaci&#243;n de la llegada</div>
+          <div id="ci-res-info"></div>
+          <div class="hora-llegada-block" style="margin-top:14px">
+            <label>&#128336; Hora estimada de llegada</label>
+            <input type="time" id="ci-hora-llegada" value="14:00">
+            <span class="hora-llegada-note">Tu padre Domingo ver&#225; esta hora</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Registro de viajeros &#183; RD 933/2021</div>
+          <div style="background:#FFFBEB;border:1px solid var(--arena-dark);border-radius:8px;padding:10px 14px;font-size:.8rem;color:#92400E;margin-bottom:16px">
+            &#9888;&#65039; Obligatorio para mayores de 14 a&#241;os. No conserves fotos del documento &#8212; solo los datos.
+          </div>
+          <div id="viajeros-container"></div>
+          <button class="add-viajero-btn" onclick="addViajero()">+ A&#241;adir viajero</button>
+          <div class="form-actions">
+            <button class="btn btn-ghost" onclick="cancelCheckin()">Cancelar</button>
+            <button class="btn" onclick="guardarCheckin()">&#128190; Guardar check-in</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVE -->
+    <div class="view" id="view-drive">
+      <div class="folder-config">
+        <h3>&#128194; Carpeta de Google Drive</h3>
+        <p>Introduce el ID de tu carpeta "Airbnb CSV" de Drive. Lo encuentras en la URL cuando abres la carpeta:<br>
+        <code style="background:#fff;padding:2px 6px;border-radius:4px;font-size:.8rem">drive.google.com/drive/folders/<strong>ESTE_ES_EL_ID</strong></code></p>
+        <div class="folder-id-input">
+          <input type="text" id="folder-id-input" placeholder="1wIxPwPH3GulG6wZe_cV956LXxajd8au8" value="">
+          <button class="btn btn-sm" onclick="guardarFolderId()">Guardar</button>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">Registro de viajeros · RD 933/2021</div>
-        <div style="background:#FFFBEB;border:1px solid var(--arena-dark);border-radius:8px;padding:10px 14px;font-size:.8rem;color:#92400E;margin-bottom:16px">
-          ⚠️ Obligatorio para mayores de 14 años. Los datos se envían a SES.HOSPEDAJES en las 24h siguientes al check-in. No conserves fotos del documento.
-        </div>
-        <div id="viajeros-container"></div>
-        <button class="add-viajero-btn" onclick="addViajero()">
-          + Añadir viajero
-        </button>
-        <div class="form-actions">
-          <button class="btn btn-ghost" onclick="cancelCheckin()">Cancelar</button>
-          <button class="btn" onclick="guardarCheckin()">💾 Guardar check-in</button>
-        </div>
+        <div class="card-title">Sincronizaci&#243;n con Drive</div>
+        <p style="font-size:.85rem;color:var(--gris-4);margin-bottom:16px">
+          La app lee autom&#225;ticamente los CSV de tu carpeta de Drive. Sube el CSV de Airbnb a esa carpeta y pulsa Sincronizar.
+        </p>
+        <div id="drive-files-list" style="margin-bottom:16px"></div>
+        <button class="btn" onclick="syncDrive()" id="btn-sync-main">&#8635; Sincronizar con Drive</button>
+      </div>
+
+      <div class="card" id="stats-card" style="display:none">
+        <div class="card-title">Reservas cargadas</div>
+        <div id="stats-content"></div>
       </div>
     </div>
-  </div>
+  </main>
+</div>
 
-  <!-- ══════════ VISTA DATOS ══════════ -->
-  <div class="view" id="view-datos">
-    <div class="card">
-      <div class="card-title">Cargar archivos CSV de Airbnb</div>
-      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
-           ondragover="e=>e.preventDefault()" ondrop="handleDrop(event)">
-        <span class="upload-icon">📁</span>
-        <p>Arrastra aquí los CSV de Airbnb o <strong>haz clic para seleccionar</strong></p>
-        <p style="font-size:.75rem">Sube el CSV de cobros pendientes y/o cobros recibidos</p>
-        <div class="upload-status" id="upload-status"></div>
-      </div>
-      <input type="file" id="file-input" accept=".csv" multiple style="display:none" onchange="handleFiles(event.target.files)">
-      <div class="form-actions">
-        <button class="btn" onclick="procesarCSVs()">✓ Cargar reservas</button>
-      </div>
-    </div>
-
-    <div class="card" id="stats-card" style="display:none">
-      <div class="card-title">Resumen de datos cargados</div>
-      <div id="stats-content"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Configuración de Google Sheets</div>
-      <div style="font-size:.82rem;color:var(--gris-4);margin-bottom:12px">
-        Para guardar los datos de check-in en Google Sheets, introduce la URL de tu hoja.
-        La hoja debe tener una pestaña llamada <strong>CheckIns</strong>.
-      </div>
-      <div class="form-group">
-        <label>URL de Google Sheets</label>
-        <input type="url" id="sheets-url" placeholder="https://docs.google.com/spreadsheets/d/..." value="">
-      </div>
-      <div style="margin-top:12px">
-        <button class="btn btn-sm" onclick="guardarConfig()">Guardar configuración</button>
-      </div>
-    </div>
-  </div>
-
-</main>
-
-<!-- Modal detalle reserva -->
+<!-- Modal -->
 <div class="modal-overlay" id="modal-reserva">
   <div class="modal">
     <h3 id="modal-title">Detalle reserva</h3>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cerrar</button>
-      <button class="btn btn-sm" onclick="irACheckin()">🔑 Hacer check-in</button>
+      <button class="btn btn-sm" onclick="irACheckin()">&#128273; Hacer check-in</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// ESTADO GLOBAL
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════
+const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+
+const APTOS = [
+  { key: 'gran',    label: 'Gran Apartamento en el Centro de Benidorm',     alias: 'Tomas Ortu\u00F1o', idx: 0 },
+  { key: 'moderno', label: 'Moderno Apartamento en el Cora\u00F3n de Benidorm', alias: 'Buen Retiro',   idx: 1 },
+];
+
 let reservas = [];
-let csvFiles = [];
+let tokenClient = null;
+let accessToken = null;
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
 let viajeroCount = 0;
 let selectedReservaId = null;
 let modalReservaId = null;
 
-const APTOS = [
-  { key: 'gran',    label: 'Gran Apartamento en el Centro de Benidorm',      alias: 'Tomas Ortuño',  idx: 0 },
-  { key: 'moderno', label: 'Moderno Apartamento en el Corazón de Benidorm',  alias: 'Buen Retiro',   idx: 1 },
-];
+// ═══════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const dias  = ['Domingo','Lunes','Martes','Mi\u00E9rcoles','Jueves','Viernes','S\u00E1bado'];
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  document.getElementById('header-date').textContent =
+    dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('header-time').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+setInterval(updateClock, 1000);
+updateClock();
 
-// ═══════════════════════════════════════════════════════
-// NAVEGACIÓN
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════
+function initGoogleAuth() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if (resp.error) { showToast('Error de autenticaci\u00F3n', 'error'); return; }
+      accessToken = resp.access_token;
+      onSignedIn();
+    },
+  });
+
+  // Comprobar si hay sesión guardada
+  const saved = localStorage.getItem('bnd_token');
+  if (saved) {
+    const { token, expiry, user } = JSON.parse(saved);
+    if (Date.now() < expiry) {
+      accessToken = token;
+      onSignedIn(user);
+      return;
+    }
+  }
+}
+
+function signIn() {
+  if (!tokenClient) { showToast('Cargando... int\u00E9ntalo en un momento', 'error'); return; }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+function onSignedIn(savedUser) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('user-badge').style.display = 'flex';
+
+  if (savedUser) {
+    document.getElementById('user-name').textContent = savedUser.name || 'Usuario';
+    const av = document.getElementById('user-avatar');
+    if (savedUser.picture) av.innerHTML = `<img src="${savedUser.picture}" alt="">`;
+    else av.textContent = (savedUser.name || 'U')[0];
+  } else {
+    // Obtener info del usuario
+    fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    }).then(r => r.json()).then(u => {
+      document.getElementById('user-name').textContent = u.given_name || u.name || 'Usuario';
+      const av = document.getElementById('user-avatar');
+      if (u.picture) av.innerHTML = `<img src="${u.picture}" alt="">`;
+      else av.textContent = (u.name || 'U')[0];
+      // Guardar sesión 1 hora
+      localStorage.setItem('bnd_token', JSON.stringify({
+        token: accessToken, expiry: Date.now() + 3600000,
+        user: { name: u.given_name || u.name, picture: u.picture }
+      }));
+    });
+  }
+
+  loadFromStorage();
+  // Cargar folder ID guardado
+  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+  if (cfg.folderId) document.getElementById('folder-id-input').value = cfg.folderId;
+
+  renderHoy();
+  document.getElementById('sync-bar').classList.remove('hidden');
+
+  // Auto-sync si hay folder ID
+  if (cfg.folderId) setTimeout(syncDrive, 500);
+}
+
+function signOut() {
+  if (accessToken) google.accounts.oauth2.revoke(accessToken);
+  accessToken = null;
+  localStorage.removeItem('bnd_token');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('user-badge').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════
+// DRIVE SYNC
+// ═══════════════════════════════════════════════
+function guardarFolderId() {
+  const id = document.getElementById('folder-id-input').value.trim();
+  if (!id) { showToast('Introduce el ID de la carpeta', 'error'); return; }
+  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+  cfg.folderId = id;
+  localStorage.setItem('bnd_config', JSON.stringify(cfg));
+  showToast('Carpeta guardada', 'success');
+  syncDrive();
+}
+
+async function syncDrive() {
+  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+  const folderId = cfg.folderId;
+  if (!folderId) { showToast('Configura primero la carpeta de Drive', 'error'); showView('drive'); return; }
+  if (!accessToken) { showToast('Inicia sesi\u00F3n primero', 'error'); return; }
+
+  setSyncState('loading', 'Sincronizando con Drive...');
+
+  try {
+    // Listar archivos CSV en la carpeta
+    const resp = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime)`,
+      { headers: { Authorization: 'Bearer ' + accessToken } }
+    );
+    const data = await resp.json();
+    const files = (data.files || []).filter(f =>
+      f.name.toLowerCase().endsWith('.csv') || f.name.toLowerCase().endsWith('.xlsx')
+    );
+
+    if (!files.length) {
+      setSyncState('error', 'No se encontraron CSV en la carpeta');
+      showToast('No hay CSV en la carpeta de Drive', 'error');
+      return;
+    }
+
+    // Mostrar archivos encontrados
+    document.getElementById('drive-files-list').innerHTML =
+      '<div style="font-size:.82rem;color:var(--gris-4);margin-bottom:8px">Archivos encontrados:</div>' +
+      files.map(f => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gris-2);font-size:.85rem">
+        <span style="color:var(--verde)">&#10003;</span>
+        <span style="flex:1">${f.name}</span>
+        <span style="color:var(--gris-4);font-size:.75rem">${new Date(f.modifiedTime).toLocaleDateString('es-ES')}</span>
+      </div>`).join('');
+
+    // Descargar y parsear cada CSV
+    const texts = await Promise.all(files.map(f =>
+      fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`,
+        { headers: { Authorization: 'Bearer ' + accessToken } }
+      ).then(r => r.text())
+    ));
+
+    reservas = procesarCSVTexts(texts);
+    localStorage.setItem('bnd_reservas', JSON.stringify(
+      reservas.map(r => ({ ...r, entrada: r.entrada.toISOString(), salida: r.salida.toISOString() }))
+    ));
+
+    setSyncState('ok', `${reservas.length} reservas \u2022 Actualizado ${new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}`);
+    showToast(`\u2713 ${reservas.length} reservas cargadas desde Drive`, 'success');
+    renderHoy();
+    renderStatsCard();
+
+  } catch(e) {
+    setSyncState('error', 'Error al conectar con Drive');
+    showToast('Error al leer Drive: ' + e.message, 'error');
+  }
+}
+
+function setSyncState(state, text) {
+  const dot  = document.getElementById('sync-dot');
+  const txt  = document.getElementById('sync-text');
+  dot.className = 'sync-dot' + (state === 'loading' ? ' loading' : state === 'error' ? ' error' : '');
+  txt.textContent = text;
+}
+
+// ═══════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -461,278 +597,157 @@ function showView(id) {
   if (id === 'hoy')        renderHoy();
 }
 
-// ═══════════════════════════════════════════════════════
-// HEADER CLOCK
-// ═══════════════════════════════════════════════════════
-function updateClock() {
-  const now = new Date();
-  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  document.getElementById('header-date').textContent =
-    dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()] + ' ' + now.getFullYear();
-  document.getElementById('header-time').textContent =
-    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-}
-setInterval(updateClock, 1000);
-updateClock();
+// ═══════════════════════════════════════════════
+// CSV PARSER
+// ═══════════════════════════════════════════════
+function norm(s) { return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+function pick(obj, keys) { for(const k of keys){ const nk=norm(k); if(obj[nk]!==undefined&&obj[nk]!=='') return obj[nk]; } return ''; }
 
-// ═══════════════════════════════════════════════════════
-// PARSEO CSV
-// ═══════════════════════════════════════════════════════
-function norm(s) {
-  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-}
-function pick(obj, keys) {
-  for (const k of keys) { const nk = norm(k); if (obj[nk] !== undefined && obj[nk] !== '') return obj[nk]; }
-  return '';
-}
-function parseCSVText(text) {
+function parseCSVSimple(text) {
   const delim = (text.split('\n')[0]||'').split(';').length > (text.split('\n')[0]||'').split(',').length ? ';' : ',';
-  const lines = [];
-  let cur = '', inQ = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (c === '"') { inQ = !inQ; }
-    else if (c === delim && !inQ) { lines.push(cur); cur = ''; }
-    else if ((c === '\n' || c === '\r') && !inQ) {
-      if (cur || lines.length) { lines.push(cur); cur = ''; }
-      if (lines.length) { rows.push([...lines]); lines.length = 0; }
-    } else { cur += c; }
-  }
-  // Simple approach
-  return parseCSVSimple(text, delim);
-}
-function parseCSVSimple(text, delim) {
   const rows = [];
-  const lines = text.split(/\r?\n/);
-  for (const line of lines) {
+  for (const line of text.split(/\r?\n/)) {
     if (!line.trim()) continue;
-    const row = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
+    const row = []; let cur = '', inQ = false;
+    for (let i=0; i<line.length; i++) {
       const c = line[i];
-      if (c === '"') { inQ = !inQ; }
-      else if (c === delim && !inQ) { row.push(cur.trim()); cur = ''; }
-      else { cur += c; }
+      if (c==='"') { inQ=!inQ; }
+      else if (c===delim && !inQ) { row.push(cur.trim()); cur=''; }
+      else { cur+=c; }
     }
-    row.push(cur.trim());
-    rows.push(row);
+    row.push(cur.trim()); rows.push(row);
   }
   return rows;
 }
+
 function parseDateMDY(s) {
   if (!s) return null;
   s = String(s).trim();
   const m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
-  if (m) {
-    let [,a,b,y] = m; y = +y < 100 ? +y+2000 : +y;
-    // MDY si el año hace sentido
-    const d = new Date(+y, +a-1, +b);
-    if (!isNaN(d)) return d;
-  }
+  if (m) { let [,a,b,y]=m; y=+y<100?+y+2000:+y; const d=new Date(+y,+a-1,+b); if(!isNaN(d)) return d; }
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) return new Date(+iso[1], +iso[2]-1, +iso[3]);
+  if (iso) return new Date(+iso[1],+iso[2]-1,+iso[3]);
   return null;
 }
-function dateKey(d) {
-  if (!d) return '';
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-function fmtDate(d) {
-  if (!d) return '—';
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
-}
-function aptoIdx(nombre) {
-  const n = norm(nombre);
-  if (n.includes('moderno') || n.includes('corazon')) return 1;
-  return 0;
-}
+function dateKey(d) { if(!d) return ''; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtDate(d) { if(!d) return '\u2014'; return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
+function aptoIdx(n) { return norm(n).includes('moderno')||norm(n).includes('corazon') ? 1 : 0; }
 
 function procesarCSVTexts(texts) {
-  const vistas = new Set();
-  const nuevas = [];
+  const vistas = new Set(), out = [];
   for (const text of texts) {
-    const delim = (text.split('\n')[0]||'').split(';').length > (text.split('\n')[0]||'').split(',').length ? ';' : ',';
-    const rows = parseCSVSimple(text, delim);
+    const rows = parseCSVSimple(text);
     if (rows.length < 2) continue;
     const headers = rows[0].map(h => norm(h));
-    const obj = (row) => {
-      const o = {};
-      headers.forEach((h,i) => { o[h] = row[i] || ''; });
-      return o;
-    };
-    for (let i = 1; i < rows.length; i++) {
+    const obj = row => { const o={}; headers.forEach((h,i)=>{ o[h]=row[i]||''; }); return o; };
+    for (let i=1; i<rows.length; i++) {
       const o = obj(rows[i]);
       const tipo = norm(pick(o,['tipo','type']));
       if (tipo && !tipo.includes('reserva')) continue;
       if (tipo.includes('cancel')) continue;
-      const cod = pick(o,['codigo de confirmacion','confirmation code','reserva','codigo']) || ('AUTO-'+i);
+      const cod = pick(o,['codigo de confirmacion','confirmation code','reserva','codigo']) || ('R'+i);
       if (vistas.has(cod)) continue;
       vistas.add(cod);
       const entrada = parseDateMDY(pick(o,['fecha de inicio','start date','entrada','checkin']));
-      const salida  = parseDateMDY(pick(o,['fecha de finalizacion','fecha de finalización','end date','salida','checkout']));
-      if (!entrada || !salida) continue;
-      nuevas.push({
-        id:          cod,
-        huesped:     pick(o,['viajero','guest name','huesped','nombre']),
+      const salida  = parseDateMDY(pick(o,['fecha de finalizacion','fecha de finalizacion','end date','salida','checkout']));
+      if (!entrada||!salida) continue;
+      out.push({
+        id: cod,
+        huesped: pick(o,['viajero','guest name','huesped','nombre']),
         apartamento: pick(o,['alojamiento','listing','apartamento']),
         entrada, salida,
-        noches:  +pick(o,['noches','# of nights','nights']) || Math.round((salida-entrada)/86400000),
-        importe: parseFloat(String(pick(o,['importe','earnings','amount'])).replace(',','.')) || 0,
+        noches: +pick(o,['noches','# of nights','nights'])||Math.round((salida-entrada)/86400000),
+        importe: parseFloat(String(pick(o,['importe','earnings','amount'])).replace(',','.'))||0,
         aptoIdx: aptoIdx(pick(o,['alojamiento','listing','apartamento'])),
       });
     }
   }
-  return nuevas;
+  return out;
 }
 
-// ═══════════════════════════════════════════════════════
-// UPLOAD
-// ═══════════════════════════════════════════════════════
-function handleFiles(files) {
-  csvFiles = [...files];
-  renderUploadStatus();
+// ═══════════════════════════════════════════════
+// PERSISTENCIA
+// ═══════════════════════════════════════════════
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem('bnd_reservas');
+    if (raw) reservas = JSON.parse(raw).map(r=>({...r,entrada:new Date(r.entrada),salida:new Date(r.salida)}));
+  } catch(e) {}
 }
-function handleDrop(e) {
-  e.preventDefault();
-  handleFiles(e.dataTransfer.files);
-}
-function renderUploadStatus() {
-  const el = document.getElementById('upload-status');
-  el.innerHTML = csvFiles.map(f =>
-    `<div class="file-tag"><span class="ok">✓</span>${f.name}</div>`
-  ).join('');
-}
-function procesarCSVs() {
-  if (!csvFiles.length) { showToast('Selecciona al menos un CSV', 'error'); return; }
-  const readers = csvFiles.map(f => new Promise(res => {
-    const r = new FileReader();
-    r.onload = e => res(e.target.result);
-    r.readAsText(f, 'UTF-8');
-  }));
-  Promise.all(readers).then(texts => {
-    reservas = procesarCSVTexts(texts);
-    localStorage.setItem('bnd_reservas', JSON.stringify(reservas.map(r => ({
-      ...r, entrada: r.entrada.toISOString(), salida: r.salida.toISOString()
-    }))));
-    renderHoy();
-    renderStatsCard();
-    showToast(`✓ ${reservas.length} reservas cargadas`, 'success');
-  });
-}
+
 function renderStatsCard() {
   const card = document.getElementById('stats-card');
   card.style.display = 'block';
   const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const futuras = reservas.filter(r => r.salida >= hoy);
-  const ingresos = futuras.reduce((s,r) => s+r.importe, 0);
-  const noches = futuras.reduce((s,r) => s+r.noches, 0);
+  const futuras = reservas.filter(r=>r.salida>=hoy);
+  const ingresos = futuras.reduce((s,r)=>s+r.importe,0);
+  const noches = futuras.reduce((s,r)=>s+r.noches,0);
   document.getElementById('stats-content').innerHTML = `
     <div class="summary-strip" style="margin:0">
-      <div class="stat-card ocupacion"><div class="stat-num">${reservas.length}</div><div class="stat-label">Reservas totales</div></div>
-      <div class="stat-card llegada"><div class="stat-num">${futuras.length}</div><div class="stat-label">Reservas futuras</div></div>
+      <div class="stat-card ocupacion"><div class="stat-num">${reservas.length}</div><div class="stat-label">Total reservas</div></div>
+      <div class="stat-card llegada"><div class="stat-num">${futuras.length}</div><div class="stat-label">Futuras</div></div>
       <div class="stat-card limpieza"><div class="stat-num">${noches}</div><div class="stat-label">Noches pendientes</div></div>
-      <div class="stat-card salida"><div class="stat-num">${ingresos.toFixed(0)} €</div><div class="stat-label">Ingresos previstos</div></div>
+      <div class="stat-card salida"><div class="stat-num">${ingresos.toFixed(0)}\u20AC</div><div class="stat-label">Ingresos previstos</div></div>
     </div>`;
 }
 
-// ═══════════════════════════════════════════════════════
-// PERSISTENCIA
-// ═══════════════════════════════════════════════════════
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem('bnd_reservas');
-    if (raw) {
-      reservas = JSON.parse(raw).map(r => ({...r, entrada: new Date(r.entrada), salida: new Date(r.salida)}));
-    }
-    const cfg = localStorage.getItem('bnd_config');
-    if (cfg) {
-      const c = JSON.parse(cfg);
-      if (c.sheetsUrl) document.getElementById('sheets-url').value = c.sheetsUrl;
-    }
-  } catch(e) {}
-}
-function guardarConfig() {
-  const url = document.getElementById('sheets-url').value;
-  localStorage.setItem('bnd_config', JSON.stringify({ sheetsUrl: url }));
-  showToast('Configuración guardada', 'success');
-}
-
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 // VISTA HOY
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 function renderHoy() {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const man  = new Date(hoy); man.setDate(man.getDate()+1);
-  const kHoy = dateKey(hoy), kMan = dateKey(man);
+  const man = new Date(hoy); man.setDate(man.getDate()+1);
+  const kHoy=dateKey(hoy), kMan=dateKey(man);
 
-  const llegadasHoy    = reservas.filter(r => dateKey(r.entrada) === kHoy);
-  const salidasHoy     = reservas.filter(r => dateKey(r.salida)  === kHoy);
-  const llegadasManana = reservas.filter(r => dateKey(r.entrada) === kMan);
-  const salidasManana  = reservas.filter(r => dateKey(r.salida)  === kMan);
+  const llegadasHoy    = reservas.filter(r=>dateKey(r.entrada)===kHoy);
+  const salidasHoy     = reservas.filter(r=>dateKey(r.salida) ===kHoy);
+  const llegadasManana = reservas.filter(r=>dateKey(r.entrada)===kMan);
+  const salidasManana  = reservas.filter(r=>dateKey(r.salida) ===kMan);
+  const aptosSalidaMan = new Set(salidasManana.map(r=>r.aptoIdx));
+  const limpiezasMan   = [...salidasManana, ...llegadasManana.filter(r=>!aptosSalidaMan.has(r.aptoIdx))];
 
-  // Limpiezas mañana = salidas mañana + llegadas mañana sin salida
-  const aptosSalidaMan = new Set(salidasManana.map(r => r.aptoIdx));
-  const limpiezasMan = [
-    ...salidasManana,
-    ...llegadasManana.filter(r => !aptosSalidaMan.has(r.aptoIdx))
-  ];
-
-  // Ocupación próximos 30 días
-  const fin30 = new Date(hoy); fin30.setDate(fin30.getDate()+30);
-  let nOcup = 0;
-  reservas.forEach(r => {
-    const ini = new Date(Math.max(r.entrada, hoy));
-    const fin = new Date(Math.min(r.salida, fin30));
-    nOcup += Math.max(0, Math.round((fin-ini)/86400000));
+  const fin30=new Date(hoy); fin30.setDate(fin30.getDate()+30);
+  let nOcup=0;
+  reservas.forEach(r=>{
+    const ini=new Date(Math.max(r.entrada,hoy)), fin=new Date(Math.min(r.salida,fin30));
+    nOcup+=Math.max(0,Math.round((fin-ini)/86400000));
   });
-  const pctOcup = Math.round(100 * nOcup / (2 * 30));
 
-  // Summary strip
   document.getElementById('summary-strip').innerHTML = `
     <div class="stat-card llegada"><div class="stat-num">${llegadasHoy.length}</div><div class="stat-label">Llegadas hoy</div></div>
     <div class="stat-card salida"><div class="stat-num">${salidasHoy.length}</div><div class="stat-label">Salidas hoy</div></div>
-    <div class="stat-card limpieza"><div class="stat-num">${limpiezasMan.length}</div><div class="stat-label">Limpiezas mañana</div></div>
-    <div class="stat-card ocupacion"><div class="stat-num">${pctOcup}%</div><div class="stat-label">Ocupación 30 días</div></div>`;
+    <div class="stat-card limpieza"><div class="stat-num">${limpiezasMan.length}</div><div class="stat-label">Limpiezas ma\u00F1ana</div></div>
+    <div class="stat-card ocupacion"><div class="stat-num">${Math.round(100*nOcup/(2*30))}%</div><div class="stat-label">Ocupaci\u00F3n 30d</div></div>`;
 
   renderEventList('list-llegadas-hoy',    llegadasHoy,    'llegada');
   renderEventList('list-salidas-hoy',     salidasHoy,     'salida');
   renderEventList('list-llegadas-manana', llegadasManana, 'llegada');
   renderEventList('list-limpiezas-manana',limpiezasMan,   'limpieza');
 
-  // Alertas
-  const alertas = [];
-  reservas.forEach(r => {
-    const mismo = reservas.find(x => x.id !== r.id && x.aptoIdx === r.aptoIdx && dateKey(x.entrada) === dateKey(r.salida));
-    if (mismo && dateKey(r.salida) >= kHoy) {
-      alertas.push(`🔴 <strong>Turnover</strong>: ${APTOS[r.aptoIdx]?.alias} el ${fmtDate(r.salida)} — sale ${r.huesped}, entra ${mismo.huesped}`);
-    }
+  const alertas=[];
+  reservas.forEach(r=>{
+    const mismo=reservas.find(x=>x.id!==r.id&&x.aptoIdx===r.aptoIdx&&dateKey(x.entrada)===dateKey(r.salida));
+    if(mismo&&dateKey(r.salida)>=kHoy)
+      alertas.push(`&#128308; <strong>Turnover</strong>: ${APTOS[r.aptoIdx]?.alias} el ${fmtDate(r.salida)} \u2014 sale ${r.huesped}, entra ${mismo.huesped}`);
   });
-  const alertasBlock = document.getElementById('alertas-block');
-  if (alertas.length) {
-    alertasBlock.innerHTML = `<div class="card" style="border-left:4px solid var(--coral)">
-      <div class="card-title">⚠️ Alertas</div>
-      ${alertas.map(a => `<div style="padding:8px 0;font-size:.85rem;border-bottom:1px solid var(--gris-2)">${a}</div>`).join('')}
-    </div>`;
-  } else { alertasBlock.innerHTML = ''; }
+  document.getElementById('alertas-block').innerHTML = alertas.length ?
+    `<div class="card" style="border-left:4px solid var(--coral)"><div class="card-title">Alertas</div>${alertas.map(a=>`<div style="padding:8px 0;font-size:.85rem;border-bottom:1px solid var(--gris-2)">${a}</div>`).join('')}</div>` : '';
 }
 
 function renderEventList(containerId, items, tipo) {
-  const el = document.getElementById(containerId);
-  if (!items.length) {
-    el.innerHTML = `<div class="empty-state"><span class="emoji">${tipo==='limpieza'?'✨':tipo==='llegada'?'🌅':'🏁'}</span>Sin eventos</div>`;
+  const el=document.getElementById(containerId);
+  if(!items.length){
+    el.innerHTML=`<div class="empty-state"><span class="emoji">${tipo==='limpieza'?'&#10024;':tipo==='llegada'?'&#127749;':'&#127937;'}</span>Sin eventos</div>`;
     return;
   }
-  const icons = { llegada:'🟢', salida:'🔴', limpieza:'🧹' };
-  el.innerHTML = items.map(r => {
-    const apto = APTOS[r.aptoIdx] || APTOS[0];
-    const extra = tipo === 'llegada' ? `${r.noches} noches · ${r.importe}€` :
-                  tipo === 'salida'  ? `Sale tras ${r.noches} noches` :
-                  `Listo para ${dateKey(r.entrada) ? fmtDate(r.entrada) : '—'}`;
+  const icons={llegada:'&#128994;',salida:'&#128308;',limpieza:'&#129529;'};
+  el.innerHTML=items.map(r=>{
+    const apto=APTOS[r.aptoIdx]||APTOS[0];
+    const extra=tipo==='llegada'?`${r.noches} noches \u00B7 ${r.importe}\u20AC`:tipo==='salida'?`Sale tras ${r.noches} noches`:`Preparar para llegada`;
     return `<div class="event-item ${tipo}" onclick="openModal('${r.id}')">
       <div class="event-icon">${icons[tipo]}</div>
       <div class="event-body">
-        <div class="event-name">${r.huesped || '—'}</div>
+        <div class="event-name">${r.huesped||'\u2014'}</div>
         <div class="event-meta">${extra}</div>
         <div class="event-apto apto-tag-${r.aptoIdx}">${apto.alias}</div>
       </div>
@@ -740,328 +755,202 @@ function renderEventList(containerId, items, tipo) {
   }).join('');
 }
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 // CALENDARIO
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 function changeMonth(dir) {
-  if (dir === 0) { currentMonth = new Date().getMonth(); currentYear = new Date().getFullYear(); }
-  else { currentMonth += dir; }
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+  if(dir===0){currentMonth=new Date().getMonth();currentYear=new Date().getFullYear();}
+  else currentMonth+=dir;
+  if(currentMonth>11){currentMonth=0;currentYear++;}
+  if(currentMonth<0){currentMonth=11;currentYear--;}
   renderCalendario();
 }
 
 function renderCalendario() {
-  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  document.getElementById('cal-title').textContent = meses[currentMonth] + ' ' + currentYear;
-
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const container = document.getElementById('calendarios');
-  container.innerHTML = '';
-
-  // Una cuadrícula unificada con ambos apartamentos por día
-  const wrap = document.createElement('div');
-  wrap.className = 'cal-apto';
-  wrap.innerHTML = renderCalGrid(currentYear, currentMonth, hoy);
-  container.appendChild(wrap);
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-title').textContent=meses[currentMonth]+' '+currentYear;
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  document.getElementById('calendarios').innerHTML=renderCalGrid(currentYear,currentMonth,hoy);
 }
 
 function renderCalGrid(year, month, hoy) {
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const daysInPrev  = new Date(year, month, 0).getDate();
-  const offset = (firstDay + 6) % 7; // Lunes primero
-  const dows = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const daysInPrev=new Date(year,month,0).getDate();
+  const offset=(firstDay+6)%7;
+  const dows=['Lun','Mar','Mi\u00E9','Jue','Vie','S\u00E1b','Dom'];
 
-  // Precalcular qué pasa cada día para cada apto
-  const dayData = {};
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dt = new Date(year, month, d);
-    const k  = dateKey(dt);
-    dayData[k] = { llegadas:[], salidas:[], ocupado:[], limpieza:[] };
-    reservas.forEach(r => {
-      if (dateKey(r.entrada) === k) dayData[k].llegadas.push(r);
-      if (dateKey(r.salida)  === k) dayData[k].salidas.push(r);
-      if (r.entrada <= dt && r.salida > dt) dayData[k].ocupado.push(r);
+  const dayData={};
+  for(let d=1;d<=daysInMonth;d++){
+    const dt=new Date(year,month,d); const k=dateKey(dt);
+    dayData[k]={llegadas:[],salidas:[],ocupado:[],limpieza:[]};
+    reservas.forEach(r=>{
+      if(dateKey(r.entrada)===k) dayData[k].llegadas.push(r);
+      if(dateKey(r.salida) ===k) dayData[k].salidas.push(r);
+      if(r.entrada<=dt&&r.salida>dt) dayData[k].ocupado.push(r);
     });
-    // Limpieza = día de salida + si hay llegada
-    dayData[k].salidas.forEach(r => dayData[k].limpieza.push(r));
-    dayData[k].llegadas.forEach(r => {
-      if (!dayData[k].salidas.find(s => s.aptoIdx === r.aptoIdx)) dayData[k].limpieza.push(r);
-    });
+    dayData[k].salidas.forEach(r=>dayData[k].limpieza.push(r));
+    dayData[k].llegadas.forEach(r=>{ if(!dayData[k].salidas.find(s=>s.aptoIdx===r.aptoIdx)) dayData[k].limpieza.push(r); });
   }
 
-  let html = '<div class="cal-grid">';
-  dows.forEach(d => { html += `<div class="cal-dow">${d}</div>`; });
+  let html='<div class="cal-grid">';
+  dows.forEach(d=>{html+=`<div class="cal-dow">${d}</div>`;});
+  for(let i=0;i<offset;i++) html+=`<div class="cal-day other-month"><div class="day-num"><div class="day-num-inner">${daysInPrev-offset+i+1}</div></div></div>`;
 
-  // Días del mes anterior
-  for (let i = 0; i < offset; i++) {
-    const d = daysInPrev - offset + i + 1;
-    html += `<div class="cal-day other-month"><div class="day-num">${d}</div></div>`;
-  }
+  for(let d=1;d<=daysInMonth;d++){
+    const dt=new Date(year,month,d);const k=dateKey(dt);
+    const data=dayData[k]||{};const isHoy=k===dateKey(hoy);
+    let cls='cal-day';if(isHoy)cls+=' today';
 
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dt = new Date(year, month, d);
-    const k  = dateKey(dt);
-    const data = dayData[k] || {};
-    const isHoy = k === dateKey(hoy);
-    const isFin = dt.getDay() === 0 || dt.getDay() === 6;
-
-    let cls = 'cal-day';
-    if (isHoy) cls += ' today';
-    if (isFin) cls += ' weekend';
-
-    // Barras de reserva
-    let bars = '';
-    data.ocupado?.forEach(r => {
-      const isIni = dateKey(r.entrada) === k;
-      const isFin2= dateKey(r.salida)  === k;
-      const pos   = isIni && isFin2 ? '' : isIni ? 'inicio' : isFin2 ? 'fin' : 'medio';
-      const txt   = isIni ? r.huesped.split(' ')[0] : '';
-      bars += `<div class="res-bar res-apto-${r.aptoIdx} ${pos}" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped} · ${APTOS[r.aptoIdx]?.alias}">${txt}</div>`;
+    let bars='';
+    data.ocupado?.forEach(r=>{
+      const isIni=dateKey(r.entrada)===k;
+      const txt=isIni?r.huesped.split(' ')[0]:'';
+      bars+=`<div class="res-bar res-apto-${r.aptoIdx}" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped}">${txt}</div>`;
     });
 
-    // Indicadores
-    let inds = '';
-    if (data.llegadas?.length) inds += '<div class="ind llegada" title="Llegada"></div>';
-    if (data.salidas?.length)  inds += '<div class="ind salida"  title="Salida"></div>';
-    if (data.limpieza?.length && !data.llegadas?.length && !data.salidas?.length)
-      inds += '<div class="ind limpieza" title="Limpieza"></div>';
-    if (data.limpieza?.length && (data.llegadas?.length || data.salidas?.length))
-      inds += '<div class="ind limpieza" title="Limpieza"></div>';
+    let inds='';
+    if(data.llegadas?.length) inds+='<div class="ind llegada" title="Llegada"></div>';
+    if(data.salidas?.length)  inds+='<div class="ind salida"  title="Salida"></div>';
+    if(data.limpieza?.length) inds+='<div class="ind limpieza" title="Limpieza"></div>';
 
-    html += `<div class="${cls}">
-      <div class="day-num">${d}</div>
+    html+=`<div class="${cls}">
+      <div class="day-num"><div class="day-num-inner">${d}</div></div>
       ${bars}
       <div class="day-indicators">${inds}</div>
     </div>`;
   }
 
-  // Relleno
-  const total = offset + daysInMonth;
-  const rem   = total % 7 === 0 ? 0 : 7 - (total % 7);
-  for (let i = 1; i <= rem; i++) html += `<div class="cal-day other-month"><div class="day-num">${i}</div></div>`;
-
-  html += '</div>';
+  const total=offset+daysInMonth;const rem=total%7===0?0:7-(total%7);
+  for(let i=1;i<=rem;i++) html+=`<div class="cal-day other-month"><div class="day-num"><div class="day-num-inner">${i}</div></div></div>`;
+  html+='</div>';
   return html;
 }
 
-// ═══════════════════════════════════════════════════════
-// MODAL DETALLE RESERVA
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════
 function openModal(id) {
-  const r = reservas.find(x => x.id === id);
-  if (!r) return;
-  modalReservaId = id;
-  const apto = APTOS[r.aptoIdx] || APTOS[0];
-  document.getElementById('modal-title').textContent = r.huesped || 'Reserva';
-  document.getElementById('modal-body').innerHTML = `
+  const r=reservas.find(x=>x.id===id);if(!r)return;
+  modalReservaId=id;
+  const apto=APTOS[r.aptoIdx]||APTOS[0];
+  document.getElementById('modal-title').textContent=r.huesped||'Reserva';
+  document.getElementById('modal-body').innerHTML=`
     <div style="display:grid;gap:8px">
       <div><strong>Apartamento:</strong> ${apto.alias}</div>
       <div><strong>Entrada:</strong> ${fmtDate(r.entrada)}</div>
       <div><strong>Salida:</strong> ${fmtDate(r.salida)}</div>
       <div><strong>Noches:</strong> ${r.noches}</div>
-      <div><strong>Importe:</strong> ${r.importe} €</div>
-      <div><strong>Código:</strong> ${r.id}</div>
+      <div><strong>Importe:</strong> ${r.importe} \u20AC</div>
+      <div><strong>C\u00F3digo:</strong> ${r.id}</div>
     </div>`;
   document.getElementById('modal-reserva').classList.add('open');
 }
-function closeModal() { document.getElementById('modal-reserva').classList.remove('open'); }
-function irACheckin() {
-  closeModal();
-  selectedReservaId = modalReservaId;
-  showView('checkin');
-  setTimeout(() => {
-    const sel = document.getElementById('ci-reserva');
-    if (sel) { sel.value = selectedReservaId; seleccionarReserva(); }
-  }, 100);
-}
+function closeModal(){document.getElementById('modal-reserva').classList.remove('open');}
+function irACheckin(){closeModal();selectedReservaId=modalReservaId;showView('checkin');setTimeout(()=>{const s=document.getElementById('ci-reserva');if(s){s.value=selectedReservaId;seleccionarReserva();}},100);}
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 // CHECK-IN
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 function renderCheckinSelector() {
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const proximos = reservas
-    .filter(r => r.entrada >= hoy)
-    .sort((a,b) => a.entrada - b.entrada)
-    .slice(0, 20);
-  const sel = document.getElementById('ci-reserva');
-  sel.innerHTML = '<option value="">— Selecciona una llegada —</option>' +
-    proximos.map(r => `<option value="${r.id}">${fmtDate(r.entrada)} · ${r.huesped} · ${APTOS[r.aptoIdx]?.alias}</option>`).join('');
-  if (selectedReservaId) { sel.value = selectedReservaId; seleccionarReserva(); }
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const proximos=reservas.filter(r=>r.entrada>=hoy).sort((a,b)=>a.entrada-b.entrada).slice(0,20);
+  const sel=document.getElementById('ci-reserva');
+  sel.innerHTML='<option value="">\u2014 Selecciona una llegada \u2014</option>'+
+    proximos.map(r=>`<option value="${r.id}">${fmtDate(r.entrada)} \u00B7 ${r.huesped} \u00B7 ${APTOS[r.aptoIdx]?.alias}</option>`).join('');
+  if(selectedReservaId){sel.value=selectedReservaId;seleccionarReserva();}
 }
 
 function seleccionarReserva() {
-  const id = document.getElementById('ci-reserva').value;
-  const block = document.getElementById('ci-form-block');
-  if (!id) { block.style.display = 'none'; return; }
-  const r = reservas.find(x => x.id === id);
-  if (!r) return;
-  const apto = APTOS[r.aptoIdx] || APTOS[0];
-  document.getElementById('ci-res-info').innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;font-size:.88rem">
-      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">APARTAMENTO</span><strong>${apto.alias}</strong></div>
-      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">ENTRADA</span><strong>${fmtDate(r.entrada)}</strong></div>
-      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">SALIDA</span><strong>${fmtDate(r.salida)}</strong></div>
-      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">NOCHES</span><strong>${r.noches}</strong></div>
-      <div><span style="color:var(--gris-4);font-size:.72rem;display:block;margin-bottom:2px">VIAJEROS</span><strong>${r.noches > 0 ? '—' : '—'}</strong></div>
+  const id=document.getElementById('ci-reserva').value;
+  const block=document.getElementById('ci-form-block');
+  if(!id){block.style.display='none';return;}
+  const r=reservas.find(x=>x.id===id);if(!r)return;
+  const apto=APTOS[r.aptoIdx]||APTOS[0];
+  document.getElementById('ci-res-info').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;font-size:.88rem">
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block">APARTAMENTO</span><strong>${apto.alias}</strong></div>
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block">ENTRADA</span><strong>${fmtDate(r.entrada)}</strong></div>
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block">SALIDA</span><strong>${fmtDate(r.salida)}</strong></div>
+      <div><span style="color:var(--gris-4);font-size:.72rem;display:block">NOCHES</span><strong>${r.noches}</strong></div>
     </div>`;
-  block.style.display = 'block';
-  viajeroCount = 0;
-  document.getElementById('viajeros-container').innerHTML = '';
-  addViajero(); // Añadir el primero automáticamente
+  block.style.display='block';
+  viajeroCount=0;
+  document.getElementById('viajeros-container').innerHTML='';
+  addViajero();
 }
 
 function addViajero() {
-  viajeroCount++;
-  const n = viajeroCount;
-  const div = document.createElement('div');
-  div.className = 'viajero-block';
-  div.id = `viajero-${n}`;
-  div.innerHTML = `
+  viajeroCount++;const n=viajeroCount;
+  const div=document.createElement('div');div.className='viajero-block';div.id=`viajero-${n}`;
+  div.innerHTML=`
     <div class="viajero-header">
       <div class="viajero-num">Viajero ${n}</div>
-      ${n > 1 ? `<button class="btn-danger" onclick="removeViajero(${n})">✕ Eliminar</button>` : ''}
+      ${n>1?`<button class="btn-danger" onclick="removeViajero(${n})">&#10005; Eliminar</button>`:''}
     </div>
     <div class="form-grid">
       <div class="form-group"><label>Nombre *</label><input type="text" id="v${n}-nombre" placeholder="Ana"></div>
-      <div class="form-group"><label>Apellidos *</label><input type="text" id="v${n}-apellidos" placeholder="García López"></div>
-      <div class="form-group">
-        <label>Tipo documento *</label>
-        <select id="v${n}-tipo-doc">
-          <option value="DNI">DNI</option>
-          <option value="Pasaporte">Pasaporte</option>
-          <option value="NIE">NIE</option>
-          <option value="Otro">Otro</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Número documento *</label><input type="text" id="v${n}-num-doc" placeholder="12345678A"></div>
-      <div class="form-group"><label>Nº soporte (DNI)</label><input type="text" id="v${n}-soporte" placeholder="AAA123456"></div>
+      <div class="form-group"><label>Apellidos *</label><input type="text" id="v${n}-apellidos" placeholder="Garc\u00EDa L\u00F3pez"></div>
+      <div class="form-group"><label>Tipo doc *</label><select id="v${n}-tipo-doc"><option>DNI</option><option>Pasaporte</option><option>NIE</option><option>Otro</option></select></div>
+      <div class="form-group"><label>N\u00BA documento *</label><input type="text" id="v${n}-num-doc" placeholder="12345678A"></div>
+      <div class="form-group"><label>N\u00BA soporte (DNI)</label><input type="text" id="v${n}-soporte" placeholder="AAA123456"></div>
       <div class="form-group"><label>Fecha nacimiento *</label><input type="date" id="v${n}-nacimiento"></div>
-      <div class="form-group"><label>Fecha expedición *</label><input type="date" id="v${n}-expedicion"></div>
-      <div class="form-group">
-        <label>Sexo *</label>
-        <select id="v${n}-sexo">
-          <option value="">—</option>
-          <option value="M">Masculino</option>
-          <option value="F">Femenino</option>
-          <option value="O">Otro</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Nacionalidad *</label><input type="text" id="v${n}-nacionalidad" placeholder="Española"></div>
-      <div class="form-group full"><label>Dirección completa *</label><input type="text" id="v${n}-direccion" placeholder="Calle Mayor 1, 28001 Madrid"></div>
-      <div class="form-group"><label>País residencia</label><input type="text" id="v${n}-pais" placeholder="España"></div>
-      <div class="form-group"><label>Teléfono *</label><input type="tel" id="v${n}-telefono" placeholder="+34 600 000 000"></div>
+      <div class="form-group"><label>Fecha expedici\u00F3n *</label><input type="date" id="v${n}-expedicion"></div>
+      <div class="form-group"><label>Sexo *</label><select id="v${n}-sexo"><option value="">&#8212;</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select></div>
+      <div class="form-group"><label>Nacionalidad *</label><input type="text" id="v${n}-nacionalidad" placeholder="Espa\u00F1ola"></div>
+      <div class="form-group full"><label>Direcci\u00F3n completa *</label><input type="text" id="v${n}-direccion" placeholder="Calle Mayor 1, 28001 Madrid"></div>
+      <div class="form-group"><label>Pa\u00EDs residencia</label><input type="text" id="v${n}-pais" placeholder="Espa\u00F1a"></div>
+      <div class="form-group"><label>Tel\u00E9fono *</label><input type="tel" id="v${n}-telefono" placeholder="+34 600 000 000"></div>
       <div class="form-group"><label>Email *</label><input type="email" id="v${n}-email" placeholder="ana@email.com"></div>
-      <div class="form-group">
-        <label>Parentesco con viajero 1</label>
-        <select id="v${n}-parentesco">
-          <option value="Titular">Titular</option>
-          <option value="Cónyuge">Cónyuge / pareja</option>
-          <option value="Hijo/a">Hijo/a</option>
-          <option value="Familiar">Familiar</option>
-          <option value="Amigo/a">Amigo/a</option>
-          <option value="Otro">Otro</option>
-        </select>
-      </div>
+      <div class="form-group"><label>Parentesco</label><select id="v${n}-parentesco"><option>Titular</option><option>C\u00F3nyuge / pareja</option><option>Hijo/a</option><option>Familiar</option><option>Amigo/a</option><option>Otro</option></select></div>
     </div>`;
   document.getElementById('viajeros-container').appendChild(div);
   div.querySelector(`#v${n}-nombre`).focus();
 }
 
-function removeViajero(n) {
-  document.getElementById(`viajero-${n}`)?.remove();
-}
-
-function getViajeroData(n) {
-  const g = id => (document.getElementById(`v${n}-${id}`)?.value || '').trim();
-  return {
-    nombre: g('nombre'), apellidos: g('apellidos'),
-    tipoDoc: g('tipo-doc'), numDoc: g('num-doc'), soporte: g('soporte'),
-    nacimiento: g('nacimiento'), expedicion: g('expedicion'),
-    sexo: g('sexo'), nacionalidad: g('nacionalidad'),
-    direccion: g('direccion'), pais: g('pais'),
-    telefono: g('telefono'), email: g('email'),
-    parentesco: g('parentesco'),
-  };
-}
+function removeViajero(n){document.getElementById(`viajero-${n}`)?.remove();}
 
 function guardarCheckin() {
-  const id = document.getElementById('ci-reserva').value;
-  const r  = reservas.find(x => x.id === id);
-  if (!r) { showToast('Selecciona una reserva', 'error'); return; }
-  const horaLlegada = document.getElementById('ci-hora-llegada').value;
-  const viajeros = [];
-  let n = 1;
-  while (document.getElementById(`viajero-${n}`)) {
-    const v = getViajeroData(n);
-    if (!v.nombre || !v.apellidos || !v.numDoc) {
-      showToast(`Viajero ${n}: faltan campos obligatorios`, 'error'); return;
-    }
-    viajeros.push(v);
-    n++;
+  const id=document.getElementById('ci-reserva').value;
+  const r=reservas.find(x=>x.id===id);if(!r){showToast('Selecciona una reserva','error');return;}
+  const horaLlegada=document.getElementById('ci-hora-llegada').value;
+  const viajeros=[];let n=1;
+  while(document.getElementById(`viajero-${n}`)){
+    const g=field=>document.getElementById(`v${n}-${field}`)?.value?.trim()||'';
+    const v={nombre:g('nombre'),apellidos:g('apellidos'),tipoDoc:g('tipo-doc'),numDoc:g('num-doc'),soporte:g('soporte'),nacimiento:g('nacimiento'),expedicion:g('expedicion'),sexo:g('sexo'),nacionalidad:g('nacionalidad'),direccion:g('direccion'),pais:g('pais'),telefono:g('telefono'),email:g('email'),parentesco:g('parentesco')};
+    if(!v.nombre||!v.apellidos||!v.numDoc){showToast(`Viajero ${n}: faltan campos obligatorios`,'error');return;}
+    viajeros.push(v);n++;
   }
-  if (!viajeros.length) { showToast('Añade al menos un viajero', 'error'); return; }
-
-  const checkinData = {
-    reservaId: r.id, huesped: r.huesped,
-    apartamento: APTOS[r.aptoIdx]?.alias,
-    entrada: fmtDate(r.entrada), salida: fmtDate(r.salida),
-    horaLlegada,
-    fechaRegistro: new Date().toISOString(),
-    viajeros,
-  };
-
-  // Guardar local
-  const prev = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
-  const idx  = prev.findIndex(c => c.reservaId === id);
-  if (idx >= 0) prev[idx] = checkinData; else prev.push(checkinData);
-  localStorage.setItem('bnd_checkins', JSON.stringify(prev));
-
-  // Intentar enviar a Google Sheets si hay URL configurada
-  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-  if (cfg.sheetsUrl) {
-    enviarASheets(checkinData, cfg.sheetsUrl);
-  } else {
-    showToast('✓ Check-in guardado localmente', 'success');
-  }
-
-  document.getElementById('ci-form-block').style.display = 'none';
-  document.getElementById('ci-reserva').value = '';
-  selectedReservaId = null;
+  if(!viajeros.length){showToast('A\u00F1ade al menos un viajero','error');return;}
+  const data={reservaId:r.id,huesped:r.huesped,apartamento:APTOS[r.aptoIdx]?.alias,entrada:fmtDate(r.entrada),salida:fmtDate(r.salida),horaLlegada,fechaRegistro:new Date().toISOString(),viajeros};
+  const prev=JSON.parse(localStorage.getItem('bnd_checkins')||'[]');
+  const idx=prev.findIndex(c=>c.reservaId===id);
+  if(idx>=0)prev[idx]=data;else prev.push(data);
+  localStorage.setItem('bnd_checkins',JSON.stringify(prev));
+  showToast('\u2713 Check-in guardado','success');
+  document.getElementById('ci-form-block').style.display='none';
+  document.getElementById('ci-reserva').value='';
+  selectedReservaId=null;
 }
 
-function enviarASheets(data, url) {
-  // Extraer ID de la URL de Google Sheets
-  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  if (!m) { showToast('URL de Sheets inválida', 'error'); return; }
-  const sheetId = m[1];
-  // Construir payload para Apps Script Web App (si está publicado)
-  // Si no, simplemente notificar al usuario
-  showToast('✓ Check-in guardado. Exporta desde Datos > Exportar', 'success');
-}
+function cancelCheckin(){document.getElementById('ci-form-block').style.display='none';document.getElementById('ci-reserva').value='';}
 
-function cancelCheckin() {
-  document.getElementById('ci-form-block').style.display = 'none';
-  document.getElementById('ci-reserva').value = '';
-}
-
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 // TOAST
-// ═══════════════════════════════════════════════════════
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast ' + type + ' show';
-  setTimeout(() => { t.classList.remove('show'); }, 3000);
+// ═══════════════════════════════════════════════
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+(type||'')+' show';
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════
-loadFromStorage();
-renderHoy();
+// ═══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  if(window.google&&window.google.accounts) initGoogleAuth();
+  else document.querySelector('script[src*="gsi/client"]').addEventListener('load', initGoogleAuth);
+});
 </script>
 </body>
 </html>
