@@ -158,6 +158,7 @@
   .res-apto-0.medio { background: #5BA8D4; color: #fff; }
   .res-apto-1 { background: #7C3AED; color: #fff; }
   .res-apto-1.medio { background: #A78BFA; color: #fff; }
+  .res-bar.salida-bar { opacity: .7; border-right: 3px solid #fff; }
   .res-salida { background: #FEE2E2; color: #991B1B; border-left: 3px solid var(--coral); font-weight: 700; }
 
   .day-indicators { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
@@ -276,13 +277,23 @@
     .res-bar { font-size: .6rem; }
     .summary-strip { grid-template-columns: repeat(2,1fr); }
   }
+
+  /* HEADER RESPONSIVE */
+  @media(max-width:500px){
+    .header-meta { display: none; }
+    .user-name-text { display: none; }
+    .logo-text { font-size: .88rem; }
+  }
+  /* CALENDARIO - días intermedios más opacos */
+  .res-bar.medio { opacity: .8; }
+  .res-bar.salida-dia { background: #E63946 !important; color: #fff !important; font-weight: 700; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <header>
-  <div class="logo">&#127944; Apartamentos Benidorm</div>
+  <div class="logo">&#127944; <span class="logo-text">Apartamentos Benidorm</span></div>
   <div class="header-right">
     <div class="header-meta">
       <strong id="header-date"></strong>
@@ -290,7 +301,7 @@
     </div>
     <div class="user-badge" id="user-badge" onclick="signOut()" style="display:none">
       <div class="user-avatar" id="user-avatar">P</div>
-      <span id="user-name">Pepe</span>
+      <span id="user-name" class="user-name-text">Pepe</span>
     </div>
   </div>
 </header>
@@ -968,11 +979,15 @@ function renderCalGrid(year, month, hoy) {
     // Reservas en curso ese día
     data.ocupado?.forEach(r=>{
       const isIni = dateKey(r.entrada) === k;
-      const esMedio = !isIni;
+      const isFin = dateKey(r.salida)  === k;
+      const esMedio = !isIni && !isFin;
       const nombre = r.huesped.split(' ')[0];
-      const txt = isIni ? nombre : '';
-      const extraCls = esMedio ? ' medio' : '';
-      bars += `<div class="res-bar res-apto-${r.aptoIdx}${extraCls}" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped}">${txt}</div>`;
+      let cls = 'res-bar res-apto-' + r.aptoIdx;
+      let txt = '';
+      if (isIni)       { txt = nombre; }
+      else if (isFin)  { cls = 'res-bar salida-dia'; txt = nombre; }
+      else             { cls += ' medio'; }
+      bars += `<div class="${cls}" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped}">${txt}</div>`;
     });
     // Salidas del día — fila especial con fondo rojo
     data.salidas?.forEach(r=>{
@@ -980,9 +995,15 @@ function renderCalGrid(year, month, hoy) {
       bars += `<div class="res-bar res-salida" onclick="event.stopPropagation();openModal('${r.id}')" title="Sale: ${r.huesped}">&#128308; ${nombre}</div>`;
     });
 
+    // Barras de salida para reservas que terminan hoy pero no están en ocupado
+    data.salidas?.forEach(r=>{
+      const yaEnBarras = data.ocupado?.some(x => x.id === r.id);
+      if (!yaEnBarras) {
+        bars += `<div class="res-bar salida-dia" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped}">${r.huesped.split(' ')[0]}</div>`;
+      }
+    });
     let inds='';
-    if(data.llegadas?.length) inds+='<div class="ind llegada" title="Llegada"></div>';
-    if(data.salidas?.length)  inds+='<div class="ind salida"  title="Salida"></div>';
+    // Solo mostrar indicador de limpieza - llegada/salida ya se ve en las barras de color
     if(data.limpieza?.length) inds+='<div class="ind limpieza" title="Limpieza"></div>';
 
     html+=`<div class="${cls}">
