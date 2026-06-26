@@ -488,15 +488,7 @@
           <button class="btn btn-sm" onclick="guardarFolderId()">Guardar</button>
         </div>
       </div>
-      <div class="folder-config" style="margin-top:12px">
-        <h3>&#128203; Google Sheet Maestro</h3>
-        <p>ID del Google Sheet "Maestro" para leer direcciones y datos de los apartamentos.<br>
-        <code style="background:#fff;padding:2px 6px;border-radius:4px;font-size:.8rem">docs.google.com/spreadsheets/d/<strong>ESTE_ES_EL_ID</strong>/edit</code></p>
-        <div class="folder-id-input">
-          <input type="text" id="sheets-maestro-id" placeholder="ID del Sheet Maestro" value="">
-          <button class="btn btn-sm" onclick="guardarSheetsMaestroId()">Guardar</button>
-        </div>
-      </div>
+
 
       <div class="card">
         <div class="card-title">Sincronizaci&#243;n con Drive</div>
@@ -576,11 +568,15 @@ const EMAILS_AUTORIZADOS = [
   'pere.llorca@gmail.com',
   'domingo.llorca@gmail.com',
 ];
-const SCOPES = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets.readonly';
+const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
 const APTOS = [
-  { key: 'gran',    label: 'Gran Apartamento en el Centro de Benidorm',     alias: 'Tomas Ortu\u00F1o', idx: 0 },
-  { key: 'moderno', label: 'Moderno Apartamento en el Cora\u00F3n de Benidorm', alias: 'Buen Retiro',   idx: 1 },
+  { key: 'gran', label: 'Gran Apartamento en el Centro de Benidorm', alias: 'Tomas Ortu\u00F1o', idx: 0,
+    maps: 'https://maps.app.goo.gl/CXoHPcBD3x7Di4MV9', direccion: 'Calle de Tom\u00E1s Ortu\u00F1o, 17',
+    wifi: 'MOVISTAR_56C0', wifiPass: '2QMDSAqHtHMUVFs9dCyx', checkin: '14:00', checkout: '11:00' },
+  { key: 'moderno', label: 'Moderno Apartamento en el Cora\u00F3n de Benidorm', alias: 'Buen Retiro', idx: 1,
+    maps: 'https://maps.app.goo.gl/nPFYHVeKhoU3QcMV8', direccion: 'Ctra. del Buen Retiro, 3',
+    wifi: 'MOVISTAR_B5E4', wifiPass: '804BA3FF3168FB1E319D', checkin: '14:00', checkout: '11:00' },
 ];
 
 let reservas = [];
@@ -779,7 +775,6 @@ async function syncDrive() {
 
     setSyncState('ok', `${reservas.length} reservas \u2022 Actualizado ${new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}`);
     showToast(`\u2713 ${reservas.length} reservas cargadas desde Drive`, 'success');
-    await leerMaestroSheets();
     renderHoy();
     renderStatsCard();
 
@@ -805,11 +800,7 @@ function showView(id) {
   document.getElementById('view-' + id).classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
-  if (id === 'drive') {
-    actualizarEstadoApiKey();
-    const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-    if (cfg.sheetsMaestroId) document.getElementById('sheets-maestro-id').value = cfg.sheetsMaestroId;
-  }
+  if (id === 'drive') actualizarEstadoApiKey();
   if (id === 'rendimiento') renderRendimiento();
   if (id === 'checkin')    renderCheckinSelector();
   if (id === 'hoy')        renderHoy();
@@ -1530,53 +1521,23 @@ function copiarMensaje(i) {
 // ═══════════════════════════════════════════════
 // LEER MAESTRO DE GOOGLE SHEETS
 // ═══════════════════════════════════════════════
-function guardarSheetsMaestroId() {
-  const id = document.getElementById('sheets-maestro-id').value.trim();
-  if (!id) { showToast('Introduce el ID del Sheet', 'error'); return; }
-  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-  cfg.sheetsMaestroId = id;
-  localStorage.setItem('bnd_config', JSON.stringify(cfg));
-  showToast('Sheet Maestro guardado', 'success');
-}
 
-async function leerMaestroSheets() {
-  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-  const sheetId = cfg.sheetsMaestroId;
-  if (!sheetId || !accessToken) { console.log('Sin config Maestro o token'); return; }
-  try {
-    const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/Maestro!A1:Z20';
-    const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
-    if (!resp.ok) { console.warn('Sheets error:', resp.status); return; }
-    const data = await resp.json();
-    const rows = data.values || [];
-    if (rows.length < 2) return;
-    const norm = function(s) { return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); };
-    const headers = rows[0].map(norm);
-    const maestroData = {};
-    for (let i = 1; i < rows.length; i++) {
-      if (!rows[i] || !rows[i].length) continue;
-      const obj = {};
-      headers.forEach(function(h, j) { obj[h] = String(rows[i][j] || '').trim(); });
-      const nombre = norm(obj['apartamento'] || obj['apto'] || '');
-      if (nombre) maestroData[nombre] = obj;
-    }
-    localStorage.setItem('bnd_maestro', JSON.stringify(maestroData));
-    console.log('Maestro cargado:', Object.keys(maestroData));
-    showToast('Maestro sincronizado', 'success');
-  } catch(e) {
-    console.warn('Error leyendo Maestro:', e.message);
-  }
-}
+
+
 
 function getMaestroApto(aptoIdx) {
-  try {
-    const maestro = JSON.parse(localStorage.getItem('bnd_maestro') || '{}');
-    const nombre = (APTOS[aptoIdx]?.label || '').toLowerCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g,'');
-    // Buscar coincidencia parcial
-    const key = Object.keys(maestro).find(k => k.includes('gran') && aptoIdx === 0 || k.includes('moderno') && aptoIdx === 1);
-    return key ? maestro[key] : {};
-  } catch(e) { return {}; }
+  var a = APTOS[aptoIdx] || {};
+  return {
+    'google maps':       a.maps      || '',
+    'maps':              a.maps      || '',
+    'direccion':         a.direccion || '',
+    'wifi':              a.wifi      || '',
+    'contrasena':        a.wifiPass  || '',
+    'check-in':          a.checkin   || '14:00',
+    'check-out':         a.checkout  || '11:00',
+    'persona entrada':   'Mi padre, Domingo',
+    'telefono contacto': '',
+  };
 }
 
 // ═══════════════════════════════════════════════
