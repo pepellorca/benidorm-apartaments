@@ -279,10 +279,15 @@
   }
 
   /* HEADER RESPONSIVE */
-  @media(max-width:500px){
+  @media(max-width:540px){
     .header-meta span { display: none; }
+    .header-meta strong { font-size: .7rem; }
     .user-name-text { display: none; }
-    .logo-text { font-size: .88rem; }
+    .logo-text { font-size: .85rem; }
+    header { padding: 0 8px; gap: 6px; }
+  }
+  @media(max-width:400px){
+    .header-meta { display: none; }
   }
   /* CALENDARIO - días intermedios más opacos */
   .res-bar.medio { opacity: .8; }
@@ -960,7 +965,8 @@ function renderCalGrid(year, month, hoy) {
     reservas.forEach(r=>{
       if(dateKey(r.entrada)===k) dayData[k].llegadas.push(r);
       if(dateKey(r.salida) ===k) dayData[k].salidas.push(r);
-      if(r.entrada<=dt&&r.salida>dt) dayData[k].ocupado.push(r);
+      // ocupado incluye el día de salida para mostrar barra roja
+      if(r.entrada<=dt&&r.salida>=dt) dayData[k].ocupado.push(r);
     });
     dayData[k].salidas.forEach(r=>dayData[k].limpieza.push(r));
     dayData[k].llegadas.forEach(r=>{ if(!dayData[k].salidas.find(s=>s.aptoIdx===r.aptoIdx)) dayData[k].limpieza.push(r); });
@@ -989,13 +995,14 @@ function renderCalGrid(year, month, hoy) {
       else             { cls += ' medio'; }
       bars += `<div class="${cls}" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped}">${txt}</div>`;
     });
-    // Salidas del día — fila especial con fondo rojo
+    // Las salidas se muestran en el bucle de ocupado con isFin
+    // Salidas de reservas pasadas (no en ocupado) — también barra roja
     data.salidas?.forEach(r=>{
-      const nombre = r.huesped.split(' ')[0];
-      bars += `<div class="res-bar res-salida" onclick="event.stopPropagation();openModal('${r.id}')" title="Sale: ${r.huesped}">&#128308; ${nombre}</div>`;
+      if(!data.ocupado?.some(x=>x.id===r.id)){
+        const nombre = r.huesped.split(' ')[0];
+        bars += `<div class="res-bar salida-dia" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped}">${nombre}</div>`;
+      }
     });
-
-    // Las salidas ya se muestran en el bucle de ocupado con isFin
     let inds='';
     // Solo mostrar indicador de limpieza - llegada/salida ya se ve en las barras de color
     if(data.limpieza?.length) inds+='<div class="ind limpieza" title="Limpieza"></div>';
