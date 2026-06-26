@@ -512,6 +512,7 @@
 // CONFIG
 // ═══════════════════════════════════════════════
 const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFeO9_K7kRvbK8Fap1i5t0MvpmzVoaXsy7rrdfR4vp-6sTRvhiPJ4Mcouf9He-Ae7-DA/exec';
 const EMAILS_AUTORIZADOS = [
   'pepe.llorca@gmail.com',
   'pere.llorca@gmail.com',
@@ -1092,11 +1093,24 @@ function guardarCheckin() {
   }
   if(!viajeros.length){showToast('A\u00F1ade al menos un viajero','error');return;}
   const data={reservaId:r.id,huesped:r.huesped,apartamento:APTOS[r.aptoIdx]?.alias,entrada:fmtDate(r.entrada),salida:fmtDate(r.salida),horaLlegada,fechaRegistro:new Date().toISOString(),viajeros};
+  // Guardar local como respaldo
   const prev=JSON.parse(localStorage.getItem('bnd_checkins')||'[]');
   const idx=prev.findIndex(c=>c.reservaId===id);
   if(idx>=0)prev[idx]=data;else prev.push(data);
   localStorage.setItem('bnd_checkins',JSON.stringify(prev));
-  showToast('\u2713 Check-in guardado','success');
+  // Enviar a Google Sheets
+  showToast('Guardando en Google Sheets...','');
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(() => {
+    showToast('\u2713 Check-in guardado en Google Sheets', 'success');
+  }).catch(err => {
+    showToast('\u2713 Guardado localmente (sin conexi\u00F3n a Sheets)', 'success');
+    console.warn('Sheets error:', err);
+  });
   document.getElementById('ci-form-block').style.display='none';
   document.getElementById('ci-reserva').value='';
   selectedReservaId=null;
@@ -1491,4 +1505,5 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
 
