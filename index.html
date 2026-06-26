@@ -505,97 +505,73 @@ function initGoogleAuth() {
     callback: (resp) => {
       if (resp.error) { showToast('Error de autenticaci\u00F3n', 'error'); return; }
       accessToken = resp.access_token;
-      onSignedIn();
+      verificarYEntrar();
     },
   });
 
-  // Comprobar si hay sesión guardada
+  // Comprobar si hay sesión guardada y válida
   const saved = localStorage.getItem('bnd_token');
   if (saved) {
-    const { token, expiry, user } = JSON.parse(saved);
-    if (Date.now() < expiry && user.email && EMAILS_AUTORIZADOS.includes(user.email)) {
-      accessToken = token;
-      onSignedIn(user);
-      return;
-    }
+    try {
+      const s = JSON.parse(saved);
+      if (s && s.expiry && Date.now() < s.expiry && s.user && s.user.email && EMAILS_AUTORIZADOS.includes(s.user.email)) {
+        accessToken = s.token;
+        mostrarApp(s.user);
+        return;
+      }
+    } catch(e) {}
     localStorage.removeItem('bnd_token');
   }
 }
 
 function signIn() {
   if (!tokenClient) { showToast('Cargando... int\u00E9ntalo en un momento', 'error'); return; }
-  tokenClient.requestAccessToken({ prompt: 'consent' });
+  tokenClient.requestAccessToken({ prompt: '' });
 }
 
-function onSignedIn(savedUser) {
+function verificarYEntrar() {
+  fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  })
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(u => {
+    if (!EMAILS_AUTORIZADOS.includes(u.email)) {
+      google.accounts.oauth2.revoke(accessToken);
+      accessToken = null;
+      alert('Acceso no autorizado. Esta app es de uso privado.');
+      return;
+    }
+    const user = { name: u.given_name || u.name || 'Usuario', picture: u.picture || '', email: u.email };
+    // Guardar sesión 55 min (el token dura 1h)
+    localStorage.setItem('bnd_token', JSON.stringify({
+      token: accessToken, expiry: Date.now() + 55 * 60 * 1000, user
+    }));
+    mostrarApp(user);
+  })
+  .catch(err => {
+    showToast('Error al verificar identidad (' + err + ')', 'error');
+    accessToken = null;
+  });
+}
+
+function mostrarApp(user) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('user-badge').style.display = 'flex';
-
-  if (savedUser) {
-    document.getElementById('user-name').textContent = savedUser.name || 'Usuario';
-    const av = document.getElementById('user-avatar');
-    if (savedUser.picture) av.innerHTML = `<img src="${savedUser.picture}" alt="">`;
-    else av.textContent = (savedUser.name || 'U')[0];
-  } else {
-    // Obtener info del usuario y verificar acceso
-    fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: 'Bearer ' + accessToken }
-    }).then(r => {
-      if (r.status === 401) {
-        accessToken = null;
-        localStorage.removeItem('bnd_token');
-        document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('app').style.display = 'none';
-        document.getElementById('user-badge').style.display = 'none';
-        return null;
-      }
-      return r.json();
-    }).then(u => {
-      if (!u) return;
-      // Verificar email autorizado
-      if (!u.email) {
-        // Token caducado o error - pedir login de nuevo
-        accessToken = null;
-        localStorage.removeItem('bnd_token');
-        document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('app').style.display = 'none';
-        document.getElementById('user-badge').style.display = 'none';
-        return;
-      }
-      if (!EMAILS_AUTORIZADOS.includes(u.email)) {
-        google.accounts.oauth2.revoke(accessToken);
-        accessToken = null;
-        localStorage.removeItem('bnd_token');
-        document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('app').style.display = 'none';
-        document.getElementById('user-badge').style.display = 'none';
-        alert('Acceso no autorizado. Esta app es de uso privado.');
-        return;
-      }
-      document.getElementById('user-name').textContent = u.given_name || u.name || 'Usuario';
-      const av = document.getElementById('user-avatar');
-      if (u.picture) av.innerHTML = `<img src="${u.picture}" alt="">`;
-      else av.textContent = (u.name || 'U')[0];
-      // Guardar sesión 1 hora
-      localStorage.setItem('bnd_token', JSON.stringify({
-        token: accessToken, expiry: Date.now() + 3600000,
-        user: { name: u.given_name || u.name, picture: u.picture, email: u.email }
-      }));
-    });
-  }
+  document.getElementById('user-name').textContent = user.name || 'Usuario';
+  const av = document.getElementById('user-avatar');
+  if (user.picture) av.innerHTML = '<img src="' + user.picture + '" alt="">';
+  else av.textContent = (user.name || 'U')[0];
 
   loadFromStorage();
-  // Cargar folder ID guardado
   const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
   if (cfg.folderId) document.getElementById('folder-id-input').value = cfg.folderId;
-
   renderHoy();
   document.getElementById('sync-bar').classList.remove('hidden');
-
-  // Auto-sync si hay folder ID
   if (cfg.folderId) setTimeout(syncDrive, 500);
 }
+
+function onSignedIn(savedUser) { mostrarApp(savedUser); }
 
 function signOut() {
   if (accessToken) google.accounts.oauth2.revoke(accessToken);
@@ -1249,3 +1225,4 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
