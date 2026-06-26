@@ -541,11 +541,32 @@ function onSignedIn(savedUser) {
     // Obtener info del usuario y verificar acceso
     fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: 'Bearer ' + accessToken }
-    }).then(r => r.json()).then(u => {
+    }).then(r => {
+      if (r.status === 401) {
+        accessToken = null;
+        localStorage.removeItem('bnd_token');
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('user-badge').style.display = 'none';
+        return null;
+      }
+      return r.json();
+    }).then(u => {
+      if (!u) return;
       // Verificar email autorizado
+      if (!u.email) {
+        // Token caducado o error - pedir login de nuevo
+        accessToken = null;
+        localStorage.removeItem('bnd_token');
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('user-badge').style.display = 'none';
+        return;
+      }
       if (!EMAILS_AUTORIZADOS.includes(u.email)) {
         google.accounts.oauth2.revoke(accessToken);
         accessToken = null;
+        localStorage.removeItem('bnd_token');
         document.getElementById('login-screen').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
         document.getElementById('user-badge').style.display = 'none';
@@ -1228,4 +1249,3 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
-
