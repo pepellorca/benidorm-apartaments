@@ -123,14 +123,14 @@
   .card-title { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--gris-4); margin-bottom: 12px; }
 
   /* STATS */
-  .summary-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .stat-card { background: #fff; border-radius: var(--r); padding: 16px 18px; box-shadow: var(--shadow); border-left: 4px solid var(--mar); display: flex; flex-direction: column; gap: 4px; }
-  .stat-card.llegada  { border-color: var(--verde); }
-  .stat-card.salida   { border-color: var(--coral); }
-  .stat-card.limpieza { border-color: var(--sol); }
-  .stat-card.ocupacion{ border-color: var(--mar); }
-  .stat-num  { font-size: 2rem; font-weight: 700; line-height: 1; font-family: var(--font-disp); }
-  .stat-label{ font-size: .75rem; color: var(--gris-4); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .summary-strip { display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 2px; }
+  .stat-card { background: #fff; border-radius: 30px; padding: 7px 14px; box-shadow: var(--shadow); border: 2px solid var(--gris-2); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .stat-card.llegada  { border-color: var(--verde); background: #F0FFF4; }
+  .stat-card.salida   { border-color: var(--coral); background: #FFF5F5; }
+  .stat-card.limpieza { border-color: var(--sol);   background: #FFFBEB; }
+  .stat-card.ocupacion{ border-color: var(--mar);   background: #EFF9FF; }
+  .stat-num  { font-size: 1.1rem; font-weight: 800; line-height: 1; color: var(--gris-5); }
+  .stat-label{ font-size: .72rem; color: var(--gris-4); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
 
   /* CALENDARIO */
   .cal-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
@@ -488,6 +488,15 @@
           <button class="btn btn-sm" onclick="guardarFolderId()">Guardar</button>
         </div>
       </div>
+      <div class="folder-config" style="margin-top:12px">
+        <h3>&#128203; Google Sheet Maestro</h3>
+        <p>ID del Google Sheet "Maestro" para leer direcciones y datos de los apartamentos.<br>
+        <code style="background:#fff;padding:2px 6px;border-radius:4px;font-size:.8rem">docs.google.com/spreadsheets/d/<strong>ESTE_ES_EL_ID</strong>/edit</code></p>
+        <div class="folder-id-input">
+          <input type="text" id="sheets-maestro-id" placeholder="ID del Sheet Maestro" value="">
+          <button class="btn btn-sm" onclick="guardarSheetsMaestroId()">Guardar</button>
+        </div>
+      </div>
 
       <div class="card">
         <div class="card-title">Sincronizaci&#243;n con Drive</div>
@@ -770,6 +779,7 @@ async function syncDrive() {
 
     setSyncState('ok', `${reservas.length} reservas \u2022 Actualizado ${new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}`);
     showToast(`\u2713 ${reservas.length} reservas cargadas desde Drive`, 'success');
+    await leerMaestroSheets();
     renderHoy();
     renderStatsCard();
 
@@ -795,7 +805,11 @@ function showView(id) {
   document.getElementById('view-' + id).classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
-  if (id === 'drive') actualizarEstadoApiKey();
+  if (id === 'drive') {
+    actualizarEstadoApiKey();
+    const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+    if (cfg.sheetsMaestroId) document.getElementById('sheets-maestro-id').value = cfg.sheetsMaestroId;
+  }
   if (id === 'rendimiento') renderRendimiento();
   if (id === 'checkin')    renderCheckinSelector();
   if (id === 'hoy')        renderHoy();
@@ -1513,6 +1527,57 @@ function copiarMensaje(i) {
     btn.classList.add('copiado');
     setTimeout(() => { btn.innerHTML = '📋 Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
   });
+}
+
+// ═══════════════════════════════════════════════
+// LEER MAESTRO DE GOOGLE SHEETS
+// ═══════════════════════════════════════════════
+function guardarSheetsMaestroId() {
+  const id = document.getElementById('sheets-maestro-id').value.trim();
+  if (!id) { showToast('Introduce el ID del Sheet', 'error'); return; }
+  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+  cfg.sheetsMaestroId = id;
+  localStorage.setItem('bnd_config', JSON.stringify(cfg));
+  showToast('Sheet Maestro guardado', 'success');
+}
+
+async function leerMaestroSheets() {
+  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+  const sheetId = cfg.sheetsMaestroId;
+  if (!sheetId || !accessToken) return;
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Maestro!A1:Z10`;
+    const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const rows = data.values || [];
+    if (rows.length < 2) return;
+    const headers = rows[0].map(h => h.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim());
+    const maestroData = {};
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const obj = {};
+      headers.forEach((h, j) => { obj[h] = row[j] || ''; });
+      const nombre = (obj['apartamento'] || obj['apto'] || '').trim().toLowerCase();
+      if (nombre) maestroData[nombre] = obj;
+    }
+    // Guardar en localStorage para uso offline
+    localStorage.setItem('bnd_maestro', JSON.stringify(maestroData));
+    console.log('Maestro cargado:', Object.keys(maestroData));
+  } catch(e) {
+    console.warn('Error leyendo Maestro:', e);
+  }
+}
+
+function getMaestroApto(aptoIdx) {
+  try {
+    const maestro = JSON.parse(localStorage.getItem('bnd_maestro') || '{}');
+    const nombre = (APTOS[aptoIdx]?.label || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g,'');
+    // Buscar coincidencia parcial
+    const key = Object.keys(maestro).find(k => k.includes('gran') && aptoIdx === 0 || k.includes('moderno') && aptoIdx === 1);
+    return key ? maestro[key] : {};
+  } catch(e) { return {}; }
 }
 
 // ═══════════════════════════════════════════════
