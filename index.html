@@ -1338,27 +1338,21 @@ async function procesarFotoDocumento(event, n) {
     const key = getOpenAIKey();
     if (!key || key === 'PENDIENTE_NUEVA_CLAVE') { showToast('Clave OpenAI no configurada', 'error'); return; }
 
-    // Llamar directamente a OpenAI con fetch (funciona en Chrome y Safari reciente)
-    const key2 = key; // alias para claridad
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Llamar al Apps Script como proxy (evita bloqueo de Safari iOS)
+    const proxyResp = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key2 },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-4o',
-        max_tokens: 400,
-        messages: [{ role: 'user', content: [
-          { type: 'text', text: 'Analiza este documento de identidad (DNI, pasaporte o NIE) y extrae los datos. Devuelve SOLO JSON sin texto adicional: {"nombre":"","apellidos":"","tipo_doc":"DNI|Pasaporte|NIE","num_doc":"","num_soporte":"","fecha_nacimiento":"YYYY-MM-DD","fecha_expedicion":"YYYY-MM-DD","sexo":"M|F","nacionalidad":"","pais":""}' },
-          { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + base64, detail: 'high' } }
-        ]}]
+        action: 'ocr',
+        imageBase64: base64,
+        mimeType: 'image/jpeg',
+        apiKey: key
       })
     });
-    if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.error?.message || 'Error OpenAI ' + resp.status);
-    }
-    const data = await resp.json();
-    const clean = data.choices[0].message.content.trim().replace(/```json|```/g,'').trim();
-    const campos = JSON.parse(clean);
+    if (!proxyResp.ok) throw new Error('Error proxy ' + proxyResp.status);
+    const proxyData = await proxyResp.json();
+    if (!proxyData.ok) throw new Error(proxyData.error || 'Error OCR');
+    const campos = proxyData.campos;
 
     rellenarViajero(n, campos);
 
@@ -1459,121 +1453,111 @@ function mostrarConfigApiKey() {
 // ═══════════════════════════════════════════════
 function renderMensajesAirbnb() {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const man = new Date(hoy); man.setDate(man.getDate()+1);
-  const kMan = dateKey(man);
+  const msgs = [];
 
-  const llegadasManana = reservas.filter(r => dateKey(r.entrada) === kMan);
-  const salidasManana  = reservas.filter(r => dateKey(r.salida)  === kMan);
-  const block = document.getElementById('mensajes-airbnb-block');
-
-  if (!llegadasManana.length && !salidasManana.length) {
-    block.innerHTML = '';
-    return;
-  }
-
-  let msgs = [];
-
-  // BIENVENIDA - llegadas mañana
-  llegadasManana.forEach(function(r) {
-    var apto = APTOS[r.aptoIdx] || APTOS[0];
-    var nombre = r.huesped.split(' ')[0];
-    var m = getMaestroApto(r.aptoIdx);
-    var maps = m['google maps'] || m['maps'] || m['ubicacion'] || '';
-    var ci = String(m['check-in'] || m['checkin'] || '14:00');
-    var checkin = (ci.indexOf('1899') !== -1 || ci.indexOf('GMT') !== -1) ? '14:00' : ci;
-    var checkout = m['check-out'] || m['checkout'] || '11:00';
-    var persona = m['persona entrada'] || m['persona de entrada'] || 'Mi padre, Domingo';
-    var tel = m['telefono contacto'] || m['telefono'] || '';
-    var checkinUrl = 'https://pepellorca.github.io/benidorm-apartaments/checkin.html'
+  reservas.forEach(function(r) {
+    const diasLlegada = Math.round((r.entrada - hoy) / 86400000);
+    const diasSalida  = Math.round((r.salida  - hoy) / 86400000);
+    const apto = APTOS[r.aptoIdx] || APTOS[0];
+    const nombre = r.huesped.split(' ')[0];
+    const m = getMaestroApto(r.aptoIdx);
+    const maps     = m['google maps'] || apto.maps || '';
+    const checkin  = m['check-in']  || apto.checkin  || '14:00';
+    const checkout = m['check-out'] || apto.checkout || '11:00';
+    const persona  = m['persona entrada'] || 'Mi padre, Domingo';
+    const wifi     = m['wifi']       || apto.wifi    || '';
+    const pass     = m['contrasena'] || apto.wifiPass || '';
+    const url = 'https://pepellorca.github.io/benidorm-apartaments/checkin.html'
       + '?r=' + encodeURIComponent(r.id)
       + '&h=' + encodeURIComponent(r.huesped || '')
       + '&a=' + encodeURIComponent(apto.alias || '')
       + '&e=' + encodeURIComponent(fmtDate(r.entrada))
       + '&s=' + encodeURIComponent(fmtDate(r.salida))
       + '&n=' + encodeURIComponent(r.noches || '');
-    var lineas = [
-      'Buenos d\u00EDas ' + nombre + ',',
-      '',
-      'Os esperamos ma\u00F1ana en el apartamento. \u00BFSobre qu\u00E9 hora ten\u00E9is pensado llegar para tenerlo todo preparado?',
-      '',
-      'Os detallo la informaci\u00F3n para la entrega de llaves:',
-      '',
-      '\uD83D\uDC49 ' + persona + ' estar\u00E1 en la puerta para recibiros y hacer la entrega en persona.',
-      '',
-      '\uD83D\uDCCD Ubicaci\u00F3n del apartamento:',
-      maps || '(ver enlace en el email)',
-      '',
-      '\uD83D\uDD50 Check-in a partir de las ' + checkin,
-      '\uD83D\uDD50 Check-out antes de las ' + checkout,
-      '',
-      '\uD83D\uDCF6 WiFi: ' + (m['wifi'] || apto.wifi || ''),
-      '\uD83D\uDD11 Contrase\u00F1a: ' + (m['contrasena'] || apto.wifiPass || ''),
-      '',
-      '\uD83D\uDCCB Para agilizar el check-in, podéis rellenar vuestros datos con antelación:',
-      checkinUrl,
-      '',
-      'Cumplimos con la normativa de protecci\u00F3n de datos (RD 933/2021 y RGPD).',
-      '',
-      'Si necesit\u00E1is cualquier cosa no dud\u00E9is en escribirme.' + (tel ? ' Tel: ' + tel : ''),
-      '',
-      '\u00A1Hasta ma\u00F1ana!',
-      'Pepe'
-    ];
-    msgs.push({ tipo: 'bienvenida', huesped: r.huesped, apto: apto.alias, texto: lineas.join('\n') });
+
+    // MSG 1: Bienvenida (5-7 dias antes)
+    if (diasLlegada >= 5 && diasLlegada <= 7) {
+      msgs.push({ tipo: 'bienvenida', sub: 'Enviar ahora \u00B7 llegan en ' + diasLlegada + ' d\u00EDas', huesped: r.huesped, apto: apto.alias,
+        texto: 'Buenos d\u00EDas ' + nombre + ',\n\n'
+          + 'Nos alegramos de que hay\u00E1is elegido nuestro apartamento para vuestras vacaciones en Benidorm!\n\n'
+          + 'Os confirmamos vuestra reserva:\n'
+          + '\uD83D\uDCCD ' + apto.alias + (apto.direccion ? ' \u00B7 ' + apto.direccion : '') + '\n'
+          + '\uD83D\uDCC5 Entrada: ' + fmtDate(r.entrada) + ' \u00B7 Salida: ' + fmtDate(r.salida) + ' \u00B7 ' + r.noches + ' noches\n'
+          + '\uD83D\uDD50 Check-in a partir de las ' + checkin + '\n'
+          + '\uD83D\uDD50 Check-out antes de las ' + checkout + '\n\n'
+          + 'Para agilizar el check-in, pod\u00E9is rellenar vuestros datos con antelaci\u00F3n (solo tarda 2 minutos):\n'
+          + url + '\n\n'
+          + 'Cumplimos con la normativa de protecci\u00F3n de datos (RD 933/2021 y RGPD).\n\n'
+          + 'Cualquier duda estamos a vuestra disposici\u00F3n.\n'
+          + '\u00A1Hasta pronto!\nPepe'
+      });
+    }
+
+    // MSG 2: Confirmacion dia anterior a llegada
+    if (diasLlegada === 1) {
+      const checkins = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
+      const tieneCI = checkins.some(function(c){ return c.reservaId === r.id; });
+      msgs.push({ tipo: 'confirmacion', sub: 'Enviar hoy \u00B7 llegan ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
+        texto: 'Hola ' + nombre + ',\n\n'
+          + '\u00A1Ma\u00F1ana es el gran d\u00EDa!\n\n'
+          + '\uD83D\uDC49 ' + persona + ' os estar\u00E1 esperando en la puerta para la entrega de llaves. \u00BFSobre qu\u00E9 hora llegar\u00E9is?\n\n'
+          + (maps ? '\uD83D\uDCCD ' + maps + '\n\n' : '')
+          + '\uD83D\uDCF6 WiFi: ' + wifi + '\n'
+          + '\uD83D\uDD11 Contrase\u00F1a: ' + pass + '\n\n'
+          + (tieneCI
+              ? '\u2705 Hemos recibido vuestro registro de viajeros. \u00A1Gracias, todo en orden!'
+              : '\uD83D\uDCCB Recordad que a\u00FAn no hemos recibido el registro de viajeros. Pod\u00E9is completarlo aqu\u00ED:\n' + url)
+          + '\n\n\u00A1Hasta ma\u00F1ana!\nPepe'
+      });
+    }
+
+    // MSG 3: Despedida dia anterior a salida
+    if (diasSalida === 1) {
+      msgs.push({ tipo: 'despedida', sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
+        texto: 'Hola ' + nombre + ',\n\n'
+          + 'Ha sido un placer teneros con nosotros!\n\n'
+          + 'Recordad que ma\u00F1ana el check-out es antes de las ' + checkout + '.\n'
+          + 'Por favor, dejad las llaves dentro del apartamento en el mueble de la entrada.\n\n'
+          + 'Si hab\u00E9is disfrutado de la estancia, nos ayudar\u00EDa mucho que nos dejar\u00E1is una rese\u00F1a en Airbnb\n\n'
+          + '\u00A1Hasta pronto y buen viaje de vuelta!\nPepe'
+      });
+    }
   });
 
-  // DESPEDIDA - salidas mañana
-  salidasManana.forEach(function(r) {
-    var apto = APTOS[r.aptoIdx] || APTOS[0];
-    var nombre = r.huesped.split(' ')[0];
-    var m = getMaestroApto(r.aptoIdx);
-    var checkout = m['check-out'] || m['checkout'] || '11:00';
-    var lineas = [
-      'Hola ' + nombre + ',',
-      '',
-      'Ha sido un placer tenerte con nosotros en ' + r.apartamento + '.',
-      '',
-      'Esperamos que hayas disfrutado de tu estancia en Benidorm y que todo haya sido de tu agrado.',
-      '',
-      'Si ha habido alguna cosa que no ha estado a la altura, me encantar\u00EDa saberlo para mejorarlo para pr\u00F3ximas visitas.',
-      '',
-      'Recuerda que el check-out es ma\u00F1ana antes de las ' + checkout + '. Por favor, deja las llaves dentro del apartamento en el mueble de la entrada.',
-      '',
-      'Si quer\u00E9is repetir, ya sab\u00E9is donde estamos \uD83D\uDE0A',
-      '',
-      '\u00A1Hasta pronto!',
-      'Pepe'
-    ];
-    msgs.push({ tipo: 'despedida', huesped: r.huesped, apto: apto.alias, texto: lineas.join('\n') });
+  const block = document.getElementById('mensajes-airbnb-block');
+  if (!msgs.length) { block.innerHTML = ''; return; }
+
+  const cfg = {
+    bienvenida:   { icon: '\\uD83C\\uDF0A', label: 'Bienvenida',          cls: 'bienvenida' },
+    confirmacion: { icon: '\\uD83D\\uDCC5', label: 'Confirmaci\\u00F3n',  cls: 'bienvenida' },
+    despedida:    { icon: '\\uD83D\\uDC4B', label: 'Despedida',           cls: 'despedida'  }
+  };
+
+  var html = '<div class="msg-panel">'
+    + '<div class="msg-panel-header" onclick="toggleMensajes()">'
+    + '<h3>&#9993;&#65039; Mensajes para Airbnb <span style="font-size:.78rem;opacity:.8;font-weight:400">(' + msgs.length + ' pendientes)</span></h3>'
+    + '<span class="msg-toggle-icon" id="msg-toggle-icon">&#9660;</span>'
+    + '</div>'
+    + '<div class="msg-panel-body" id="msg-panel-body">';
+
+  msgs.forEach(function(msg, i) {
+    var c = cfg[msg.tipo] || cfg.bienvenida;
+    html += '<div class="msg-item">'
+      + '<div class="msg-item-header">'
+      + '<div class="msg-item-title">' + msg.huesped
+      + ' <span style="color:var(--gris-4);font-size:.8rem">&#183; ' + msg.apto + '</span></div>'
+      + '<span class="msg-tipo ' + c.cls + '">' + c.label + '</span>'
+      + '</div>'
+      + '<div style="font-size:.75rem;color:var(--gris-4);margin-bottom:8px">' + msg.sub + '</div>'
+      + '<div class="msg-texto" id="msg-texto-' + i + '">' + msg.texto + '</div>'
+      + '<button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')">'
+      + '&#128203; Copiar mensaje</button>'
+      + '</div>';
   });
 
-  const html = `<div class="msg-panel">
-    <div class="msg-panel-header" onclick="toggleMensajes()">
-      <h3>✉️ Mensajes para Airbnb <span style="font-size:.78rem;opacity:.8;font-weight:400">(${msgs.length} pendientes)</span></h3>
-      <span class="msg-toggle-icon" id="msg-toggle-icon">▼</span>
-    </div>
-    <div class="msg-panel-body" id="msg-panel-body">
-      ${msgs.map((m, i) => `
-        <div class="msg-item">
-          <div class="msg-item-header">
-            <div class="msg-item-title">
-              ${m.tipo === 'bienvenida' ? '🟢' : '🟡'}
-              ${m.huesped}
-              <span style="color:var(--gris-4);font-weight:400">·</span>
-              <span style="color:var(--gris-4);font-size:.8rem">${m.apto}</span>
-            </div>
-            <span class="msg-tipo ${m.tipo}">${m.tipo === 'bienvenida' ? 'Bienvenida' : 'Despedida'}</span>
-          </div>
-          <div class="msg-texto" id="msg-texto-${i}">${m.texto}</div>
-          <button class="btn-copiar" id="btn-copiar-${i}" onclick="copiarMensaje(${i})">
-            📋 Copiar mensaje
-          </button>
-        </div>`).join('')}
-    </div>
-  </div>`;
-
+  html += '</div></div>';
   block.innerHTML = html;
-  // Mensajes cerrados por defecto
+  // Cerrado por defecto
 }
 
 function toggleMensajes(forceOpen) {
