@@ -10,8 +10,8 @@
 <meta name="theme-color" content="#023E8A">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
-<!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- Google OAuth2 -->
+<script src="https://accounts.google.com/gsi/client"></script>
 <!-- Google API Client -->
 <script src="https://apis.google.com/js/api.js"></script>
 <style>
@@ -643,74 +643,67 @@ updateClock();
 // ═══════════════════════════════════════════════
 function decodeJWT(token) {
   try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
+    const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.parse(atob(b64));
   } catch(e) { return null; }
 }
 
 function initGoogleAuth() {
-  // Usar Google Identity Services con ID token (más fiable que access token)
-  google.accounts.id.initialize({
-    client_id: CLIENT_ID,
-    callback: (resp) => {
-      if (!resp.credential) { showToast('Error de autenticaci\u00F3n', 'error'); return; }
-      const payload = decodeJWT(resp.credential);
-      if (!payload || !payload.email) { showToast('No se pudo obtener el email', 'error'); return; }
-      if (!EMAILS_AUTORIZADOS.includes(payload.email)) {
-        alert('Acceso no autorizado. Esta app es de uso privado.');
-        return;
-      }
-      // Guardar sesión 8 horas
-      const user = { name: payload.given_name || payload.name || 'Usuario', picture: payload.picture || '', email: payload.email };
-      localStorage.setItem('bnd_token', JSON.stringify({ expiry: Date.now() + 8 * 60 * 60 * 1000, user }));
-      // Obtener access token para Drive
-      tokenClient.requestAccessToken({ prompt: '' });
-      mostrarApp(user);
-    },
-    auto_select: false,
-  });
-
-  // Inicializar token client para Drive API — SIEMPRE, antes de comprobar sesión
+  // Inicializar token client para Drive
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: (resp) => {
-      if (!resp.error) {
-        accessToken = resp.access_token;
-        // Si había una sync pendiente, ejecutarla ahora
+    callback: function(resp) {
+      if (resp.error) { showToast('Error de autorización: ' + resp.error, 'error'); return; }
+      accessToken = resp.access_token;
+      // Obtener email del usuario
+      fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: 'Bearer ' + accessToken }
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(u) {
+        if (!EMAILS_AUTORIZADOS.includes(u.email)) {
+          google.accounts.oauth2.revoke(accessToken);
+          accessToken = null;
+          alert('Acceso no autorizado.');
+          return;
+        }
+        const user = { name: u.given_name || u.name || 'Usuario', picture: u.picture || '', email: u.email };
+        localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user }));
+        mostrarApp(user);
+        // Sync automático
         const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-        if (cfg.folderId) syncDrive();
-      } else {
-        showToast('Error al conectar con Drive: ' + resp.error, 'error');
-      }
-    },
+        if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
+      })
+      .catch(function(e){ showToast('Error verificando cuenta', 'error'); });
+    }
   });
 
   // Comprobar sesión guardada
-  const saved = localStorage.getItem('bnd_token');
-  if (saved) {
-    try {
+  try {
+    const saved = localStorage.getItem('bnd_token');
+    if (saved) {
       const s = JSON.parse(saved);
       if (s && s.expiry && Date.now() < s.expiry && s.user && EMAILS_AUTORIZADOS.includes(s.user.email)) {
+        accessToken = s.token;
         mostrarApp(s.user);
-        // Intentar renovar access token de Drive en silencio
-        try { tokenClient.requestAccessToken({ prompt: '', login_hint: s.user.email }); } catch(e) {}
+        try { tokenClient.requestAccessToken({ prompt: '', login_hint: s.user.email }); } catch(e){}
         return;
       }
-    } catch(e) {}
-    localStorage.removeItem('bnd_token');
-  }
-
-  // Mostrar botón de Google
-  google.accounts.id.renderButton(
-    document.getElementById('google-signin-btn'),
-    { theme: 'outline', size: 'large', width: 280, text: 'continue_with', locale: 'es' }
-  );
-  // No llamamos a prompt() automático para evitar popups no deseados
+      localStorage.removeItem('bnd_token');
+    }
+  } catch(e) { localStorage.removeItem('bnd_token'); }
 }
 
 function signIn() {
-  google.accounts.id.prompt();
+  if (!tokenClient) {
+    showToast('Cargando Google... inténtalo en un segundo', 'error');
+    setTimeout(function(){
+      try { initGoogleAuth(); tokenClient.requestAccessToken({ prompt: 'consent' }); } catch(e){}
+    }, 1500);
+    return;
+  }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
 function mostrarApp(user) {
@@ -722,28 +715,25 @@ function mostrarApp(user) {
   if (user.picture) av.innerHTML = '<img src="' + user.picture + '" alt="">';
   else av.textContent = (user.name || 'U')[0];
   loadFromStorage();
-  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
   renderHoy();
   document.getElementById('sync-bar').classList.remove('hidden');
-  // Mostrar estado según si hay datos en caché
   if (reservas.length > 0) {
-    setSyncState('ok', reservas.length + ' reservas en cach\u00E9 \u2022 pulsa Actualizar para sincronizar');
+    setSyncState('ok', reservas.length + ' reservas en caché • pulsa Actualizar');
   } else {
-    setSyncState('error', 'Sin datos \u2022 pulsa Actualizar para sincronizar');
+    setSyncState('error', 'Sin datos • pulsa Actualizar');
   }
-  if (cfg.folderId) setTimeout(syncDrive, 800);
+  setTimeout(syncDrive, 800);
 }
 
-function onSignedIn(savedUser) { mostrarApp(savedUser); }
-
 function signOut() {
-  if (accessToken) google.accounts.oauth2.revoke(accessToken);
+  if (accessToken) { try { google.accounts.oauth2.revoke(accessToken); } catch(e){} }
   accessToken = null;
   localStorage.removeItem('bnd_token');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('user-badge').style.display = 'none';
 }
+
 
 // ═══════════════════════════════════════════════
 // DRIVE SYNC
@@ -2019,9 +2009,15 @@ function exportarExcel() {
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-window.addEventListener('load', () => {
-  if(window.google&&window.google.accounts) initGoogleAuth();
-  else document.querySelector('script[src*="gsi/client"]').addEventListener('load', initGoogleAuth);
+window.addEventListener('load', function() {
+  function tryInit() {
+    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+      initGoogleAuth();
+    } else {
+      setTimeout(tryInit, 200);
+    }
+  }
+  tryInit();
 });
 </script>
 </body>
