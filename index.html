@@ -1337,29 +1337,28 @@ async function procesarFotoDocumento(event, n) {
     const key = getOpenAIKey();
     if (!key || key === 'PENDIENTE_NUEVA_CLAVE') { showToast('Clave OpenAI no configurada', 'error'); return; }
 
-    const prompt = 'Analiza esta imagen de un documento de identidad (DNI español, pasaporte o NIE) y extrae los datos en formato JSON. Devuelve SOLO el JSON sin texto adicional:\n{"nombre":"","apellidos":"","tipo_doc":"DNI|Pasaporte|NIE","num_doc":"","num_soporte":"(solo DNI)","fecha_nacimiento":"YYYY-MM-DD","fecha_expedicion":"YYYY-MM-DD","sexo":"M|F","nacionalidad":"","pais":""}';
+    // Llamar via Apps Script como proxy para evitar bloqueos de Safari iOS
+    const payload = {
+      action: 'ocr',
+      imageBase64: base64,
+      mimeType: file.type,
+      apiKey: key
+    };
 
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        max_tokens: 400,
-        messages: [{ role: 'user', content: [
-          { type: 'text', text: prompt },
-          { type: 'image_url', image_url: { url: 'data:' + file.type + ';base64,' + base64, detail: 'high' } }
-        ]}]
-      })
+    const cb = 'ocr_' + Date.now();
+    const campos = await new Promise(function(resolve, reject) {
+      window[cb] = function(resp) {
+        delete window[cb];
+        document.getElementById('jsonp-ocr-' + cb)?.remove();
+        if (resp && resp.ok) resolve(resp.campos);
+        else reject(new Error(resp?.error || 'Error OCR'));
+      };
+      const s = document.createElement('script');
+      s.id = 'jsonp-ocr-' + cb;
+      s.src = APPS_SCRIPT_URL + '?callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(payload));
+      s.onerror = function() { delete window[cb]; s.remove(); reject(new Error('Error de conexión')); };
+      document.head.appendChild(s);
     });
-
-    if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.error?.message || 'Error OpenAI ' + resp.status);
-    }
-
-    const data = await resp.json();
-    const clean = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim();
-    const campos = JSON.parse(clean);
 
     rellenarViajero(n, campos);
 
