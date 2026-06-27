@@ -263,6 +263,23 @@
   .apikey-input:focus { border-color: var(--mar); }
   .apikey-note { font-size: .75rem; color: var(--gris-4); background: var(--gris-1); border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; }
 
+  /* ESTADO APARTAMENTOS */
+  .estado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  @media(max-width:480px){ .estado-grid { grid-template-columns: 1fr; } }
+  .estado-card { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; border-left: 5px solid var(--gris-3); }
+  .estado-card.libre    { border-color: var(--verde); }
+  .estado-card.ocupado  { border-color: var(--coral); }
+  .estado-card.limpieza { border-color: var(--sol); }
+  .estado-card.checkin  { border-color: var(--mar); }
+  .estado-apto-nombre { font-weight: 700; font-size: .95rem; color: var(--gris-5); margin-bottom: 6px; }
+  .estado-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: .78rem; font-weight: 700; margin-bottom: 6px; }
+  .estado-badge.libre    { background: #DCFCE7; color: #166534; }
+  .estado-badge.ocupado  { background: #FEE2E2; color: #991B1B; }
+  .estado-badge.limpieza { background: #FEF9C3; color: #854D0E; }
+  .estado-badge.checkin  { background: #DBEAFE; color: #1E40AF; }
+  .estado-detalle { font-size: .82rem; color: var(--gris-4); line-height: 1.5; }
+  .estado-huesped { font-weight: 600; color: var(--gris-5); }
+
   /* MENSAJES AIRBNB */
   .msg-panel { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
   .msg-panel-header { background: linear-gradient(135deg, #1F3A5F, #0077B6); color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
@@ -373,7 +390,7 @@
   <main>
     <!-- HOY -->
     <div class="view active" id="view-hoy">
-      <div class="summary-strip" id="summary-strip"></div>
+      <div id="estado-aptos-block"></div>
       <div id="mensajes-airbnb-block"></div>
       <div class="today-grid">
         <div><div class="card-title">&#128994; Llegadas hoy</div><div class="event-list" id="list-llegadas-hoy"></div></div>
@@ -878,6 +895,49 @@ function renderStatsCard() {
 // ═══════════════════════════════════════════════
 // VISTA HOY
 // ═══════════════════════════════════════════════
+function renderEstadoAptos() {
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var man = new Date(hoy); man.setDate(man.getDate()+1);
+  var kHoy = dateKey(hoy), kMan = dateKey(man);
+  var html = '<div class="estado-grid">';
+  APTOS.forEach(function(apto) {
+    var activa   = reservas.find(function(r){ return r.aptoIdx===apto.idx && r.entrada<=hoy && r.salida>hoy; });
+    var saleHoy  = reservas.find(function(r){ return r.aptoIdx===apto.idx && dateKey(r.salida)===kHoy; });
+    var llegaHoy = reservas.find(function(r){ return r.aptoIdx===apto.idx && dateKey(r.entrada)===kHoy; });
+    var llegaMan = reservas.find(function(r){ return r.aptoIdx===apto.idx && dateKey(r.entrada)===kMan; });
+    var colorClass = apto.idx===0 ? 'apto-tag-0' : 'apto-tag-1';
+    var estado, badge, detalle;
+    if (llegaHoy) {
+      estado='checkin'; badge='Check-in hoy';
+      detalle='<span class="estado-huesped">'+llegaHoy.huesped+'</span><br>Entrada hoy &bull; '+llegaHoy.noches+' noches hasta el '+fmtDate(llegaHoy.salida);
+    } else if (saleHoy) {
+      estado='limpieza'; badge='Sale hoy &bull; Limpiar';
+      detalle='<span class="estado-huesped">'+saleHoy.huesped+'</span> sale hoy antes de las 11:00'+(llegaMan ? '<br>&#9888; '+llegaMan.huesped+' entra ma&ntilde;ana' : '');
+    } else if (activa) {
+      var dias = Math.round((activa.salida-hoy)/86400000);
+      estado='ocupado'; badge='Ocupado';
+      detalle='<span class="estado-huesped">'+activa.huesped+'</span><br>Sale el '+fmtDate(activa.salida)+' &bull; '+dias+' d&iacute;a'+(dias!==1?'s':'')+' restante'+(dias!==1?'s':'');
+    } else if (llegaMan) {
+      estado='limpieza'; badge='Pendiente limpieza';
+      detalle='<span class="estado-huesped">'+llegaMan.huesped+'</span> entra ma&ntilde;ana<br>Preparar el apartamento hoy';
+    } else {
+      estado='libre'; badge='Libre';
+      var prox = reservas.filter(function(r){ return r.aptoIdx===apto.idx && r.entrada>hoy; }).sort(function(a,b){ return a.entrada-b.entrada; })[0];
+      detalle = prox ? 'Pr&oacute;xima entrada el '+fmtDate(prox.entrada)+' &bull; '+prox.huesped : 'Sin reservas pr&oacute;ximas';
+    }
+    // Emojis como entidades HTML
+    var iconos = { checkin:'&#128309;', ocupado:'&#128308;', limpieza:'&#128993;', libre:'&#128994;' };
+    html += '<div class="estado-card '+estado+'">'
+      +'<div class="estado-apto-nombre">&#127968; <span class="'+colorClass+'">'+apto.alias+'</span></div>'
+      +'<div class="estado-badge '+estado+'">'+iconos[estado]+' '+badge+'</div>'
+      +'<div class="estado-detalle">'+detalle+'</div>'
+      +'</div>';
+  });
+  html += '</div>';
+  var el = document.getElementById('estado-aptos-block');
+  if (el) el.innerHTML = html;
+}
+
 function renderHoy() {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   const man = new Date(hoy); man.setDate(man.getDate()+1);
@@ -890,18 +950,7 @@ function renderHoy() {
   const aptosSalidaMan = new Set(salidasManana.map(r=>r.aptoIdx));
   const limpiezasMan   = [...salidasManana, ...llegadasManana.filter(r=>!aptosSalidaMan.has(r.aptoIdx))];
 
-  const fin30=new Date(hoy); fin30.setDate(fin30.getDate()+30);
-  let nOcup=0;
-  reservas.forEach(r=>{
-    const ini=new Date(Math.max(r.entrada,hoy)), fin=new Date(Math.min(r.salida,fin30));
-    nOcup+=Math.max(0,Math.round((fin-ini)/86400000));
-  });
-
-  document.getElementById('summary-strip').innerHTML = `
-    <div class="stat-card llegada"><div class="stat-num">${llegadasHoy.length}</div><div class="stat-label">Llegadas hoy</div></div>
-    <div class="stat-card salida"><div class="stat-num">${salidasHoy.length}</div><div class="stat-label">Salidas hoy</div></div>
-    <div class="stat-card limpieza"><div class="stat-num">${limpiezasMan.length}</div><div class="stat-label">Limpiezas ma\u00F1ana</div></div>
-    <div class="stat-card ocupacion"><div class="stat-num">${Math.round(100*nOcup/(2*30))}%</div><div class="stat-label">Ocupaci\u00F3n 30d</div></div>`;
+  renderEstadoAptos();
 
   renderEventList('list-llegadas-hoy',    llegadasHoy,    'llegada');
   renderEventList('list-salidas-hoy',     salidasHoy,     'salida');
@@ -1453,8 +1502,7 @@ function renderMensajesAirbnb() {
   </div>`;
 
   block.innerHTML = html;
-  // Auto-abrir si hay mensajes
-  setTimeout(() => toggleMensajes(true), 100);
+  // Mensajes cerrados por defecto
 }
 
 function toggleMensajes(forceOpen) {
@@ -1740,6 +1788,4 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
-
-
 
