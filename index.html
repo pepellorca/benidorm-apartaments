@@ -1338,28 +1338,27 @@ async function procesarFotoDocumento(event, n) {
     const key = getOpenAIKey();
     if (!key || key === 'PENDIENTE_NUEVA_CLAVE') { showToast('Clave OpenAI no configurada', 'error'); return; }
 
-    // Llamar via Apps Script como proxy para evitar bloqueos de Safari iOS
-    const payload = {
-      action: 'ocr',
-      imageBase64: base64,
-      mimeType: 'image/jpeg',
-      apiKey: key
-    };
-
-    const cb = 'ocr_' + Date.now();
-    const campos = await new Promise(function(resolve, reject) {
-      window[cb] = function(resp) {
-        delete window[cb];
-        document.getElementById('jsonp-ocr-' + cb)?.remove();
-        if (resp && resp.ok) resolve(resp.campos);
-        else reject(new Error(resp?.error || 'Error OCR'));
-      };
-      const s = document.createElement('script');
-      s.id = 'jsonp-ocr-' + cb;
-      s.src = APPS_SCRIPT_URL + '?callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(payload));
-      s.onerror = function() { delete window[cb]; s.remove(); reject(new Error('Error de conexión')); };
-      document.head.appendChild(s);
+    // Llamar directamente a OpenAI con fetch (funciona en Chrome y Safari reciente)
+    const key2 = key; // alias para claridad
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key2 },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: [
+          { type: 'text', text: 'Analiza este documento de identidad (DNI, pasaporte o NIE) y extrae los datos. Devuelve SOLO JSON sin texto adicional: {"nombre":"","apellidos":"","tipo_doc":"DNI|Pasaporte|NIE","num_doc":"","num_soporte":"","fecha_nacimiento":"YYYY-MM-DD","fecha_expedicion":"YYYY-MM-DD","sexo":"M|F","nacionalidad":"","pais":""}' },
+          { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + base64, detail: 'high' } }
+        ]}]
+      })
     });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || 'Error OpenAI ' + resp.status);
+    }
+    const data = await resp.json();
+    const clean = data.choices[0].message.content.trim().replace(/```json|```/g,'').trim();
+    const campos = JSON.parse(clean);
 
     rellenarViajero(n, campos);
 
@@ -1696,6 +1695,8 @@ function renderReservasList() {
     return;
   }
 
+  // Guardar IDs en variable global para evitar problemas con JSON inline
+  window._reservaIds = lista.map(function(x){ return x.id; });
   el.innerHTML = lista.map(function(r, i) {
     const apto = APTOS[r.aptoIdx] || APTOS[0];
     const colorCls = r.aptoIdx === 0 ? 'apto-tag-0' : 'apto-tag-1';
@@ -1717,15 +1718,15 @@ function renderReservasList() {
       + ' <span class="res-estado-badge ' + estadoCls + '">' + estadoTxt + '</span></div>'
       + '</div>'
       + '<div class="reserva-row-actions">'
-      + '<button class="btn-enlace" id="btn-enlace-' + i + '" onclick="copiarEnlaceReserva(' + i + ', this, ' + JSON.stringify(lista.map(function(x){return x.id;})) + ')">'
+      + '<button class="btn-enlace" id="btn-enlace-' + i + '" onclick="copiarEnlaceReserva(' + i + ', this)">'
       + '&#128279; Enlace check-in</button>'
       + '</div>'
       + '</div>';
   }).join('');
 }
 
-function copiarEnlaceReserva(i, btn, ids) {
-  // Buscar la reserva por su ID en el array global
+function copiarEnlaceReserva(i, btn) {
+  const ids = window._reservaIds || [];
   const rid = ids[i];
   const r = reservas.find(function(x){ return x.id === rid; });
   if (!r) return;
@@ -1838,6 +1839,8 @@ function renderRegistros(lista) {
   }
   // Ordenar por fecha desc
   lista = lista.slice().sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||''); });
+  // Guardar IDs en variable global para evitar problemas con JSON inline
+  window._reservaIds = lista.map(function(x){ return x.id; });
   el.innerHTML = lista.map(function(r, i) {
     const completo = r.viajeros && r.viajeros.length > 0;
     const estadoCls = completo ? 'completo' : 'pendiente';
