@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Aptos Benidorm">
 <meta name="theme-color" content="#023E8A">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPgogIDwhLS0gRm9uZG8gYXp1bCBtYXJpbm8gY29uIGVzcXVpbmFzIHJlZG9uZGVhZGFzIC0tPgogIDxyZWN0IHdpZHRoPSIxMDI0IiBoZWlnaHQ9IjEwMjQiIHJ4PSIyMjQiIGZpbGw9IiMwMjNFOEEiLz4KICA8IS0tIFRlamFkbyAodHJpw6FuZ3VsbykgLS0+CiAgPHBvbHlnb24gcG9pbnRzPSI1MTIsMTgwIDE4MCw1MDAgODQ0LDUwMCIgZmlsbD0id2hpdGUiLz4KICA8IS0tIEN1ZXJwbyBkZSBsYSBjYXNhIC0tPgogIDxyZWN0IHg9IjI1MCIgeT0iNDkwIiB3aWR0aD0iNTI0IiBoZWlnaHQ9IjMwMCIgcng9IjEyIiBmaWxsPSJ3aGl0ZSIvPgogIDwhLS0gUHVlcnRhIC0tPgogIDxyZWN0IHg9IjQzMiIgeT0iNTkwIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjIwMCIgcng9IjEwIiBmaWxsPSIjMDIzRThBIi8+CiAgPCEtLSBWZW50YW5hIGl6cXVpZXJkYSAtLT4KICA8cmVjdCB4PSIyOTAiIHk9IjU3MCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSI5MCIgcng9IjgiIGZpbGw9IiMwMjNFOEEiLz4KICA8bGluZSB4MT0iMzQwIiB5MT0iNTcwIiB4Mj0iMzQwIiB5Mj0iNjYwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8bGluZSB4MT0iMjkwIiB5MT0iNjE1IiB4Mj0iMzkwIiB5Mj0iNjE1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8IS0tIFZlbnRhbmEgZGVyZWNoYSAtLT4KICA8cmVjdCB4PSI2MzQiIHk9IjU3MCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSI5MCIgcng9IjgiIGZpbGw9IiMwMjNFOEEiLz4KICA8bGluZSB4MT0iNjg0IiB5MT0iNTcwIiB4Mj0iNjg0IiB5Mj0iNjYwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8bGluZSB4MT0iNjM0IiB5MT0iNjE1IiB4Mj0iNzM0IiB5Mj0iNjE1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiLz4KICA8IS0tIE9sYXMgLS0+CiAgPHBhdGggZD0iTTEwMCw4MjAgUTE4MCw3OTAgMjYwLDgyMCBRMzQwLDg1MCA0MjAsODIwIFE1MDAsNzkwIDU4MCw4MjAgUTY2MCw4NTAgNzQwLDgyMCBRODIwLDc5MCA5MDAsODIwIEw5MDAsODgwIEwxMDAsODgwIFoiIGZpbGw9IiM5MEUwRUYiIG9wYWNpdHk9IjAuNSIvPgogIDxwYXRoIGQ9Ik0xMDAsODUwIFEyMDAsODIwIDMwMCw4NTAgUTQwMCw4ODAgNTAwLDg1MCBRNjAwLDgyMCA3MDAsODUwIFE4MDAsODgwIDkwMCw4NTAgTDkwMCw5MjAgTDEwMCw5MjAgWiIgZmlsbD0iIzkwRTBFRiIgb3BhY2l0eT0iMC4zNSIvPgo8L3N2Zz4=">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <!-- Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- Google API Client -->
@@ -355,8 +356,8 @@
 <div id="app" style="display:none">
   <div class="sync-bar hidden" id="sync-bar">
     <div class="sync-info">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-text">Conectado a Google Drive</span>
+      <div class="sync-dot error" id="sync-dot"></div>
+      <span id="sync-text">Sin sincronizar · pulsa Actualizar</span>
     </div>
     <button class="btn-sync" onclick="syncDrive()">&#8635; Actualizar</button>
   </div>
@@ -479,40 +480,16 @@
 
     <!-- DRIVE -->
     <div class="view" id="view-drive">
-      <div class="folder-config">
-        <h3>&#128194; Carpeta de Google Drive</h3>
-        <p>Introduce el ID de tu carpeta "Airbnb CSV" de Drive. Lo encuentras en la URL cuando abres la carpeta:<br>
-        <code style="background:#fff;padding:2px 6px;border-radius:4px;font-size:.8rem">drive.google.com/drive/folders/<strong>ESTE_ES_EL_ID</strong></code></p>
-        <div class="folder-id-input">
-          <input type="text" id="folder-id-input" placeholder="1wIxPwPH3GulG6wZe_cV956LXxajd8au8" value="">
-          <button class="btn btn-sm" onclick="guardarFolderId()">Guardar</button>
-        </div>
-      </div>
-
-
       <div class="card">
-        <div class="card-title">Sincronizaci&#243;n con Drive</div>
+        <div class="card-title">&#128194; Google Drive</div>
         <p style="font-size:.85rem;color:var(--gris-4);margin-bottom:16px">
-          La app lee autom&#225;ticamente los CSV de tu carpeta de Drive. Sube el CSV de Airbnb a esa carpeta y pulsa Sincronizar.
+          La app sincroniza autom&#225;ticamente al abrirse. Pulsa el bot&#243;n para forzar una actualizaci&#243;n despu&#233;s de subir un nuevo CSV a Drive.
         </p>
         <div id="drive-files-list" style="margin-bottom:16px"></div>
         <button class="btn" onclick="syncDrive()" id="btn-sync-main">&#8635; Sincronizar con Drive</button>
       </div>
 
-      <div class="card">
-        <div class="card-title">&#128247; Configuraci&#243;n OCR (lectura de documentos)</div>
-        <p style="font-size:.85rem;color:var(--gris-4);margin-bottom:12px">
-          Para leer DNI y pasaportes con la c&#225;mara necesitas una clave de OpenAI. 
-          Se guarda solo en este dispositivo.
-        </p>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <div id="apikey-status" style="font-size:.82rem;color:var(--gris-4)">
-            Estado: <span id="apikey-estado">&#10005; No configurada</span>
-          </div>
-          <button class="btn btn-sm" onclick="mostrarConfigApiKey()">&#128273; Configurar clave</button>
-          <button class="btn-danger btn-sm" onclick="borrarApiKey()" style="padding:5px 12px;font-size:.8rem">Eliminar clave</button>
-        </div>
-      </div>
+
 
       <div class="card" id="stats-card" style="display:none">
         <div class="card-title">Reservas cargadas</div>
@@ -562,6 +539,8 @@
 // CONFIG
 // ═══════════════════════════════════════════════
 const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
+const DRIVE_FOLDER_ID = '1wIxPwPH3GulG6wZe_cV956LXxajd8au8'; // Carpeta "Airbnb CSV" fija
+const OPENAI_API_KEY = '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';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFeO9_K7kRvbK8Fap1i5t0MvpmzVoaXsy7rrdfR4vp-6sTRvhiPJ4Mcouf9He-Ae7-DA/exec';
 const EMAILS_AUTORIZADOS = [
   'pepe.llorca@gmail.com',
@@ -688,9 +667,14 @@ function mostrarApp(user) {
   else av.textContent = (user.name || 'U')[0];
   loadFromStorage();
   const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-  if (cfg.folderId) document.getElementById('folder-id-input').value = cfg.folderId;
   renderHoy();
   document.getElementById('sync-bar').classList.remove('hidden');
+  // Mostrar estado según si hay datos en caché
+  if (reservas.length > 0) {
+    setSyncState('ok', reservas.length + ' reservas en cach\u00E9 \u2022 pulsa Actualizar para sincronizar');
+  } else {
+    setSyncState('error', 'Sin datos \u2022 pulsa Actualizar para sincronizar');
+  }
   if (cfg.folderId) setTimeout(syncDrive, 800);
 }
 
@@ -708,20 +692,11 @@ function signOut() {
 // ═══════════════════════════════════════════════
 // DRIVE SYNC
 // ═══════════════════════════════════════════════
-function guardarFolderId() {
-  const id = document.getElementById('folder-id-input').value.trim();
-  if (!id) { showToast('Introduce el ID de la carpeta', 'error'); return; }
-  const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-  cfg.folderId = id;
-  localStorage.setItem('bnd_config', JSON.stringify(cfg));
-  showToast('Carpeta guardada', 'success');
-  syncDrive();
-}
+
 
 async function syncDrive() {
   const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-  const folderId = cfg.folderId;
-  if (!folderId) { showToast('Configura primero la carpeta de Drive', 'error'); showView('drive'); return; }
+  const folderId = DRIVE_FOLDER_ID;
   if (!accessToken) {
     if (!tokenClient) {
       showToast('Recarga la página e inicia sesión de nuevo', 'error');
@@ -1220,7 +1195,7 @@ function guardarApiKey() {
 }
 
 function getOpenAIKey() {
-  return localStorage.getItem('bnd_openai_key') || '';
+  return localStorage.getItem('bnd_openai_key') || OPENAI_API_KEY || '';
 }
 
 function pedirApiKeyYContinuar(callback) {
@@ -1765,5 +1740,6 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
+
 
 
