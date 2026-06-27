@@ -263,6 +263,22 @@
   .apikey-input:focus { border-color: var(--mar); }
   .apikey-note { font-size: .75rem; color: var(--gris-4); background: var(--gris-1); border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; }
 
+  /* RESERVAS */
+  .reserva-row { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .reserva-row-info { flex: 1; min-width: 0; }
+  .reserva-row-nombre { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reserva-row-meta { font-size: .78rem; color: var(--gris-4); margin-top: 2px; }
+  .reserva-row-apto { font-size: .75rem; font-weight: 700; margin-top: 3px; }
+  .reserva-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .btn-enlace { background: var(--verde); color: #fff; border: none; border-radius: 6px; padding: 7px 12px; font-size: .78rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .btn-enlace:hover { background: #229A44; }
+  .btn-enlace.copiado { background: var(--mar); }
+  .res-estado-badge { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .res-estado-hoy   { background: #DBEAFE; color: #1E40AF; }
+  .res-estado-prox  { background: #DCFCE7; color: #166534; }
+  .res-estado-ocup  { background: #FEE2E2; color: #991B1B; }
+  .res-estado-pas   { background: var(--gris-2); color: var(--gris-4); }
+
   /* ESTADO APARTAMENTOS */
   .estado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   @media(max-width:480px){ .estado-grid { grid-template-columns: 1fr; } }
@@ -398,6 +414,7 @@
 
   <nav>
     <button class="active" onclick="showView('hoy')" id="tab-hoy">&#128203; Hoy</button>
+    <button onclick="showView('reservas')" id="tab-reservas">&#128222; Reservas</button>
     <button onclick="showView('calendario')" id="tab-calendario">&#128197; Calendario</button>
     <button onclick="showView('checkin')" id="tab-checkin">&#128273; Check&#8209;in</button>
     <button onclick="showView('rendimiento')" id="tab-rendimiento">&#128200; Rendimiento</button>
@@ -421,6 +438,26 @@
       </div>
       <div style="height:16px"></div>
       <div id="alertas-block"></div>
+    </div>
+
+    <!-- RESERVAS -->
+    <div class="view" id="view-reservas">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <h2 style="font-family:var(--font-disp);font-size:1.2rem;color:var(--mar-deep)">&#128222; Reservas</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="res-filtro-apto" onchange="renderReservasList()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
+            <option value="">Todos los apartamentos</option>
+            <option value="0">Tomas Ortu&#241;o</option>
+            <option value="1">Buen Retiro</option>
+          </select>
+          <select id="res-filtro-periodo" onchange="renderReservasList()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
+            <option value="futuras">Pr&#243;ximas</option>
+            <option value="todas">Todas</option>
+            <option value="pasadas">Pasadas</option>
+          </select>
+        </div>
+      </div>
+      <div id="reservas-list"></div>
     </div>
 
     <!-- CALENDARIO -->
@@ -821,6 +858,7 @@ function showView(id) {
   document.getElementById('view-' + id).classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
+  if (id === 'reservas') renderReservasList();
   if (id === 'drive') actualizarEstadoApiKey();
   if (id === 'registros') cargarRegistros();
   if (id === 'rendimiento') renderRendimiento();
@@ -1631,6 +1669,93 @@ function enviarASheets_(data) {
     showToast('\u2713 Guardado localmente (verificar conexi\u00F3n)', 'success');
   };
   document.head.appendChild(s);
+}
+
+// ═══════════════════════════════════════════════
+// PESTAÑA RESERVAS - LISTA Y GENERADOR DE ENLACE
+// ═══════════════════════════════════════════════
+function renderReservasList() {
+  const el = document.getElementById('reservas-list');
+  if (!el) return;
+
+  const filtroApto    = document.getElementById('res-filtro-apto')?.value || '';
+  const filtroPeriodo = document.getElementById('res-filtro-periodo')?.value || 'futuras';
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+
+  let lista = reservas.slice();
+
+  // Filtro apartamento
+  if (filtroApto !== '') lista = lista.filter(function(r){ return r.aptoIdx === parseInt(filtroApto); });
+
+  // Filtro periodo
+  lista = lista.filter(function(r){
+    if (filtroPeriodo === 'futuras') return r.entrada >= hoy;
+    if (filtroPeriodo === 'pasadas') return r.salida < hoy;
+    return true;
+  });
+
+  // Ordenar por fecha entrada
+  lista.sort(function(a,b){ return a.entrada - b.entrada; });
+
+  if (!lista.length) {
+    el.innerHTML = '<div class="empty-state"><span class="emoji">&#128222;</span>No hay reservas con estos filtros</div>';
+    return;
+  }
+
+  el.innerHTML = lista.map(function(r, i) {
+    const apto = APTOS[r.aptoIdx] || APTOS[0];
+    const colorCls = r.aptoIdx === 0 ? 'apto-tag-0' : 'apto-tag-1';
+    const hoyKey = dateKey(hoy);
+    const esHoy = dateKey(r.entrada) === hoyKey;
+    const esOcup = r.entrada <= hoy && r.salida > hoy;
+    const esPas  = r.salida < hoy;
+    const estadoCls = esHoy ? 'res-estado-hoy' : esOcup ? 'res-estado-ocup' : esPas ? 'res-estado-pas' : 'res-estado-prox';
+    const estadoTxt = esHoy ? 'Check-in hoy' : esOcup ? 'En curso' : esPas ? 'Pasada' : 'Próxima';
+
+    const dias = Math.round((r.entrada - hoy) / 86400000);
+    const diasTxt = esPas ? '' : esOcup ? 'en curso' : dias === 0 ? 'hoy' : 'en ' + dias + ' día' + (dias !== 1 ? 's' : '');
+
+    return '<div class="reserva-row">'
+      + '<div class="reserva-row-info">'
+      + '<div class="reserva-row-nombre">&#128100; ' + r.huesped + '</div>'
+      + '<div class="reserva-row-meta">' + fmtDate(r.entrada) + ' → ' + fmtDate(r.salida) + ' · ' + r.noches + ' noches' + (diasTxt ? ' · ' + diasTxt : '') + '</div>'
+      + '<div class="reserva-row-apto ' + colorCls + '">' + apto.alias + ' · ' + r.importe + '€'
+      + ' <span class="res-estado-badge ' + estadoCls + '">' + estadoTxt + '</span></div>'
+      + '</div>'
+      + '<div class="reserva-row-actions">'
+      + '<button class="btn-enlace" id="btn-enlace-' + i + '" onclick="copiarEnlaceReserva(' + i + ', this, ' + JSON.stringify(lista.map(function(x){return x.id;})) + ')">'
+      + '&#128279; Enlace check-in</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function copiarEnlaceReserva(i, btn, ids) {
+  // Buscar la reserva por su ID en el array global
+  const rid = ids[i];
+  const r = reservas.find(function(x){ return x.id === rid; });
+  if (!r) return;
+  const apto = APTOS[r.aptoIdx] || APTOS[0];
+  const url = 'https://pepellorca.github.io/benidorm-apartaments/checkin.html'
+    + '?r=' + encodeURIComponent(r.id)
+    + '&h=' + encodeURIComponent(r.huesped || '')
+    + '&a=' + encodeURIComponent(apto.alias || '')
+    + '&e=' + encodeURIComponent(fmtDate(r.entrada))
+    + '&s=' + encodeURIComponent(fmtDate(r.salida))
+    + '&n=' + encodeURIComponent(r.noches || '');
+
+  navigator.clipboard.writeText(url).then(function() {
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copiado');
+    setTimeout(function(){ btn.innerHTML = '&#128279; Enlace check-in'; btn.classList.remove('copiado'); }, 2500);
+  }).catch(function() {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copiado');
+    setTimeout(function(){ btn.innerHTML = '&#128279; Enlace check-in'; btn.classList.remove('copiado'); }, 2500);
+  });
 }
 
 // ═══════════════════════════════════════════════

@@ -123,6 +123,15 @@ canvas.firma-canvas { display: block; width: 100%; height: 120px; cursor: crossh
 .progress-bar { height: 4px; background: var(--gris-2); border-radius: 2px; margin-bottom: 20px; }
 .progress-fill { height: 100%; background: var(--mar); border-radius: 2px; transition: width .3s; }
 
+/* OCR */
+.ocr-btn-group { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.btn-ocr { background: #166534; color: #fff; border: none; border-radius: 7px; padding: 9px 14px; font-size: .82rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.btn-ocr:hover { background: #14532D; }
+.btn-ocr-sec { background: #fff; color: #166534; border: 2px solid #166534; border-radius: 7px; padding: 9px 14px; font-size: .82rem; font-weight: 600; cursor: pointer; }
+.ocr-status { font-size: .8rem; color: #166534; padding: 6px 0; display: none; align-items: center; gap: 6px; }
+.ocr-spinner { width: 14px; height: 14px; border: 2px solid #BBF7D0; border-top-color: #166534; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 @media(max-width:480px){ .form-grid { grid-template-columns: 1fr; } .reserva-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -139,6 +148,8 @@ canvas.firma-canvas { display: block; width: 100%; height: 120px; cursor: crossh
 </header>
 
 <main>
+<input type="file" id="ocr-cam" accept="image/*" capture="environment" style="display:none" onchange="ocrDoc(event)">
+<input type="file" id="ocr-file" accept="image/*" style="display:none" onchange="ocrDoc(event)">
   <!-- LOADING -->
   <div class="screen active" id="screen-loading">
     <div class="loading"><div class="spinner"></div><p id="loading-text">Cargando...</p></div>
@@ -208,6 +219,7 @@ canvas.firma-canvas { display: block; width: 100%; height: 120px; cursor: crossh
 // CONFIG
 // ═══════════════════════════════════════════
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFeO9_K7kRvbK8Fap1i5t0MvpmzVoaXsy7rrdfR4vp-6sTRvhiPJ4Mcouf9He-Ae7-DA/exec';
+const OPENAI_KEY = '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';
 
 const APTOS_DATA = {
   'gran':    { alias: 'Tomas Ortu\u00F1o', nombre: 'Gran Apartamento en el Centro de Benidorm' },
@@ -510,6 +522,14 @@ function addViajero(esMenor) {
     <div class="viajero-header">
       <div class="viajero-num">&#128100; ${t(tituloKey)} ${n}</div>
       ${n > 1 ? `<button class="btn-remove" onclick="removeViajero(${n})">${t('btn_eliminar')}</button>` : ''}
+    </div>
+    <div style="background:#F0FFF4;border:1px solid #86EFAC;border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:.78rem;font-weight:700;color:#166534;margin-bottom:8px">&#128247; Leer documento con c&#225;mara (opcional)</div>
+      <div class="ocr-btn-group">
+        <button class="btn-ocr" onclick="abrirCamara(${n})">&#128247; C&#225;mara</button>
+        <button class="btn-ocr-sec" onclick="abrirArchivo(${n})">&#128193; Subir imagen</button>
+      </div>
+      <div class="ocr-status" id="ocr-status-${n}"><div class="ocr-spinner"></div><span>Leyendo documento...</span></div>
     </div>
     <div class="form-grid">
       <div class="form-group"><label><span data-tv="f_nombre">${t('f_nombre')}</span><span class="req">*</span></label><input type="text" id="v${n}-nombre" placeholder="Ana"></div>
