@@ -2052,7 +2052,7 @@ function renderGestion() {
         return '<div class="gest-row">'
           +'<div class="gest-label '+(enviado?'done':'pend')+'">'+(enviado?'\u2705':'\u2b1c')+' '+labels[j]
           +(enviado?' <span style="font-size:.7rem;color:var(--gris-4)">'+enviado+'</span>':'')+'</div>'
-          +'<div class="gest-acts"><button class="btn-gc copy'+(enviado?' done':'')+'" onclick="copyMsgG(event,'+i+',\"'+tipo+'\")">'
+          +'<div class="gest-acts"><button class="btn-gc copy'+(enviado?' done':'')+'" onclick="copyMsgG(event,'+i+',\''+tipo+'\')">'
           +(enviado?'\u2713 Enviado':'&#128203; Copiar')+'</button></div></div>';
       }).join('')
       +'</div>'
@@ -2074,7 +2074,7 @@ function toggleGest(i){
   if(!b) return;
   var open=b.style.display==='block';
   b.style.display=open?'none':'block';
-  if(t) t.textContent=open?'&#9660;':'&#9650;';
+  if(t) t.innerHTML=open?'&#9660;':'&#9650;';
 }
 function copyMsgG(e,i,tipo){
   e.stopPropagation();
