@@ -1519,11 +1519,12 @@ function renderMensajesAirbnb() {
     if (diasSalida === 1) {
       msgs.push({ tipo: 'despedida', sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
         texto: 'Hola ' + nombre + ',\n\n'
-          + 'Ha sido un placer teneros con nosotros!\n\n'
-          + 'Recordad que ma\u00F1ana el check-out es antes de las ' + checkout + '.\n'
-          + 'Por favor, dejad las llaves dentro del apartamento en el mueble de la entrada.\n\n'
-          + 'Si hab\u00E9is disfrutado de la estancia, nos ayudar\u00EDa mucho que nos dejar\u00E1is una rese\u00F1a en Airbnb\n\n'
-          + '\u00A1Hasta pronto y buen viaje de vuelta!\nPepe'
+          + 'Ha sido un placer tenerte con nosotros en Benidorm!\n\n'
+          + 'Esperamos que hayas disfrutado de tu estancia y que todo haya sido de tu agrado.\n\n'
+          + 'Si ha habido alguna cosa que no ha estado a la altura, me encantar\u00EDa saberlo para mejorarlo para pr\u00F3ximas visitas.\n\n'
+          + 'Recuerda que el check-out es ma\u00F1ana antes de las ' + checkout + '. Por favor, deja las llaves dentro del apartamento en el mueble de la entrada.\n\n'
+          + 'Si quer\u00E9is repetir, ya sab\u00E9is donde estamos \uD83D\uDE0A\n\n'
+          + '\u00A1Hasta pronto!\nPepe'
       });
     }
   });
@@ -1994,11 +1995,12 @@ function buildMsg(r, tipo) {
     +(ci?'\u2705 Hemos recibido vuestro registro. \u00A1Todo en orden!':'\uD83D\uDCCB A\u00FAn no hemos recibido el registro. Pod\u00E9is completarlo aqu\u00ED:'+nl+url)
     +nl+nl+'\u00A1Hasta ma\u00F1ana!'+nl+'Pepe';
   if (tipo==='despedida') return 'Hola '+nombre+','+nl+nl
-    +'Ha sido un placer teneros con nosotros!'+nl+nl
-    +'Recordad que ma\u00F1ana el check-out es antes de las '+co_h+'.'+nl
-    +'Por favor, dejad las llaves dentro del apartamento en el mueble de la entrada.'+nl+nl
-    +'Si hab\u00E9is disfrutado de la estancia, nos ayudar\u00EDa mucho que nos dejar\u00E1is una rese\u00F1a en Airbnb'+nl+nl
-    +'\u00A1Hasta pronto y buen viaje de vuelta!'+nl+'Pepe';
+    +'Ha sido un placer tenerte con nosotros en Benidorm!'+nl+nl
+    +'Esperamos que hayas disfrutado de tu estancia y que todo haya sido de tu agrado.'+nl+nl
+    +'Si ha habido alguna cosa que no ha estado a la altura, me encantar\u00EDa saberlo para mejorarlo para pr\u00F3ximas visitas.'+nl+nl
+    +'Recuerda que el check-out es ma\u00F1ana antes de las '+co_h+'. Por favor, deja las llaves dentro del apartamento en el mueble de la entrada.'+nl+nl
+    +'Si quer\u00E9is repetir, ya sab\u00E9is donde estamos \uD83D\uDE0A'+nl+nl
+    +'\u00A1Hasta pronto!'+nl+'Pepe';
   return '';
 }
 function renderGestion() {
