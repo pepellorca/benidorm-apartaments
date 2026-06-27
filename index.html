@@ -1342,21 +1342,27 @@ async function procesarFotoDocumento(event, n) {
     const key = getOpenAIKey();
     if (!key || key === 'PENDIENTE_NUEVA_CLAVE') { showToast('Clave OpenAI no configurada', 'error'); return; }
 
-    // Llamar al Apps Script como proxy (evita bloqueo de Safari iOS)
-    const proxyResp = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'ocr',
-        imageBase64: base64,
-        mimeType: 'image/jpeg',
-        apiKey: key
-      })
+    // Usar JSONP para evitar bloqueo CORS de Safari iOS
+    const campos = await new Promise(function(resolve, reject) {
+      const cb = 'ocr_' + Date.now();
+      const payload = JSON.stringify({ action: 'ocr', imageBase64: base64, mimeType: 'image/jpeg', apiKey: key });
+      window[cb] = function(resp) {
+        delete window[cb];
+        const s = document.getElementById('jsonp_' + cb);
+        if (s) s.remove();
+        if (resp && resp.ok) resolve(resp.campos);
+        else reject(new Error(resp ? resp.error : 'Error OCR'));
+      };
+      const s = document.createElement('script');
+      s.id = 'jsonp_' + cb;
+      s.onerror = function() {
+        delete window[cb];
+        s.remove();
+        reject(new Error('Error de conexi\u00F3n con el servidor'));
+      };
+      s.src = APPS_SCRIPT_URL + '?action=ocr&callback=' + cb + '&data=' + encodeURIComponent(payload);
+      document.head.appendChild(s);
     });
-    if (!proxyResp.ok) throw new Error('Error proxy ' + proxyResp.status);
-    const proxyData = await proxyResp.json();
-    if (!proxyData.ok) throw new Error(proxyData.error || 'Error OCR');
-    const campos = proxyData.campos;
 
     rellenarViajero(n, campos);
 

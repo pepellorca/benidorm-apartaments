@@ -697,6 +697,80 @@ function updateProgress() {
 }
 
 // ═══════════════════════════════════════════
+// OCR - LECTURA DE DOCUMENTOS
+// ═══════════════════════════════════════════
+let currentOcrN = null;
+
+function abrirCamara(n) { currentOcrN = n; document.getElementById('ocr-cam').value = ''; document.getElementById('ocr-cam').click(); }
+function abrirArchivo(n) { currentOcrN = n; document.getElementById('ocr-file').value = ''; document.getElementById('ocr-file').click(); }
+
+async function ocrDoc(event) {
+  const file = event.target.files[0];
+  const n = currentOcrN;
+  if (!file || !n) return;
+  const status = document.getElementById('ocr-status-' + n);
+  if (status) status.style.display = 'flex';
+  try {
+    // Comprimir imagen
+    const base64 = await new Promise(function(res, rej) {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = function() {
+        URL.revokeObjectURL(url);
+        const MAX = 1024;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) { if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;} }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', 0.7).split(',')[1]);
+      };
+      img.onerror = rej;
+      img.src = url;
+    });
+
+    // Enviar via JSONP al Apps Script proxy
+    const campos = await new Promise(function(resolve, reject) {
+      const cb = 'ocr_' + Date.now();
+      const payload = JSON.stringify({ action: 'ocr', imageBase64: base64, mimeType: 'image/jpeg', apiKey: OPENAI_KEY });
+      window[cb] = function(resp) {
+        delete window[cb];
+        const s = document.getElementById('jsonp_' + cb);
+        if (s) s.remove();
+        if (resp && resp.ok) resolve(resp.campos);
+        else reject(new Error(resp ? resp.error : 'Error OCR'));
+      };
+      const s = document.createElement('script');
+      s.id = 'jsonp_' + cb;
+      s.onerror = function() { delete window[cb]; s.remove(); reject(new Error('Error de conexi\u00F3n')); };
+      s.src = APPS_SCRIPT_URL + '?action=ocr&callback=' + cb + '&data=' + encodeURIComponent(payload);
+      document.head.appendChild(s);
+    });
+
+    // Rellenar campos
+    const set = function(id, val) { const el = document.getElementById('v'+n+'-'+id); if(el && val) el.value = val; };
+    set('nombre',      campos.nombre);
+    set('apellidos',   campos.apellidos);
+    set('num-doc',     campos.num_doc);
+    set('soporte',     campos.num_soporte);
+    set('nacimiento',  campos.fecha_nacimiento);
+    set('expedicion',  campos.fecha_expedicion);
+    set('nacionalidad',campos.nacionalidad);
+    set('pais',        campos.pais);
+    const tipoEl = document.getElementById('v'+n+'-tipo-doc');
+    if (tipoEl && campos.tipo_doc) { const m = [...tipoEl.options].find(o=>o.value===campos.tipo_doc); if(m) tipoEl.value=campos.tipo_doc; }
+    const sexoEl = document.getElementById('v'+n+'-sexo');
+    if (sexoEl && campos.sexo) sexoEl.value = campos.sexo;
+
+    if (status) status.style.display = 'none';
+    alert(t('ocr_ok') || 'Datos le\u00EDdos. Revisa y confirma.');
+  } catch(e) {
+    if (status) status.style.display = 'none';
+    alert('Error al leer el documento: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════
 // ENVIAR
 // ═══════════════════════════════════════════
 function enviarFormulario() {
