@@ -447,6 +447,23 @@ function showError() { showScreen('screen-error'); }
 // CARGAR RESERVA
 // ═══════════════════════════════════════════
 function cargarReserva(codigo) {
+  const params = new URLSearchParams(window.location.search);
+  const huesped = params.get('h') || '';
+  const apto    = params.get('a') || '';
+  const entrada = params.get('e') || '';
+  const salida  = params.get('s') || '';
+  const noches  = params.get('n') || '';
+
+  // Si vienen datos en la URL, usarlos directamente sin llamar al Apps Script
+  if (huesped || apto) {
+    reservaData = { codigo, huesped, apto, entrada, salida, noches };
+    mostrarReserva(reservaData);
+    showScreen('screen-form');
+    addViajero();
+    return;
+  }
+
+  // Fallback: intentar cargar desde Apps Script
   const url = APPS_SCRIPT_URL + '?action=getReserva&codigo=' + encodeURIComponent(codigo);
   fetch(url)
     .then(function(r) { return r.json(); })
@@ -455,12 +472,11 @@ function cargarReserva(codigo) {
       reservaData = data.reserva;
       mostrarReserva(reservaData);
       showScreen('screen-form');
-      addViajero(); // Añadir primer viajero automáticamente
+      addViajero();
     })
     .catch(function() {
-      // Si falla la carga (CORS, etc.), intentar con datos del código
-      // Fallback: mostrar formulario con código solamente
-      reservaData = { codigo: codigo, apto: '', huesped: '', entrada: '', salida: '', noches: '' };
+      // Si falla, mostrar formulario con solo el código
+      reservaData = { codigo, huesped: '', apto: '', entrada: '', salida: '', noches: '' };
       mostrarReserva(reservaData);
       showScreen('screen-form');
       addViajero();

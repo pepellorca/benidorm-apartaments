@@ -1423,7 +1423,13 @@ function renderMensajesAirbnb() {
     var checkout = m['check-out'] || m['checkout'] || '11:00';
     var persona = m['persona entrada'] || m['persona de entrada'] || 'Mi padre, Domingo';
     var tel = m['telefono contacto'] || m['telefono'] || '';
-    var checkinUrl = 'https://pepellorca.github.io/benidorm-apartaments/checkin.html?r=' + r.id;
+    var checkinUrl = 'https://pepellorca.github.io/benidorm-apartaments/checkin.html'
+      + '?r=' + encodeURIComponent(r.id)
+      + '&h=' + encodeURIComponent(r.huesped || '')
+      + '&a=' + encodeURIComponent(apto.alias || '')
+      + '&e=' + encodeURIComponent(fmtDate(r.entrada))
+      + '&s=' + encodeURIComponent(fmtDate(r.salida))
+      + '&n=' + encodeURIComponent(r.noches || '');
     var lineas = [
       'Buenos d\u00EDas ' + nombre + ',',
       '',
