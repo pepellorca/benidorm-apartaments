@@ -1316,7 +1316,7 @@ function guardarApiKey() {
 }
 
 function getOpenAIKey() {
-  return localStorage.getItem('bnd_openai_key') || OPENAI_API_KEY || '';
+  return OPENAI_API_KEY || '';
 }
 
 function pedirApiKeyYContinuar(callback) {
@@ -1383,7 +1383,9 @@ async function procesarFotoDocumento(event, n) {
   } catch(e) {
     if (preview) preview.style.display = 'none';
     if (status)  status.style.display = 'none';
-    showToast('Error al leer el documento: ' + e.message, 'error');
+    const msg = e.message || 'Error desconocido';
+    console.error('OCR error:', e);
+    showToast('Error OCR: ' + msg, 'error');
   }
 }
 
