@@ -632,9 +632,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════
+// ===============================================
 // CONFIG
-// ═══════════════════════════════════════════════
+// ===============================================
 const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
 const DRIVE_FOLDER_ID = '1wIxPwPH3GulG6wZe_cV956LXxajd8au8'; // Carpeta "Airbnb CSV" fija
 const OPENAI_API_KEY = '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';
@@ -664,9 +664,9 @@ let viajeroCount = 0;
 let selectedReservaId = null;
 let modalReservaId = null;
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // CLOCK
-// ═══════════════════════════════════════════════
+// ===============================================
 function updateClock() {
   const now = new Date();
   const dias  = ['Domingo','Lunes','Martes','Mi\u00E9rcoles','Jueves','Viernes','S\u00E1bado'];
@@ -679,9 +679,9 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // AUTH
-// ═══════════════════════════════════════════════
+// ===============================================
 function decodeJWT(token) {
   try {
     const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
@@ -695,7 +695,7 @@ function initGoogleAuth() {
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: function(resp) {
-      if (resp.error) { showToast('Error de autorización: ' + resp.error, 'error'); return; }
+      if (resp.error) { showToast('Error de autorizaci\u00f3n: ' + resp.error, 'error'); return; }
       accessToken = resp.access_token;
       // Obtener email del usuario
       fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -712,7 +712,7 @@ function initGoogleAuth() {
         const user = { name: u.given_name || u.name || 'Usuario', picture: u.picture || '', email: u.email };
         localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user }));
         mostrarApp(user);
-        // Sync automático
+        // Sync autom\u00e1tico
         const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
         if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
       })
@@ -720,7 +720,7 @@ function initGoogleAuth() {
     }
   });
 
-  // Comprobar sesión guardada
+  // Comprobar sesi\u00f3n guardada
   try {
     const saved = localStorage.getItem('bnd_token');
     if (saved) {
@@ -738,7 +738,7 @@ function initGoogleAuth() {
 
 function signIn() {
   if (!tokenClient) {
-    showToast('Cargando Google... inténtalo en un segundo', 'error');
+    showToast('Cargando Google... int\u00e9ntalo en un segundo', 'error');
     setTimeout(function(){
       try { initGoogleAuth(); tokenClient.requestAccessToken({ prompt: 'consent' }); } catch(e){}
     }, 1500);
@@ -759,9 +759,9 @@ function mostrarApp(user) {
   renderHoy();
   document.getElementById('sync-bar').classList.remove('hidden');
   if (reservas.length > 0) {
-    setSyncState('ok', reservas.length + ' reservas en caché • pulsa Actualizar');
+    setSyncState('ok', reservas.length + ' reservas en cach\u00e9 \u2022 pulsa Actualizar');
   } else {
-    setSyncState('error', 'Sin datos • pulsa Actualizar');
+    setSyncState('error', 'Sin datos \u2022 pulsa Actualizar');
   }
   setTimeout(syncDrive, 800);
 }
@@ -776,9 +776,9 @@ function signOut() {
 }
 
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // DRIVE SYNC
-// ═══════════════════════════════════════════════
+// ===============================================
 
 
 async function syncDrive() {
@@ -786,7 +786,7 @@ async function syncDrive() {
   const folderId = DRIVE_FOLDER_ID;
   if (!accessToken) {
     if (!tokenClient) {
-      showToast('Recarga la página e inicia sesión de nuevo', 'error');
+      showToast('Recarga la p\u00e1gina e inicia sesi\u00f3n de nuevo', 'error');
       return;
     }
     // Pedir token de Drive con popup
@@ -853,9 +853,9 @@ function setSyncState(state, text) {
   txt.textContent = text;
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // NAV
-// ═══════════════════════════════════════════════
+// ===============================================
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -870,9 +870,9 @@ function showView(id) {
   if (id === 'hoy')        renderHoy();
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // CSV PARSER
-// ═══════════════════════════════════════════════
+// ===============================================
 function norm(s) { return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
 function pick(obj, keys) { for(const k of keys){ const nk=norm(k); if(obj[nk]!==undefined&&obj[nk]!=='') return obj[nk]; } return ''; }
 
@@ -938,9 +938,9 @@ function procesarCSVTexts(texts) {
   return out;
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // PERSISTENCIA
-// ═══════════════════════════════════════════════
+// ===============================================
 function loadFromStorage() {
   try {
     const raw = localStorage.getItem('bnd_reservas');
@@ -964,9 +964,9 @@ function renderStatsCard() {
     </div>`;
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // VISTA HOY
-// ═══════════════════════════════════════════════
+// ===============================================
 function renderEstadoAptos() {
   var hoy = new Date(); hoy.setHours(0,0,0,0);
   var man = new Date(hoy); man.setDate(man.getDate()+1);
@@ -1063,9 +1063,9 @@ function renderEventList(containerId, items, tipo) {
   }).join('');
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // CALENDARIO
-// ═══════════════════════════════════════════════
+// ===============================================
 function changeMonth(dir) {
   if(dir===0){currentMonth=new Date().getMonth();currentYear=new Date().getFullYear();}
   else currentMonth+=dir;
@@ -1095,7 +1095,7 @@ function renderCalGrid(year, month, hoy) {
     reservas.forEach(r=>{
       if(dateKey(r.entrada)===k) dayData[k].llegadas.push(r);
       if(dateKey(r.salida) ===k) dayData[k].salidas.push(r);
-      // ocupado incluye el día de salida para mostrar barra roja
+      // ocupado incluye el d\u00eda de salida para mostrar barra roja
       if(r.entrada<=dt&&r.salida>=dt) dayData[k].ocupado.push(r);
     });
     dayData[k].salidas.forEach(r=>dayData[k].limpieza.push(r));
@@ -1112,7 +1112,7 @@ function renderCalGrid(year, month, hoy) {
     let cls='cal-day';if(isHoy)cls+=' today';
 
     let bars='';
-    // Reservas en curso ese día
+    // Reservas en curso ese d\u00eda
     data.ocupado?.forEach(r=>{
       const isIni = dateKey(r.entrada) === k;
       const isFin = dateKey(r.salida)  === k;
@@ -1126,7 +1126,7 @@ function renderCalGrid(year, month, hoy) {
       bars += `<div class="${cls}" onclick="event.stopPropagation();openModal('${r.id}')" title="${r.huesped}">${txt}</div>`;
     });
     // Las salidas se muestran en el bucle de ocupado con isFin
-    // Salidas de reservas pasadas (no en ocupado) — también barra roja
+    // Salidas de reservas pasadas (no en ocupado) \u2014 tambi\u00e9n barra roja
     data.salidas?.forEach(r=>{
       if(!data.ocupado?.some(x=>x.id===r.id)){
         const nombre = r.huesped.split(' ')[0];
@@ -1150,9 +1150,9 @@ function renderCalGrid(year, month, hoy) {
   return html;
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // MODAL
-// ═══════════════════════════════════════════════
+// ===============================================
 function openModal(id) {
   const r=reservas.find(x=>x.id===id);if(!r)return;
   modalReservaId=id;
@@ -1172,9 +1172,9 @@ function openModal(id) {
 function closeModal(){document.getElementById('modal-reserva').classList.remove('open');}
 function irACheckin(){closeModal();selectedReservaId=modalReservaId;showView('checkin');setTimeout(()=>{const s=document.getElementById('ci-reserva');if(s){s.value=selectedReservaId;seleccionarReserva();}},100);}
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // CHECK-IN
-// ═══════════════════════════════════════════════
+// ===============================================
 function renderCheckinSelector() {
   const hoy=new Date();hoy.setHours(0,0,0,0);
   const proximos=reservas.filter(r=>r.entrada>=hoy).sort((a,b)=>a.entrada-b.entrada).slice(0,20);
@@ -1273,9 +1273,9 @@ function guardarCheckin() {
 
 function cancelCheckin(){document.getElementById('ci-form-block').style.display='none';document.getElementById('ci-reserva').value='';}
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // TOAST
-// ═══════════════════════════════════════════════
+// ===============================================
 function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='toast '+(type||'')+' show';
@@ -1283,9 +1283,9 @@ function showToast(msg,type=''){
 }
 
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // OCR - FOTO DOCUMENTO
-// ═══════════════════════════════════════════════
+// ===============================================
 let currentOcrViajero = null;
 let pendingOcrCallback = null;
 
@@ -1308,10 +1308,10 @@ function closeApiKeyModal() {
 
 function guardarApiKey() {
   const key = document.getElementById('apikey-input').value.trim();
-  if (!key.startsWith('sk-')) { showToast('Clave inválida — debe empezar por sk-', 'error'); return; }
+  if (!key.startsWith('sk-')) { showToast('Clave inv\u00e1lida \u2014 debe empezar por sk-', 'error'); return; }
   localStorage.setItem('bnd_openai_key', key);
   document.getElementById('modal-apikey').classList.remove('open');
-  showToast('✓ Clave guardada', 'success');
+  showToast('\u2713 Clave guardada', 'success');
   if (pendingOcrCallback) { pendingOcrCallback(); pendingOcrCallback = null; }
 }
 
@@ -1337,7 +1337,7 @@ async function procesarFotoDocumento(event, n) {
   if (status)  status.style.display = 'flex';
 
   try {
-    // Comprimir imagen antes de enviar (máx 800px, calidad 70%)
+    // Comprimir imagen antes de enviar (m\u00e1x 800px, calidad 70%)
     const base64 = await comprimirImagen(file);
     const key = getOpenAIKey();
     if (!key || key === 'PENDIENTE_NUEVA_CLAVE') { showToast('Clave OpenAI no configurada', 'error'); return; }
@@ -1429,9 +1429,9 @@ function fileToBase64(file) {
   });
 }
 
-// ═══════════════════════════════════════════════
-// API KEY CONFIG en pestaña Drive
-// ═══════════════════════════════════════════════
+// ===============================================
+// API KEY CONFIG en pesta\u00f1a Drive
+// ===============================================
 function borrarApiKey() {
   localStorage.removeItem('bnd_openai_key');
   actualizarEstadoApiKey();
@@ -1452,9 +1452,9 @@ function mostrarConfigApiKey() {
   document.getElementById('modal-apikey').classList.add('open');
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // MENSAJES PARA AIRBNB EN VISTA HOY
-// ═══════════════════════════════════════════════
+// ===============================================
 function renderMensajesAirbnb() {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   const msgs = [];
@@ -1571,10 +1571,10 @@ function toggleMensajes(forceOpen) {
   const isOpen = body.classList.contains('open');
   if (forceOpen === true || !isOpen) {
     body.classList.add('open');
-    if (icon) { icon.textContent = '▲'; icon.classList.add('open'); }
+    if (icon) { icon.textContent = '\u25b2'; icon.classList.add('open'); }
   } else {
     body.classList.remove('open');
-    if (icon) { icon.textContent = '▼'; icon.classList.remove('open'); }
+    if (icon) { icon.textContent = '\u25bc'; icon.classList.remove('open'); }
   }
 }
 
@@ -1583,9 +1583,9 @@ function copiarMensaje(i) {
   const btn = document.getElementById('btn-copiar-' + i);
   if (!el || !btn) return;
   navigator.clipboard.writeText(el.textContent).then(() => {
-    btn.textContent = '✓ Copiado';
+    btn.textContent = '\u2713 Copiado';
     btn.classList.add('copiado');
-    setTimeout(() => { btn.innerHTML = '📋 Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
+    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
   }).catch(() => {
     // Fallback para Safari
     const range = document.createRange();
@@ -1594,15 +1594,15 @@ function copiarMensaje(i) {
     window.getSelection().addRange(range);
     document.execCommand('copy');
     window.getSelection().removeAllRanges();
-    btn.textContent = '✓ Copiado';
+    btn.textContent = '\u2713 Copiado';
     btn.classList.add('copiado');
-    setTimeout(() => { btn.innerHTML = '📋 Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
+    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
   });
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // LEER MAESTRO DE GOOGLE SHEETS
-// ═══════════════════════════════════════════════
+// ===============================================
 
 
 
@@ -1622,9 +1622,9 @@ function getMaestroApto(aptoIdx) {
   };
 }
 
-// ═══════════════════════════════════════════════
-// ENVÍO A GOOGLE SHEETS
-// ═══════════════════════════════════════════════
+// ===============================================
+// ENV\u00cdO A GOOGLE SHEETS
+// ===============================================
 function enviarASheets_(data) {
   // Usamos un iframe oculto para enviar el POST sin problemas de CORS
   const payload = encodeURIComponent(JSON.stringify(data));
@@ -1652,9 +1652,9 @@ function enviarASheets_(data) {
   document.head.appendChild(s);
 }
 
-// ═══════════════════════════════════════════════
-// PESTAÑA RESERVAS - LISTA Y GENERADOR DE ENLACE
-// ═══════════════════════════════════════════════
+// ===============================================
+// PESTA\u00d1A RESERVAS - LISTA Y GENERADOR DE ENLACE
+// ===============================================
 function renderReservasList() {
   const el = document.getElementById('reservas-list');
   if (!el) return;
@@ -1693,16 +1693,16 @@ function renderReservasList() {
     const esOcup = r.entrada <= hoy && r.salida > hoy;
     const esPas  = r.salida < hoy;
     const estadoCls = esHoy ? 'res-estado-hoy' : esOcup ? 'res-estado-ocup' : esPas ? 'res-estado-pas' : 'res-estado-prox';
-    const estadoTxt = esHoy ? 'Check-in hoy' : esOcup ? 'En curso' : esPas ? 'Pasada' : 'Próxima';
+    const estadoTxt = esHoy ? 'Check-in hoy' : esOcup ? 'En curso' : esPas ? 'Pasada' : 'Pr\u00f3xima';
 
     const dias = Math.round((r.entrada - hoy) / 86400000);
-    const diasTxt = esPas ? '' : esOcup ? 'en curso' : dias === 0 ? 'hoy' : 'en ' + dias + ' día' + (dias !== 1 ? 's' : '');
+    const diasTxt = esPas ? '' : esOcup ? 'en curso' : dias === 0 ? 'hoy' : 'en ' + dias + ' d\u00eda' + (dias !== 1 ? 's' : '');
 
     return '<div class="reserva-row">'
       + '<div class="reserva-row-info">'
       + '<div class="reserva-row-nombre">&#128100; ' + r.huesped + '</div>'
-      + '<div class="reserva-row-meta">' + fmtDate(r.entrada) + ' → ' + fmtDate(r.salida) + ' · ' + r.noches + ' noches' + (diasTxt ? ' · ' + diasTxt : '') + '</div>'
-      + '<div class="reserva-row-apto ' + colorCls + '">' + apto.alias + ' · ' + r.importe + '€'
+      + '<div class="reserva-row-meta">' + fmtDate(r.entrada) + ' \u2192 ' + fmtDate(r.salida) + ' \u00b7 ' + r.noches + ' noches' + (diasTxt ? ' \u00b7 ' + diasTxt : '') + '</div>'
+      + '<div class="reserva-row-apto ' + colorCls + '">' + apto.alias + ' \u00b7 ' + r.importe + '\u20ac'
       + ' <span class="res-estado-badge ' + estadoCls + '">' + estadoTxt + '</span></div>'
       + '</div>'
       + '<div class="reserva-row-actions">'
@@ -1728,22 +1728,22 @@ function copiarEnlaceReserva(i, btn) {
     + '&n=' + encodeURIComponent(r.noches || '');
 
   navigator.clipboard.writeText(url).then(function() {
-    btn.textContent = '✓ Copiado';
+    btn.textContent = '\u2713 Copiado';
     btn.classList.add('copiado');
     setTimeout(function(){ btn.innerHTML = '&#128279; Enlace check-in'; btn.classList.remove('copiado'); }, 2500);
   }).catch(function() {
     // Fallback
     const ta = document.createElement('textarea');
     ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-    btn.textContent = '✓ Copiado';
+    btn.textContent = '\u2713 Copiado';
     btn.classList.add('copiado');
     setTimeout(function(){ btn.innerHTML = '&#128279; Enlace check-in'; btn.classList.remove('copiado'); }, 2500);
   });
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // REGISTROS DE VIAJEROS
-// ═══════════════════════════════════════════════
+// ===============================================
 let todosLosRegistros = [];
 
 async function cargarRegistros() {
@@ -1751,7 +1751,7 @@ async function cargarRegistros() {
   el.innerHTML = '<div class="empty-state"><div class="spinner" style="width:28px;height:28px;border:3px solid var(--gris-2);border-top-color:var(--mar);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 8px"></div>Cargando...</div>';
 
   try {
-    // Leer pestaña CheckIns desde Google Sheets
+    // Leer pesta\u00f1a CheckIns desde Google Sheets
     const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
     const sheetId = cfg.sheetsMaestroId || '';
     if (!sheetId || !accessToken) {
@@ -1766,7 +1766,7 @@ async function cargarRegistros() {
     if (!resp.ok) throw new Error('Error ' + resp.status);
     const data = await resp.json();
     const rows = data.values || [];
-    if (rows.length < 2) { el.innerHTML = '<div class="empty-state"><span class="emoji">&#128203;</span>No hay registros todavía</div>'; return; }
+    if (rows.length < 2) { el.innerHTML = '<div class="empty-state"><span class="emoji">&#128203;</span>No hay registros todav\u00eda</div>'; return; }
     const headers = rows[0].map(function(h){ return String(h||'').toLowerCase().trim(); });
     const registros = {};
     for (let i = 1; i < rows.length; i++) {
@@ -1776,7 +1776,7 @@ async function cargarRegistros() {
       if (!registros[rid]) {
         registros[rid] = {
           id: rid, reservaId: rid,
-          huesped: obj['huésped'] || obj['huesped'] || '',
+          huesped: obj['hu\u00e9sped'] || obj['huesped'] || '',
           apartamento: obj['apartamento'] || '',
           entrada: obj['entrada'] || '',
           salida: obj['salida'] || '',
@@ -1788,12 +1788,12 @@ async function cargarRegistros() {
       registros[rid].viajeros.push({
         parentesco: obj['viajero'] || '', nombre: obj['nombre'] || '',
         apellidos: obj['apellidos'] || '', tipoDoc: obj['tipo doc'] || '',
-        numDoc: obj['nº doc'] || obj['num doc'] || '', soporte: obj['nº soporte'] || '',
-        nacimiento: obj['nacimiento'] || '', expedicion: obj['expedición'] || obj['expedicion'] || '',
+        numDoc: obj['n\u00ba doc'] || obj['num doc'] || '', soporte: obj['n\u00ba soporte'] || '',
+        nacimiento: obj['nacimiento'] || '', expedicion: obj['expedici\u00f3n'] || obj['expedicion'] || '',
         sexo: obj['sexo'] || '', nacionalidad: obj['nacionalidad'] || '',
-        direccion: obj['dirección'] || obj['direccion'] || '',
-        pais: obj['país'] || obj['pais'] || '',
-        telefono: obj['teléfono'] || obj['telefono'] || '',
+        direccion: obj['direcci\u00f3n'] || obj['direccion'] || '',
+        pais: obj['pa\u00eds'] || obj['pais'] || '',
+        telefono: obj['tel\u00e9fono'] || obj['telefono'] || '',
         email: obj['email'] || '', firma: obj['firma'] || ''
       });
     }
@@ -1822,7 +1822,7 @@ function filtrarRegistros() {
 function renderRegistros(lista) {
   const el = document.getElementById('registros-list');
   if (!lista || !lista.length) {
-    el.innerHTML = '<div class="empty-state"><span class="emoji">&#128203;</span>No hay registros todavía</div>';
+    el.innerHTML = '<div class="empty-state"><span class="emoji">&#128203;</span>No hay registros todav\u00eda</div>';
     return;
   }
   // Ordenar por fecha desc
@@ -1838,9 +1838,9 @@ function renderRegistros(lista) {
     }).join('');
     return '<div class="registro-card ' + estadoCls + '">'
       + '<div class="registro-header">'
-      + '<div><div class="registro-nombre">&#128100; ' + (r.huesped||r.reservaId||'—') + '</div>'
-      + '<div class="registro-meta">' + (r.apartamento||'—') + ' · ' + (r.entrada||'') + ' → ' + (r.salida||'') + '</div>'
-      + '<div class="registro-meta" style="margin-top:2px">Registrado el ' + (r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES') : '—') + '</div></div>'
+      + '<div><div class="registro-nombre">&#128100; ' + (r.huesped||r.reservaId||'\u2014') + '</div>'
+      + '<div class="registro-meta">' + (r.apartamento||'\u2014') + ' \u00b7 ' + (r.entrada||'') + ' \u2192 ' + (r.salida||'') + '</div>'
+      + '<div class="registro-meta" style="margin-top:2px">Registrado el ' + (r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES') : '\u2014') + '</div></div>'
       + '<span class="registro-badge ' + estadoCls + '">' + estadoTxt + '</span>'
       + '</div>'
       + '<div class="registro-viajeros">' + chips + '</div>'
@@ -1851,9 +1851,9 @@ function renderRegistros(lista) {
   }).join('');
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // GENERAR PDF
-// ═══════════════════════════════════════════════
+// ===============================================
 function generarPDF(idx) {
   var registro = todosLosRegistros[idx];
   if (!registro) { showToast('Registro no encontrado', 'error'); return; }
@@ -1877,13 +1877,13 @@ function generarPDF(idx) {
   html += '<h2>DATOS DEL ALOJAMIENTO</h2>';
   html += '<div class="grid">';
   html += field('Establecimiento', 'Apartamentos Llorca Benidorm');
-  html += field('Apartamento', registro.apartamento || '—');
-  html += field('Fecha de entrada', registro.entrada || '—');
-  html += field('Fecha de salida', registro.salida || '—');
-  html += field('Hora de llegada', registro.horaLlegada || '—');
-  html += field('Titular de la reserva', registro.huesped || '—');
-  html += field('Código de reserva', registro.reservaId || '—');
-  html += field('Fecha de registro', registro.fecha ? new Date(registro.fecha).toLocaleDateString('es-ES') : '—');
+  html += field('Apartamento', registro.apartamento || '\u2014');
+  html += field('Fecha de entrada', registro.entrada || '\u2014');
+  html += field('Fecha de salida', registro.salida || '\u2014');
+  html += field('Hora de llegada', registro.horaLlegada || '\u2014');
+  html += field('Titular de la reserva', registro.huesped || '\u2014');
+  html += field('C\u00f3digo de reserva', registro.reservaId || '\u2014');
+  html += field('Fecha de registro', registro.fecha ? new Date(registro.fecha).toLocaleDateString('es-ES') : '\u2014');
   html += '</div>';
 
   (registro.viajeros || []).forEach(function(v, i) {
@@ -1893,16 +1893,16 @@ function generarPDF(idx) {
     html += field('Nombre', v.nombre);
     html += field('Apellidos', v.apellidos);
     html += field('Tipo de documento', v.tipoDoc);
-    html += field('Nº de documento', v.numDoc);
-    html += field('Nº de soporte', v.soporte || '—');
+    html += field('N\u00ba de documento', v.numDoc);
+    html += field('N\u00ba de soporte', v.soporte || '\u2014');
     html += field('Fecha de nacimiento', v.nacimiento);
-    html += field('Fecha de expedición', v.expedicion || '—');
+    html += field('Fecha de expedici\u00f3n', v.expedicion || '\u2014');
     html += field('Sexo', v.sexo);
     html += field('Nacionalidad', v.nacionalidad);
-    html += field('País de residencia', v.pais);
-    html += field('Dirección', v.direccion);
-    html += field('Teléfono', v.telefono || '—');
-    html += field('Email', v.email || '—');
+    html += field('Pa\u00eds de residencia', v.pais);
+    html += field('Direcci\u00f3n', v.direccion);
+    html += field('Tel\u00e9fono', v.telefono || '\u2014');
+    html += field('Email', v.email || '\u2014');
     html += '</div>';
     html += '<div class="label" style="margin-top:8px">FIRMA DEL VIAJERO</div>';
     html += '<div class="firma-box">';
@@ -1918,7 +1918,7 @@ function generarPDF(idx) {
   html += '<div class="footer">';
   html += 'Titular responsable: Pepe Llorca &bull; ';
   html += 'Datos tratados conforme al RD 933/2021 y RGPD &bull; ';
-  html += 'Conservación: 3 años &bull; ';
+  html += 'Conservaci\u00f3n: 3 a\u00f1os &bull; ';
   html += 'Comunicado a SES.HOSPEDAJES en plazo legal &bull; ';
   html += 'Generado el ' + new Date().toLocaleString('es-ES');
   html += '</div></body></html>';
@@ -1930,13 +1930,13 @@ function generarPDF(idx) {
 }
 
 function field(label, value) {
-  return '<div class="field"><div class="label">' + label + '</div><div class="value">' + (value || '—') + '</div></div>';
+  return '<div class="field"><div class="label">' + label + '</div><div class="value">' + (value || '\u2014') + '</div></div>';
 }
 
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // GESTION FUSIONADA
-// ═══════════════════════════════════════════════
+// ===============================================
 function getMsgEnviado(rid, tipo) {
   try { return (JSON.parse(localStorage.getItem('bnd_msgs')||'{}'))[rid+'_'+tipo]||null; } catch(e){return null;}
 }
@@ -1972,51 +1972,33 @@ function buildMsg(r, tipo) {
   var pass=m['contrasena']||apto.wifiPass||'';
   var url=buildCheckinUrl(r);
   var ci=getCIReserva(r.id);
-  if (tipo==='bienvenida') return 'Buenos días '+nombre+',
-
-Nos alegramos de que hayáis elegido nuestro apartamento para vuestras vacaciones en Benidorm!
-
-Os confirmamos vuestra reserva:
-📍 '+apto.alias+(apto.direccion?' · '+apto.direccion:'')+'
-📅 Entrada: '+fmtDate(r.entrada)+' → '+fmtDate(r.salida)+' · '+r.noches+' noches
-⏰ Check-in a partir de las '+ci_h+'
-⏰ Check-out antes de las '+co_h+'
-
-Para agilizar el check-in, podéis rellenar vuestros datos con antelación:
-'+url+'
-
-Cumplimos con la normativa de protección de datos (RD 933/2021 y RGPD).
-
-Cualquier duda estamos a vuestra disposición.
-¡Hasta pronto!
-Pepe';
-  if (tipo==='confirmacion') return 'Hola '+nombre+',
-
-¡Mañana es el gran día!
-
-👉 '+persona+' os estará esperando en la puerta. ¿Sobre qué hora llegaréis?
-
-'+(maps?'📍 '+maps+'
-
-':'')+'📶 WiFi: '+wifi+'
-🔑 Contraseña: '+pass+'
-
-'+(ci?'✅ Hemos recibido vuestro registro. ¡Todo en orden!':'📋 Aún no hemos recibido el registro. Podéis completarlo aquí:
-'+url)+'
-
-¡Hasta mañana!
-Pepe';
-  if (tipo==='despedida') return 'Hola '+nombre+',
-
-Ha sido un placer teneros con nosotros!
-
-Recordad que mañana el check-out es antes de las '+co_h+'.
-Por favor, dejad las llaves dentro del apartamento en el mueble de la entrada.
-
-Si habéis disfrutado de la estancia, nos ayudaría mucho que nos dejaráis una reseña en Airbnb
-
-¡Hasta pronto y buen viaje de vuelta!
-Pepe';
+  var nl = '\n';
+  if (tipo==='bienvenida') return 'Buenos d\u00EDas '+nombre+','+nl+nl
+    +'Nos alegramos de que hay\u00E1is elegido nuestro apartamento para vuestras vacaciones en Benidorm!'+nl+nl
+    +'Os confirmamos vuestra reserva:'+nl
+    +'\uD83D\uDCCD '+apto.alias+(apto.direccion?' \u00B7 '+apto.direccion:'')+nl
+    +'\uD83D\uDCC5 Entrada: '+fmtDate(r.entrada)+' \u2192 '+fmtDate(r.salida)+' \u00B7 '+r.noches+' noches'+nl
+    +'\u23F0 Check-in a partir de las '+ci_h+nl
+    +'\u23F0 Check-out antes de las '+co_h+nl+nl
+    +'Para agilizar el check-in, pod\u00E9is rellenar vuestros datos con antelaci\u00F3n:'+nl
+    +url+nl+nl
+    +'Cumplimos con la normativa de protecci\u00F3n de datos (RD 933/2021 y RGPD).'+nl+nl
+    +'Cualquier duda estamos a vuestra disposici\u00F3n.'+nl
+    +'\u00A1Hasta pronto!'+nl+'Pepe';
+  if (tipo==='confirmacion') return 'Hola '+nombre+','+nl+nl
+    +'\u00A1Ma\u00F1ana es el gran d\u00EDa!'+nl+nl
+    +'\uD83D\uDC49 '+persona+' os estar\u00E1 esperando en la puerta. \u00BFSobre qu\u00E9 hora llegar\u00E9is?'+nl+nl
+    +(maps?'\uD83D\uDCCD '+maps+nl+nl:'')
+    +'\uD83D\uDCF6 WiFi: '+wifi+nl
+    +'\uD83D\uDD11 Contrase\u00F1a: '+pass+nl+nl
+    +(ci?'\u2705 Hemos recibido vuestro registro. \u00A1Todo en orden!':'\uD83D\uDCCB A\u00FAn no hemos recibido el registro. Pod\u00E9is completarlo aqu\u00ED:'+nl+url)
+    +nl+nl+'\u00A1Hasta ma\u00F1ana!'+nl+'Pepe';
+  if (tipo==='despedida') return 'Hola '+nombre+','+nl+nl
+    +'Ha sido un placer teneros con nosotros!'+nl+nl
+    +'Recordad que ma\u00F1ana el check-out es antes de las '+co_h+'.'+nl
+    +'Por favor, dejad las llaves dentro del apartamento en el mueble de la entrada.'+nl+nl
+    +'Si hab\u00E9is disfrutado de la estancia, nos ayudar\u00EDa mucho que nos dejar\u00E1is una rese\u00F1a en Airbnb'+nl+nl
+    +'\u00A1Hasta pronto y buen viaje de vuelta!'+nl+'Pepe';
   return '';
 }
 function renderGestion() {
@@ -2042,7 +2024,7 @@ function renderGestion() {
     var esCI=dateKey(r.entrada)===dateKey(hoy);
     var esPas=r.salida<hoy;
     var sCls=esCI?'checkin':esOc?'ocupado':esPas?'pasada':'libre';
-    var sTxt=esCI?'Check-in hoy':esOc?'Ocupado':esPas?'Pasada':dias+' días';
+    var sTxt=esCI?'Check-in hoy':esOc?'Ocupado':esPas?'Pasada':dias+' d\u00edas';
     var m1=getMsgEnviado(r.id,'bienvenida');
     var m2=getMsgEnviado(r.id,'confirmacion');
     var m3=getMsgEnviado(r.id,'despedida');
@@ -2051,13 +2033,13 @@ function renderGestion() {
     return '<div class="gest-card '+sCls+'">'
       +'<div class="gest-header" onclick="toggleGest('+i+')">'
       +'<div><div class="gest-nombre">&#128100; '+r.huesped+' <span style="font-size:.72rem;font-weight:400;color:var(--gris-4)">'+sTxt+'</span></div>'
-      +'<div class="gest-meta">'+fmtDate(r.entrada)+' → '+fmtDate(r.salida)+' · '+r.noches+' noches · '+r.importe+'€</div>'
+      +'<div class="gest-meta">'+fmtDate(r.entrada)+' \u2192 '+fmtDate(r.salida)+' \u00b7 '+r.noches+' noches \u00b7 '+r.importe+'\u20ac</div>'
       +'<div class="gest-meta '+cCls+'" style="margin-top:2px;font-weight:700">'+apto.alias+'</div></div>'
       +'<div style="display:flex;gap:3px;align-items:center;font-size:.85rem">'
-      +'<span title="Bienvenida">'+(m1?'✅':'⬜')+'</span>'
-      +'<span title="Confirmación">'+(m2?'✅':'⬜')+'</span>'
-      +'<span title="Despedida">'+(m3?'✅':'⬜')+'</span>'
-      +'<span title="Docs">'+(ci?'📋':'⬜')+'</span>'
+      +'<span title="Bienvenida">'+(m1?'\u2705':'\u2b1c')+'</span>'
+      +'<span title="Confirmaci\u00f3n">'+(m2?'\u2705':'\u2b1c')+'</span>'
+      +'<span title="Despedida">'+(m3?'\u2705':'\u2b1c')+'</span>'
+      +'<span title="Docs">'+(ci?'\ud83d\udccb':'\u2b1c')+'</span>'
       +' <span id="gt-'+i+'" style="color:var(--gris-4);font-size:.75rem">&#9660;</span>'
       +'</div></div>'
       +'<div class="gest-body" id="gb-'+i+'">'
@@ -2066,18 +2048,18 @@ function renderGestion() {
       +['bienvenida','confirmacion','despedida'].map(function(tipo,j){
         var env=['m1','m2','m3'][j];
         var enviado=[m1,m2,m3][j];
-        var labels=['Bienvenida (5-7d antes)','Confirmación (1d antes)','Despedida (1d antes)'];
+        var labels=['Bienvenida (5-7d antes)','Confirmaci\u00f3n (1d antes)','Despedida (1d antes)'];
         return '<div class="gest-row">'
-          +'<div class="gest-label '+(enviado?'done':'pend')+'">'+(enviado?'✅':'⬜')+' '+labels[j]
+          +'<div class="gest-label '+(enviado?'done':'pend')+'">'+(enviado?'\u2705':'\u2b1c')+' '+labels[j]
           +(enviado?' <span style="font-size:.7rem;color:var(--gris-4)">'+enviado+'</span>':'')+'</div>'
-          +'<div class="gest-acts"><button class="btn-gc copy'+(enviado?' done':'')+'" onclick="copyMsgG(event,'+i+',''+tipo+'')">'
-          +(enviado?'✓ Enviado':'&#128203; Copiar')+'</button></div></div>';
+          +'<div class="gest-acts"><button class="btn-gc copy'+(enviado?' done':'')+'" onclick="copyMsgG(event,'+i+',\"'+tipo+'\")">'
+          +(enviado?'\u2713 Enviado':'&#128203; Copiar')+'</button></div></div>';
       }).join('')
       +'</div>'
       // Documentacion
-      +'<div class="gest-section"><div class="gest-stitle">&#128203; Documentación</div>'
+      +'<div class="gest-section"><div class="gest-stitle">&#128203; Documentaci\u00f3n</div>'
       +'<div class="gest-row"><div class="gest-label '+(ci?'done':'pend')+'">'
-      +(ci?'✅ '+nV+' viajero'+(nV!==1?'s':'')+' registrado'+(nV!==1?'s':''):'⬜ Sin documentación')
+      +(ci?'\u2705 '+nV+' viajero'+(nV!==1?'s':'')+' registrado'+(nV!==1?'s':''):'\u2b1c Sin documentaci\u00f3n')
       +'</div><div class="gest-acts">'
       +(ci?'<button class="btn-gc pdf" onclick="pdfG('+i+')">&#128196; PDF</button>':'')
       +'<button class="btn-gc link" onclick="linkG('+i+',this)">&#128279; Enlace</button>'
@@ -2099,23 +2081,23 @@ function copyMsgG(e,i,tipo){
   var r=(window._gLista||[])[i]; if(!r) return;
   var txt=buildMsg(r,tipo);
   var btn=e.target;
-  var done=function(){setMsgEnviado(r.id,tipo);btn.textContent='✓ Enviado';btn.classList.add('done');showToast('✓ Mensaje copiado','success');renderGestion();};
+  var done=function(){setMsgEnviado(r.id,tipo);btn.textContent='\u2713 Enviado';btn.classList.add('done');showToast('\u2713 Mensaje copiado','success');renderGestion();};
   navigator.clipboard.writeText(txt).then(done).catch(function(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();done();});
 }
 function linkG(i,btn){
   var r=(window._gLista||[])[i]; if(!r) return;
   var url=buildCheckinUrl(r);
-  navigator.clipboard.writeText(url).then(function(){btn.textContent='✓ Copiado';setTimeout(function(){btn.innerHTML='&#128279; Enlace';},2000);}).catch(function(){var ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();btn.textContent='✓ Copiado';setTimeout(function(){btn.innerHTML='&#128279; Enlace';},2000);});
+  navigator.clipboard.writeText(url).then(function(){btn.textContent='\u2713 Copiado';setTimeout(function(){btn.innerHTML='&#128279; Enlace';},2000);}).catch(function(){var ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();btn.textContent='\u2713 Copiado';setTimeout(function(){btn.innerHTML='&#128279; Enlace';},2000);});
 }
 function pdfG(i){
   var r=(window._gLista||[])[i]; if(!r) return;
   var ci=getCIReserva(r.id);
-  if(!ci){showToast('Sin documentación para esta reserva','error');return;}
+  if(!ci){showToast('Sin documentaci\u00f3n para esta reserva','error');return;}
   generarPDF(ci);
 }
-// ═══════════════════════════════════════════════
+// ===============================================
 // RENDIMIENTO
-// ═══════════════════════════════════════════════
+// ===============================================
 function getAniosDisponibles() {
   const anios = new Set();
   const anioActual = new Date().getFullYear();
@@ -2130,7 +2112,7 @@ function getAniosDisponibles() {
 function calcMetricasMes(anio, mes, aptoIdx) {
   // mes: 0-11
   const inicio = new Date(anio, mes, 1);
-  const fin    = new Date(anio, mes+1, 0); // último día del mes
+  const fin    = new Date(anio, mes+1, 0); // \u00faltimo d\u00eda del mes
   const diasMes = fin.getDate();
   let noches = 0, ingresos = 0, reservasN = 0;
   reservas.filter(r => r.aptoIdx === aptoIdx).forEach(r => {
@@ -2146,7 +2128,7 @@ function renderRendimiento() {
   const sel = document.getElementById('rend-year');
   const anios = getAniosDisponibles();
 
-  // Poblar selector si está vacío
+  // Poblar selector si est\u00e1 vac\u00edo
   if (sel.options.length === 0 || sel.options.length !== anios.length) {
     sel.innerHTML = anios.map(a => `<option value="${a}">${a}</option>`).join('');
   }
@@ -2155,7 +2137,7 @@ function renderRendimiento() {
   const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   const mesesFull = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-  // Calcular métricas anuales por apartamento
+  // Calcular m\u00e9tricas anuales por apartamento
   let totales = [
     { noches:0, ingresos:0, reservas:0, diasDisp: 0 },
     { noches:0, ingresos:0, reservas:0, diasDisp: 0 }
@@ -2214,7 +2196,7 @@ function renderRendimiento() {
   // Stats por apartamento
   [0,1].forEach(idx => {
     const t = totales[idx];
-    const alias = idx === 0 ? 'Tomas Ortuño' : 'Buen Retiro';
+    const alias = idx === 0 ? 'Tomas Ortu\u00f1o' : 'Buen Retiro';
     document.getElementById('rend-stats-'+idx).innerHTML = `
       <div style="display:grid;gap:8px;font-size:.85rem">
         <div style="display:flex;justify-content:space-between"><span style="color:var(--gris-4)">Reservas</span><strong>${t.reservas}</strong></div>
@@ -2226,9 +2208,9 @@ function renderRendimiento() {
   });
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // EXPORTAR EXCEL
-// ═══════════════════════════════════════════════
+// ===============================================
 function exportarExcel() {
   if (!reservas.length) { showToast('No hay reservas cargadas', 'error'); return; }
   const anio = parseInt(document.getElementById('rend-year')?.value) || new Date().getFullYear();
@@ -2237,11 +2219,11 @@ function exportarExcel() {
 
   // Hojas por apartamento
   [0,1].forEach(idx => {
-    const alias = idx === 0 ? 'Tomas Ortuño' : 'Buen Retiro';
+    const alias = idx === 0 ? 'Tomas Ortu\u00f1o' : 'Buen Retiro';
     const rs = reservas
       .filter(r => r.aptoIdx === idx)
       .sort((a,b) => a.entrada - b.entrada);
-    const rows = [['Huésped','Entrada','Salida','Noches','Importe (EUR)','Código']];
+    const rows = [['Hu\u00e9sped','Entrada','Salida','Noches','Importe (EUR)','C\u00f3digo']];
     rs.forEach(r => rows.push([
       r.huesped, fmtDate(r.entrada), fmtDate(r.salida),
       r.noches, r.importe, r.id
@@ -2257,13 +2239,13 @@ function exportarExcel() {
   });
 
   // Hoja resumen anual
-  const resRows = [['Apartamento','Mes','Reservas','Noches','Ocupación %','Ingresos (EUR)','ADR (EUR)']];
+  const resRows = [['Apartamento','Mes','Reservas','Noches','Ocupaci\u00f3n %','Ingresos (EUR)','ADR (EUR)']];
   for (let m = 0; m < 12; m++) {
     [0,1].forEach(idx => {
       const d = calcMetricasMes(anio, m, idx);
       if (d.noches > 0 || new Date(anio, m+1, 1) <= new Date()) {
         resRows.push([
-          idx===0 ? 'Tomas Ortuño' : 'Buen Retiro',
+          idx===0 ? 'Tomas Ortu\u00f1o' : 'Buen Retiro',
           meses[m], d.reservas, d.noches, d.ocupacion, d.ingresos, d.adr
         ]);
       }
@@ -2275,7 +2257,7 @@ function exportarExcel() {
     let tn=0, ti=0, tr=0;
     for(let m=0;m<12;m++){const d=calcMetricasMes(anio,m,idx);tn+=d.noches;ti+=d.ingresos;tr+=d.reservas;}
     resRows.push([
-      idx===0?'Tomas Ortuño':'Buen Retiro',
+      idx===0?'Tomas Ortu\u00f1o':'Buen Retiro',
       'TOTAL '+anio, tr, tn, tn?Math.round(100*tn/365):0, ti, tn?Math.round(ti/tn):0
     ]);
   });
@@ -2295,12 +2277,12 @@ function exportarExcel() {
   XLSX.utils.book_append_sheet(wb, wsComp, 'Comparativa');
 
   XLSX.writeFile(wb, 'Apartamentos_Benidorm_' + anio + '.xlsx');
-  showToast('✓ Excel descargado', 'success');
+  showToast('\u2713 Excel descargado', 'success');
 }
 
-// ═══════════════════════════════════════════════
+// ===============================================
 // INIT
-// ═══════════════════════════════════════════════
+// ===============================================
 window.addEventListener('load', function() {
   function tryInit() {
     if (window.google && window.google.accounts && window.google.accounts.oauth2) {
