@@ -712,34 +712,46 @@ async function ocrDoc(event) {
   if (status) status.style.display = 'flex';
   try {
     // Comprimir imagen
-    const base64 = await new Promise(function(res, rej) {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = function() {
-        URL.revokeObjectURL(url);
-        const MAX = 1024;
-        let w = img.width, h = img.height;
-        if (w > MAX || h > MAX) { if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;} }
-        const c = document.createElement('canvas');
-        c.width = w; c.height = h;
-        c.getContext('2d').drawImage(img, 0, 0, w, h);
-        res(c.toDataURL('image/jpeg', 0.7).split(',')[1]);
-      };
-      img.onerror = rej;
-      img.src = url;
-    });
+    let base64;
+    try {
+      base64 = await new Promise(function(res, rej) {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = function() {
+          URL.revokeObjectURL(url);
+          const MAX = 1024;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) { if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;} }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          res(c.toDataURL('image/jpeg', 0.7).split(',')[1]);
+        };
+        img.onerror = rej;
+        img.src = url;
+      });
+    } catch(e) {
+      // Fallback: imagen original
+      base64 = await new Promise(function(res, rej) {
+        const r = new FileReader();
+        r.onload = function(e) { res(e.target.result.split(',')[1]); };
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    const mimeType = file.type || 'image/jpeg';
 
     // Enviar directamente a OpenAI
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      mode: 'cors',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_KEY },
       body: JSON.stringify({
         model: 'gpt-4o',
         max_tokens: 400,
         messages: [{ role: 'user', content: [
           { type: 'text', text: 'Analiza este documento de identidad (DNI, pasaporte o NIE) y extrae los datos. Devuelve SOLO JSON sin texto adicional: {"nombre":"","apellidos":"","tipo_doc":"DNI|Pasaporte|NIE","num_doc":"","num_soporte":"","fecha_nacimiento":"YYYY-MM-DD","fecha_expedicion":"YYYY-MM-DD","sexo":"M|F","nacionalidad":"","pais":""}' },
-          { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + base64, detail: 'high' } }
+          { type: 'image_url', image_url: { url: 'data:' + mimeType + ';base64,' + base64, detail: 'high' } }
         ]}]
       })
     });

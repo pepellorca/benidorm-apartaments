@@ -1337,27 +1337,42 @@ async function procesarFotoDocumento(event, n) {
   if (status)  status.style.display = 'flex';
 
   try {
-    // Comprimir imagen antes de enviar (m\u00e1x 800px, calidad 70%)
-    const base64 = await comprimirImagen(file);
+    // Usar fileToBase64 sin comprimir (como en la versión que funcionaba)
+    let base64;
+    try {
+      base64 = await comprimirImagen(file);
+    } catch(e) {
+      base64 = await fileToBase64(file);
+    }
     const key = getOpenAIKey();
-    if (!key || key === 'PENDIENTE_NUEVA_CLAVE') { showToast('Clave OpenAI no configurada', 'error'); return; }
+    if (!key) { showToast('Clave OpenAI no configurada', 'error'); return; }
+
+    const prompt = 'Analiza esta imagen de un documento de identidad (DNI espa\u00F1ol, pasaporte o NIE) y extrae los siguientes datos en formato JSON. Si un campo no es visible o no existe, pon null. Devuelve SOLO el JSON, sin texto adicional:\n{"nombre":"nombre de pila","apellidos":"apellidos completos","tipo_doc":"DNI | Pasaporte | NIE","num_doc":"n\u00FAmero del documento","num_soporte":"n\u00FAmero de soporte (solo DNI)","fecha_nacimiento":"YYYY-MM-DD","fecha_expedicion":"YYYY-MM-DD","sexo":"M | F","nacionalidad":"nacionalidad en espa\u00F1ol","pais":"pa\u00EDs de residencia"}';
 
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      mode: 'cors',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
       body: JSON.stringify({
         model: 'gpt-4o',
         max_tokens: 400,
-        messages: [{ role: 'user', content: [
-          { type: 'text', text: 'Analiza este documento de identidad (DNI, pasaporte o NIE) y extrae los datos. Devuelve SOLO JSON sin texto adicional: {"nombre":"","apellidos":"","tipo_doc":"DNI|Pasaporte|NIE","num_doc":"","num_soporte":"","fecha_nacimiento":"YYYY-MM-DD","fecha_expedicion":"YYYY-MM-DD","sexo":"M|F","nacionalidad":"","pais":""}' },
-          { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + base64, detail: 'high' } }
-        ]}]
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: 'data:' + file.type + ';base64,' + base64, detail: 'high' } }
+          ]
+        }]
       })
     });
-    if (!resp.ok) { const err = await resp.json(); throw new Error(err.error?.message || 'Error ' + resp.status); }
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || 'Error OpenAI ' + resp.status);
+    }
+
     const data = await resp.json();
-    const campos = JSON.parse(data.choices[0].message.content.trim().replace(/```json|```/g,'').trim());
+    const clean = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim();
+    const campos = JSON.parse(clean);
 
     rellenarViajero(n, campos);
 
