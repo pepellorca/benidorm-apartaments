@@ -279,6 +279,32 @@
   .res-estado-ocup  { background: #FEE2E2; color: #991B1B; }
   .res-estado-pas   { background: var(--gris-2); color: var(--gris-4); }
 
+  /* GESTION */
+  .gest-card { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden; border-left: 5px solid var(--gris-3); }
+  .gest-card.ocupado { border-color: var(--coral); }
+  .gest-card.checkin { border-color: var(--mar); }
+  .gest-card.libre   { border-color: var(--verde); }
+  .gest-card.pasada  { border-color: var(--gris-3); opacity: .8; }
+  .gest-header { padding: 14px 16px 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; cursor: pointer; }
+  .gest-nombre { font-weight: 700; font-size: .92rem; color: var(--gris-5); }
+  .gest-meta   { font-size: .78rem; color: var(--gris-4); margin-top: 2px; }
+  .gest-body   { padding: 0 16px 14px; border-top: 1px solid var(--gris-2); display: none; }
+  .gest-section { margin-top: 10px; }
+  .gest-stitle { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gris-4); margin-bottom: 6px; }
+  .gest-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--gris-2); flex-wrap: wrap; }
+  .gest-row:last-child { border-bottom: none; }
+  .gest-label { font-size: .82rem; display: flex; align-items: center; gap: 5px; }
+  .gest-label.done { color: var(--verde); font-weight: 600; }
+  .gest-label.pend { color: var(--gris-4); }
+  .gest-acts { display: flex; gap: 5px; }
+  .btn-gc { border: none; border-radius: 5px; padding: 4px 10px; font-size: .75rem; font-weight: 600; cursor: pointer; }
+  .btn-gc.copy { background: var(--mar); color: #fff; }
+  .btn-gc.copy.done { background: var(--verde); }
+  .btn-gc.pdf  { background: var(--coral); color: #fff; }
+  .btn-gc.link { background: var(--gris-2); color: var(--gris-5); }
+  .gest-chips  { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .gest-chip   { background: var(--gris-1); border: 1px solid var(--gris-2); border-radius: 20px; padding: 2px 8px; font-size: .72rem; }
+  .gest-indicators { display: flex; gap: 4px; align-items: center; font-size: .9rem; }
   /* ESTADO APARTAMENTOS */
   .estado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   @media(max-width:480px){ .estado-grid { grid-template-columns: 1fr; } }
@@ -416,8 +442,7 @@
     <button class="active" onclick="showView('hoy')" id="tab-hoy">&#128203; Hoy</button>
     <button onclick="showView('calendario')" id="tab-calendario">&#128197; Calendario</button>
     <button onclick="showView('checkin')" id="tab-checkin">&#128273; Check&#8209;in</button>
-    <button onclick="showView('registros')" id="tab-registros">&#128203; Registros</button>
-    <button onclick="showView('reservas')" id="tab-reservas">&#128222; Reservas</button>
+    <button onclick="showView('gestion')" id="tab-gestion">&#128222; Reservas</button>
     <button onclick="showView('rendimiento')" id="tab-rendimiento">&#128200; Rendimiento</button>
     <button onclick="showView('drive')" id="tab-drive">&#128194; Drive</button>
   </nav>
@@ -438,26 +463,6 @@
       </div>
       <div style="height:16px"></div>
       <div id="alertas-block"></div>
-    </div>
-
-    <!-- RESERVAS -->
-    <div class="view" id="view-reservas">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <h2 style="font-family:var(--font-disp);font-size:1.2rem;color:var(--mar-deep)">&#128222; Reservas</h2>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <select id="res-filtro-apto" onchange="renderReservasList()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
-            <option value="">Todos los apartamentos</option>
-            <option value="0">Tomas Ortu&#241;o</option>
-            <option value="1">Buen Retiro</option>
-          </select>
-          <select id="res-filtro-periodo" onchange="renderReservasList()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
-            <option value="futuras">Pr&#243;ximas</option>
-            <option value="todas">Todas</option>
-            <option value="pasadas">Pasadas</option>
-          </select>
-        </div>
-      </div>
-      <div id="reservas-list"></div>
     </div>
 
     <!-- CALENDARIO -->
@@ -550,25 +555,24 @@
       </div>
     </div>
 
-    <!-- REGISTROS -->
-    <div class="view" id="view-registros">
+    <!-- GESTION fusionada -->
+    <div class="view" id="view-gestion">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <h2 style="font-family:var(--font-disp);font-size:1.2rem;color:var(--mar-deep)">&#128203; Registros de viajeros</h2>
-        <button class="btn btn-sm" onclick="cargarRegistros()">&#8635; Actualizar</button>
+        <h2 style="font-family:var(--font-disp);font-size:1.2rem;color:var(--mar-deep)">&#128222; Reservas</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="gest-filtro-apto" onchange="renderGestion()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
+            <option value="">Todos</option>
+            <option value="0">Tomas Ortu&ntilde;o</option>
+            <option value="1">Buen Retiro</option>
+          </select>
+          <select id="gest-filtro-periodo" onchange="renderGestion()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
+            <option value="futuras">Pr&oacute;ximas</option>
+            <option value="todas">Todas</option>
+            <option value="pasadas">Pasadas</option>
+          </select>
+        </div>
       </div>
-      <div id="registros-filtros" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-        <select id="filtro-apto" onchange="filtrarRegistros()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
-          <option value="">Todos los apartamentos</option>
-          <option value="Tomas Ortuño">Tomas Ortuño</option>
-          <option value="Buen Retiro">Buen Retiro</option>
-        </select>
-        <select id="filtro-estado" onchange="filtrarRegistros()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
-          <option value="">Todos los estados</option>
-          <option value="completo">Completo</option>
-          <option value="pendiente">Pendiente firma</option>
-        </select>
-      </div>
-      <div id="registros-list"><div class="empty-state"><span class="emoji">&#128203;</span>Cargando registros...</div></div>
+      <div id="gestion-list"></div>
     </div>
 
     <!-- DRIVE -->
@@ -858,9 +862,9 @@ function showView(id) {
   document.getElementById('view-' + id).classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
-  if (id === 'reservas') renderReservasList();
+
   if (id === 'drive') actualizarEstadoApiKey();
-  if (id === 'registros') cargarRegistros();
+  if (id === 'gestion') renderGestion();
   if (id === 'rendimiento') renderRendimiento();
   if (id === 'checkin')    renderCheckinSelector();
   if (id === 'hoy')        renderHoy();
@@ -1929,6 +1933,186 @@ function field(label, value) {
   return '<div class="field"><div class="label">' + label + '</div><div class="value">' + (value || '—') + '</div></div>';
 }
 
+
+// ═══════════════════════════════════════════════
+// GESTION FUSIONADA
+// ═══════════════════════════════════════════════
+function getMsgEnviado(rid, tipo) {
+  try { return (JSON.parse(localStorage.getItem('bnd_msgs')||'{}'))[rid+'_'+tipo]||null; } catch(e){return null;}
+}
+function setMsgEnviado(rid, tipo) {
+  try {
+    var d=JSON.parse(localStorage.getItem('bnd_msgs')||'{}');
+    d[rid+'_'+tipo]=new Date().toLocaleDateString('es-ES');
+    localStorage.setItem('bnd_msgs',JSON.stringify(d));
+  } catch(e){}
+}
+function getCIReserva(rid) {
+  try { return (JSON.parse(localStorage.getItem('bnd_checkins')||'[]')).find(function(c){return c.reservaId===rid;})||null; } catch(e){return null;}
+}
+function buildCheckinUrl(r) {
+  var apto=APTOS[r.aptoIdx]||APTOS[0];
+  return 'https://pepellorca.github.io/benidorm-apartaments/checkin.html'
+    +'?r='+encodeURIComponent(r.id)
+    +'&h='+encodeURIComponent(r.huesped||'')
+    +'&a='+encodeURIComponent(apto.alias||'')
+    +'&e='+encodeURIComponent(fmtDate(r.entrada))
+    +'&s='+encodeURIComponent(fmtDate(r.salida))
+    +'&n='+encodeURIComponent(r.noches||'');
+}
+function buildMsg(r, tipo) {
+  var apto=APTOS[r.aptoIdx]||APTOS[0];
+  var nombre=r.huesped.split(' ')[0];
+  var m=getMaestroApto(r.aptoIdx);
+  var maps=m['google maps']||apto.maps||'';
+  var ci_h=m['check-in']||apto.checkin||'14:00';
+  var co_h=m['check-out']||apto.checkout||'11:00';
+  var persona=m['persona entrada']||'Mi padre, Domingo';
+  var wifi=m['wifi']||apto.wifi||'';
+  var pass=m['contrasena']||apto.wifiPass||'';
+  var url=buildCheckinUrl(r);
+  var ci=getCIReserva(r.id);
+  if (tipo==='bienvenida') return 'Buenos días '+nombre+',
+
+Nos alegramos de que hayáis elegido nuestro apartamento para vuestras vacaciones en Benidorm!
+
+Os confirmamos vuestra reserva:
+📍 '+apto.alias+(apto.direccion?' · '+apto.direccion:'')+'
+📅 Entrada: '+fmtDate(r.entrada)+' → '+fmtDate(r.salida)+' · '+r.noches+' noches
+⏰ Check-in a partir de las '+ci_h+'
+⏰ Check-out antes de las '+co_h+'
+
+Para agilizar el check-in, podéis rellenar vuestros datos con antelación:
+'+url+'
+
+Cumplimos con la normativa de protección de datos (RD 933/2021 y RGPD).
+
+Cualquier duda estamos a vuestra disposición.
+¡Hasta pronto!
+Pepe';
+  if (tipo==='confirmacion') return 'Hola '+nombre+',
+
+¡Mañana es el gran día!
+
+👉 '+persona+' os estará esperando en la puerta. ¿Sobre qué hora llegaréis?
+
+'+(maps?'📍 '+maps+'
+
+':'')+'📶 WiFi: '+wifi+'
+🔑 Contraseña: '+pass+'
+
+'+(ci?'✅ Hemos recibido vuestro registro. ¡Todo en orden!':'📋 Aún no hemos recibido el registro. Podéis completarlo aquí:
+'+url)+'
+
+¡Hasta mañana!
+Pepe';
+  if (tipo==='despedida') return 'Hola '+nombre+',
+
+Ha sido un placer teneros con nosotros!
+
+Recordad que mañana el check-out es antes de las '+co_h+'.
+Por favor, dejad las llaves dentro del apartamento en el mueble de la entrada.
+
+Si habéis disfrutado de la estancia, nos ayudaría mucho que nos dejaráis una reseña en Airbnb
+
+¡Hasta pronto y buen viaje de vuelta!
+Pepe';
+  return '';
+}
+function renderGestion() {
+  var el=document.getElementById('gestion-list'); if(!el) return;
+  var fApto=document.getElementById('gest-filtro-apto')?.value||'';
+  var fPer=document.getElementById('gest-filtro-periodo')?.value||'futuras';
+  var hoy=new Date(); hoy.setHours(0,0,0,0);
+  var lista=reservas.slice();
+  if(fApto!=='') lista=lista.filter(function(r){return r.aptoIdx===parseInt(fApto);});
+  lista=lista.filter(function(r){
+    if(fPer==='futuras') return r.salida>=hoy;
+    if(fPer==='pasadas') return r.salida<hoy;
+    return true;
+  });
+  lista.sort(function(a,b){return a.entrada-b.entrada;});
+  if(!lista.length){el.innerHTML='<div class="empty-state"><span class="emoji">&#128222;</span>No hay reservas</div>';return;}
+  window._gLista=lista;
+  el.innerHTML=lista.map(function(r,i){
+    var apto=APTOS[r.aptoIdx]||APTOS[0];
+    var cCls=r.aptoIdx===0?'apto-tag-0':'apto-tag-1';
+    var dias=Math.round((r.entrada-hoy)/86400000);
+    var esOc=r.entrada<=hoy&&r.salida>hoy;
+    var esCI=dateKey(r.entrada)===dateKey(hoy);
+    var esPas=r.salida<hoy;
+    var sCls=esCI?'checkin':esOc?'ocupado':esPas?'pasada':'libre';
+    var sTxt=esCI?'Check-in hoy':esOc?'Ocupado':esPas?'Pasada':dias+' días';
+    var m1=getMsgEnviado(r.id,'bienvenida');
+    var m2=getMsgEnviado(r.id,'confirmacion');
+    var m3=getMsgEnviado(r.id,'despedida');
+    var ci=getCIReserva(r.id);
+    var nV=ci&&ci.viajeros?ci.viajeros.length:ci?1:0;
+    return '<div class="gest-card '+sCls+'">'
+      +'<div class="gest-header" onclick="toggleGest('+i+')">'
+      +'<div><div class="gest-nombre">&#128100; '+r.huesped+' <span style="font-size:.72rem;font-weight:400;color:var(--gris-4)">'+sTxt+'</span></div>'
+      +'<div class="gest-meta">'+fmtDate(r.entrada)+' → '+fmtDate(r.salida)+' · '+r.noches+' noches · '+r.importe+'€</div>'
+      +'<div class="gest-meta '+cCls+'" style="margin-top:2px;font-weight:700">'+apto.alias+'</div></div>'
+      +'<div style="display:flex;gap:3px;align-items:center;font-size:.85rem">'
+      +'<span title="Bienvenida">'+(m1?'✅':'⬜')+'</span>'
+      +'<span title="Confirmación">'+(m2?'✅':'⬜')+'</span>'
+      +'<span title="Despedida">'+(m3?'✅':'⬜')+'</span>'
+      +'<span title="Docs">'+(ci?'📋':'⬜')+'</span>'
+      +' <span id="gt-'+i+'" style="color:var(--gris-4);font-size:.75rem">&#9660;</span>'
+      +'</div></div>'
+      +'<div class="gest-body" id="gb-'+i+'">'
+      // Mensajes
+      +'<div class="gest-section"><div class="gest-stitle">&#9993; Mensajes Airbnb</div>'
+      +['bienvenida','confirmacion','despedida'].map(function(tipo,j){
+        var env=['m1','m2','m3'][j];
+        var enviado=[m1,m2,m3][j];
+        var labels=['Bienvenida (5-7d antes)','Confirmación (1d antes)','Despedida (1d antes)'];
+        return '<div class="gest-row">'
+          +'<div class="gest-label '+(enviado?'done':'pend')+'">'+(enviado?'✅':'⬜')+' '+labels[j]
+          +(enviado?' <span style="font-size:.7rem;color:var(--gris-4)">'+enviado+'</span>':'')+'</div>'
+          +'<div class="gest-acts"><button class="btn-gc copy'+(enviado?' done':'')+'" onclick="copyMsgG(event,'+i+',''+tipo+'')">'
+          +(enviado?'✓ Enviado':'&#128203; Copiar')+'</button></div></div>';
+      }).join('')
+      +'</div>'
+      // Documentacion
+      +'<div class="gest-section"><div class="gest-stitle">&#128203; Documentación</div>'
+      +'<div class="gest-row"><div class="gest-label '+(ci?'done':'pend')+'">'
+      +(ci?'✅ '+nV+' viajero'+(nV!==1?'s':'')+' registrado'+(nV!==1?'s':''):'⬜ Sin documentación')
+      +'</div><div class="gest-acts">'
+      +(ci?'<button class="btn-gc pdf" onclick="pdfG('+i+')">&#128196; PDF</button>':'')
+      +'<button class="btn-gc link" onclick="linkG('+i+',this)">&#128279; Enlace</button>'
+      +'</div></div>'
+      +(ci&&ci.viajeros?'<div class="gest-chips">'+ci.viajeros.map(function(v){return '<span class="gest-chip">'+(v.nombre||'')+' '+(v.apellidos||'')+'</span>';}).join('')+'</div>':'')
+      +'</div></div></div>';
+  }).join('');
+}
+function toggleGest(i){
+  var b=document.getElementById('gb-'+i);
+  var t=document.getElementById('gt-'+i);
+  if(!b) return;
+  var open=b.style.display==='block';
+  b.style.display=open?'none':'block';
+  if(t) t.textContent=open?'&#9660;':'&#9650;';
+}
+function copyMsgG(e,i,tipo){
+  e.stopPropagation();
+  var r=(window._gLista||[])[i]; if(!r) return;
+  var txt=buildMsg(r,tipo);
+  var btn=e.target;
+  var done=function(){setMsgEnviado(r.id,tipo);btn.textContent='✓ Enviado';btn.classList.add('done');showToast('✓ Mensaje copiado','success');renderGestion();};
+  navigator.clipboard.writeText(txt).then(done).catch(function(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();done();});
+}
+function linkG(i,btn){
+  var r=(window._gLista||[])[i]; if(!r) return;
+  var url=buildCheckinUrl(r);
+  navigator.clipboard.writeText(url).then(function(){btn.textContent='✓ Copiado';setTimeout(function(){btn.innerHTML='&#128279; Enlace';},2000);}).catch(function(){var ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();btn.textContent='✓ Copiado';setTimeout(function(){btn.innerHTML='&#128279; Enlace';},2000);});
+}
+function pdfG(i){
+  var r=(window._gLista||[])[i]; if(!r) return;
+  var ci=getCIReserva(r.id);
+  if(!ci){showToast('Sin documentación para esta reserva','error');return;}
+  generarPDF(ci);
+}
 // ═══════════════════════════════════════════════
 // RENDIMIENTO
 // ═══════════════════════════════════════════════
