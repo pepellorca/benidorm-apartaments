@@ -1423,6 +1423,7 @@ function renderMensajesAirbnb() {
     var checkout = m['check-out'] || m['checkout'] || '11:00';
     var persona = m['persona entrada'] || m['persona de entrada'] || 'Mi padre, Domingo';
     var tel = m['telefono contacto'] || m['telefono'] || '';
+    var checkinUrl = 'https://pepellorca.github.io/benidorm-apartaments/checkin.html?r=' + r.id;
     var lineas = [
       'Buenos d\u00EDas ' + nombre + ',',
       '',
@@ -1438,10 +1439,13 @@ function renderMensajesAirbnb() {
       '\uD83D\uDD50 Check-in a partir de las ' + checkin,
       '\uD83D\uDD50 Check-out antes de las ' + checkout,
       '',
-      '\uD83D\uDCF6 WiFi: ' + (m['wifi'] || m['wifi red'] || m['ssid'] || '(ver en el apartamento)'),
-      '\uD83D\uDD11 Contrase\u00F1a: ' + (m['contrasena'] || m['contrase\u00F1a'] || m['wifi password'] || m['clave wifi'] || '(ver en el apartamento)'),
+      '\uD83D\uDCF6 WiFi: ' + (m['wifi'] || apto.wifi || ''),
+      '\uD83D\uDD11 Contrase\u00F1a: ' + (m['contrasena'] || apto.wifiPass || ''),
       '',
-      '\uD83D\uDEC2 Para completar el registro necesitamos los datos del pasaporte de cada hu\u00E9sped (nombre completo, n\u00FAmero de pasaporte, fecha de expedici\u00F3n, fecha de nacimiento y nacionalidad) o una foto.',
+      '\uD83D\uDCCB Para agilizar el check-in, podéis rellenar vuestros datos con antelación:',
+      checkinUrl,
+      '',
+      'Cumplimos con la normativa de protecci\u00F3n de datos (RD 933/2021 y RGPD).',
       '',
       'Si necesit\u00E1is cualquier cosa no dud\u00E9is en escribirme.' + (tel ? ' Tel: ' + tel : ''),
       '',
@@ -1788,4 +1792,3 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
-
