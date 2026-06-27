@@ -414,11 +414,11 @@
 
   <nav>
     <button class="active" onclick="showView('hoy')" id="tab-hoy">&#128203; Hoy</button>
-    <button onclick="showView('reservas')" id="tab-reservas">&#128222; Reservas</button>
     <button onclick="showView('calendario')" id="tab-calendario">&#128197; Calendario</button>
     <button onclick="showView('checkin')" id="tab-checkin">&#128273; Check&#8209;in</button>
-    <button onclick="showView('rendimiento')" id="tab-rendimiento">&#128200; Rendimiento</button>
     <button onclick="showView('registros')" id="tab-registros">&#128203; Registros</button>
+    <button onclick="showView('reservas')" id="tab-reservas">&#128222; Reservas</button>
+    <button onclick="showView('rendimiento')" id="tab-rendimiento">&#128200; Rendimiento</button>
     <button onclick="showView('drive')" id="tab-drive">&#128194; Drive</button>
   </nav>
 
@@ -1327,77 +1327,52 @@ async function procesarFotoDocumento(event, n) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // Mostrar preview
-  const preview = document.getElementById(`ocr-preview-${n}`);
-  const status  = document.getElementById(`ocr-status-${n}`);
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = 'block';
+  const preview = document.getElementById('ocr-preview-' + n);
+  const status  = document.getElementById('ocr-status-' + n);
+  if (preview) { preview.src = URL.createObjectURL(file); preview.style.display = 'block'; }
+  if (status)  status.style.display = 'flex';
 
-  pedirApiKeyYContinuar(async () => {
-    status.style.display = 'flex';
-    try {
-      // Convertir imagen a base64
-      const base64 = await fileToBase64(file);
-      const key = getOpenAIKey();
+  try {
+    const base64 = await fileToBase64(file);
+    const key = getOpenAIKey();
+    if (!key || key === 'PENDIENTE_NUEVA_CLAVE') { showToast('Clave OpenAI no configurada', 'error'); return; }
 
-      const prompt = `Analiza esta imagen de un documento de identidad (DNI español, pasaporte o NIE) y extrae los siguientes datos en formato JSON. Si un campo no es visible o no existe, pon null. 
-      Devuelve SOLO el JSON, sin texto adicional:
-      {
-        "nombre": "nombre de pila",
-        "apellidos": "apellidos completos",
-        "tipo_doc": "DNI | Pasaporte | NIE",
-        "num_doc": "número del documento",
-        "num_soporte": "número de soporte (solo DNI, empieza por letras)",
-        "fecha_nacimiento": "YYYY-MM-DD",
-        "fecha_expedicion": "YYYY-MM-DD",
-        "sexo": "M | F",
-        "nacionalidad": "nacionalidad en español",
-        "pais": "país de residencia"
-      }`;
+    const prompt = 'Analiza esta imagen de un documento de identidad (DNI español, pasaporte o NIE) y extrae los datos en formato JSON. Devuelve SOLO el JSON sin texto adicional:\n{"nombre":"","apellidos":"","tipo_doc":"DNI|Pasaporte|NIE","num_doc":"","num_soporte":"(solo DNI)","fecha_nacimiento":"YYYY-MM-DD","fecha_expedicion":"YYYY-MM-DD","sexo":"M|F","nacionalidad":"","pais":""}';
 
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          max_tokens: 400,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'text', text: prompt },
-              { type: 'image_url', image_url: { url: `data:${file.type};base64,${base64}`, detail: 'high' } }
-            ]
-          }]
-        })
-      });
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: [
+          { type: 'text', text: prompt },
+          { type: 'image_url', image_url: { url: 'data:' + file.type + ';base64,' + base64, detail: 'high' } }
+        ]}]
+      })
+    });
 
-      if (!resp.ok) {
-        const err = await resp.json();
-        throw new Error(err.error?.message || 'Error OpenAI ' + resp.status);
-      }
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || 'Error OpenAI ' + resp.status);
+    }
 
-      const data = await resp.json();
-      const text = data.choices[0].message.content.trim();
-      const clean = text.replace(/```json|```/g, '').trim();
-      const campos = JSON.parse(clean);
+    const data = await resp.json();
+    const clean = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim();
+    const campos = JSON.parse(clean);
 
-      // Rellenar formulario
-      rellenarViajero(n, campos);
+    rellenarViajero(n, campos);
 
-      // Borrar imagen de memoria (no la almacenamos)
-      URL.revokeObjectURL(preview.src);
-      preview.style.display = 'none';
-      status.style.display = 'none';
+    if (preview) { URL.revokeObjectURL(preview.src); preview.style.display = 'none'; }
+    if (status)  status.style.display = 'none';
+    showToast('\u2713 Datos le\u00EDdos correctamente \u2014 revisa y confirma', 'success');
 
-      showToast('✓ Datos leídos correctamente — revisa y confirma', 'success');
-
-    } catch(e) {
-      status.style.display = 'none';
-      preview.style.display = 'none';
-      if (e.message.includes('401') || e.message.includes('invalid_api_key')) {
-        localStorage.removeItem('bnd_openai_key');
-        showToast('Clave de OpenAI inválida — inténtalo de nuevo', 'error');
-      } else {
+  } catch(e) {
+    if (preview) preview.style.display = 'none';
+    if (status)  status.style.display = 'none';
+    showToast('Error al leer el documento: ' + e.message, 'error');
+  }
+}
         showToast('Error al leer el documento: ' + e.message, 'error');
       }
     }
