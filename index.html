@@ -300,6 +300,23 @@
   .msg-toggle-icon { transition: transform .3s; font-size: .8rem; }
   .msg-toggle-icon.open { transform: rotate(180deg); }
 
+  /* REGISTROS */
+  .registro-card { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; margin-bottom: 10px; border-left: 4px solid var(--gris-3); }
+  .registro-card.completo  { border-color: var(--verde); }
+  .registro-card.pendiente { border-color: var(--sol); }
+  .registro-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .registro-nombre { font-weight: 700; font-size: .95rem; color: var(--gris-5); }
+  .registro-meta { font-size: .78rem; color: var(--gris-4); margin-top: 2px; }
+  .registro-badge { font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .registro-badge.completo  { background: #DCFCE7; color: #166534; }
+  .registro-badge.pendiente { background: #FEF9C3; color: #854D0E; }
+  .registro-viajeros { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .viajero-chip { background: var(--gris-1); border: 1px solid var(--gris-2); border-radius: 20px; padding: 3px 10px; font-size: .75rem; color: var(--gris-5); }
+  .registro-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .btn-pdf { background: var(--coral); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: .8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .btn-pdf:hover { background: #C1121F; }
+  .btn-ver { background: var(--mar); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: .8rem; font-weight: 600; cursor: pointer; }
+
   /* RENDIMIENTO */
   .rend-table th { background: var(--gris-5); color: #fff; padding: 8px 10px; text-align: center; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
   .rend-table td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--gris-2); font-size: .83rem; }
@@ -384,6 +401,7 @@
     <button onclick="showView('calendario')" id="tab-calendario">&#128197; Calendario</button>
     <button onclick="showView('checkin')" id="tab-checkin">&#128273; Check&#8209;in</button>
     <button onclick="showView('rendimiento')" id="tab-rendimiento">&#128200; Rendimiento</button>
+    <button onclick="showView('registros')" id="tab-registros">&#128203; Registros</button>
     <button onclick="showView('drive')" id="tab-drive">&#128194; Drive</button>
   </nav>
 
@@ -493,6 +511,27 @@
           <div id="rend-stats-1"></div>
         </div>
       </div>
+    </div>
+
+    <!-- REGISTROS -->
+    <div class="view" id="view-registros">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <h2 style="font-family:var(--font-disp);font-size:1.2rem;color:var(--mar-deep)">&#128203; Registros de viajeros</h2>
+        <button class="btn btn-sm" onclick="cargarRegistros()">&#8635; Actualizar</button>
+      </div>
+      <div id="registros-filtros" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <select id="filtro-apto" onchange="filtrarRegistros()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
+          <option value="">Todos los apartamentos</option>
+          <option value="Tomas Ortuño">Tomas Ortuño</option>
+          <option value="Buen Retiro">Buen Retiro</option>
+        </select>
+        <select id="filtro-estado" onchange="filtrarRegistros()" style="border:2px solid var(--gris-3);border-radius:7px;padding:6px 10px;font-size:.82rem;outline:none">
+          <option value="">Todos los estados</option>
+          <option value="completo">Completo</option>
+          <option value="pendiente">Pendiente firma</option>
+        </select>
+      </div>
+      <div id="registros-list"><div class="empty-state"><span class="emoji">&#128203;</span>Cargando registros...</div></div>
     </div>
 
     <!-- DRIVE -->
@@ -793,6 +832,7 @@ function showView(id) {
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
   if (id === 'drive') actualizarEstadoApiKey();
+  if (id === 'registros') cargarRegistros();
   if (id === 'rendimiento') renderRendimiento();
   if (id === 'checkin')    renderCheckinSelector();
   if (id === 'hoy')        renderHoy();
@@ -1601,6 +1641,194 @@ function enviarASheets_(data) {
     showToast('\u2713 Guardado localmente (verificar conexi\u00F3n)', 'success');
   };
   document.head.appendChild(s);
+}
+
+// ═══════════════════════════════════════════════
+// REGISTROS DE VIAJEROS
+// ═══════════════════════════════════════════════
+let todosLosRegistros = [];
+
+async function cargarRegistros() {
+  const el = document.getElementById('registros-list');
+  el.innerHTML = '<div class="empty-state"><div class="spinner" style="width:28px;height:28px;border:3px solid var(--gris-2);border-top-color:var(--mar);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 8px"></div>Cargando...</div>';
+
+  try {
+    // Leer pestaña CheckIns desde Google Sheets
+    const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+    const sheetId = cfg.sheetsMaestroId || '';
+    if (!sheetId || !accessToken) {
+      // Leer desde localStorage como fallback
+      const local = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
+      todosLosRegistros = local;
+      renderRegistros(local);
+      return;
+    }
+    const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/CheckIns!A1:Z500';
+    const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+    if (!resp.ok) throw new Error('Error ' + resp.status);
+    const data = await resp.json();
+    const rows = data.values || [];
+    if (rows.length < 2) { el.innerHTML = '<div class="empty-state"><span class="emoji">&#128203;</span>No hay registros todavía</div>'; return; }
+    const headers = rows[0].map(function(h){ return String(h||'').toLowerCase().trim(); });
+    const registros = {};
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i]; if (!row.length) continue;
+      const obj = {}; headers.forEach(function(h,j){ obj[h] = String(row[j]||'').trim(); });
+      const rid = obj['reserva'] || obj['reservaid'] || ('R'+i);
+      if (!registros[rid]) {
+        registros[rid] = {
+          id: rid, reservaId: rid,
+          huesped: obj['huésped'] || obj['huesped'] || '',
+          apartamento: obj['apartamento'] || '',
+          entrada: obj['entrada'] || '',
+          salida: obj['salida'] || '',
+          horaLlegada: obj['hora llegada'] || '',
+          fecha: obj['fecha'] || '',
+          viajeros: []
+        };
+      }
+      registros[rid].viajeros.push({
+        parentesco: obj['viajero'] || '', nombre: obj['nombre'] || '',
+        apellidos: obj['apellidos'] || '', tipoDoc: obj['tipo doc'] || '',
+        numDoc: obj['nº doc'] || obj['num doc'] || '', soporte: obj['nº soporte'] || '',
+        nacimiento: obj['nacimiento'] || '', expedicion: obj['expedición'] || obj['expedicion'] || '',
+        sexo: obj['sexo'] || '', nacionalidad: obj['nacionalidad'] || '',
+        direccion: obj['dirección'] || obj['direccion'] || '',
+        pais: obj['país'] || obj['pais'] || '',
+        telefono: obj['teléfono'] || obj['telefono'] || '',
+        email: obj['email'] || '', firma: obj['firma'] || ''
+      });
+    }
+    todosLosRegistros = Object.values(registros);
+    renderRegistros(todosLosRegistros);
+  } catch(e) {
+    // Fallback a localStorage
+    const local = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
+    todosLosRegistros = local;
+    renderRegistros(local);
+  }
+}
+
+function filtrarRegistros() {
+  const apto   = document.getElementById('filtro-apto')?.value || '';
+  const estado = document.getElementById('filtro-estado')?.value || '';
+  let filtrados = todosLosRegistros;
+  if (apto)   filtrados = filtrados.filter(function(r){ return (r.apartamento||'').includes(apto); });
+  if (estado) filtrados = filtrados.filter(function(r){
+    const completo = r.viajeros && r.viajeros.every(function(v){ return v.firma; });
+    return estado === 'completo' ? completo : !completo;
+  });
+  renderRegistros(filtrados);
+}
+
+function renderRegistros(lista) {
+  const el = document.getElementById('registros-list');
+  if (!lista || !lista.length) {
+    el.innerHTML = '<div class="empty-state"><span class="emoji">&#128203;</span>No hay registros todavía</div>';
+    return;
+  }
+  // Ordenar por fecha desc
+  lista = lista.slice().sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||''); });
+  el.innerHTML = lista.map(function(r) {
+    const completo = r.viajeros && r.viajeros.length > 0;
+    const estadoCls = completo ? 'completo' : 'pendiente';
+    const estadoTxt = completo ? '&#10003; Completo' : '&#9888; Pendiente';
+    const chips = (r.viajeros||[]).map(function(v){
+      return '<span class="viajero-chip">' + (v.nombre||'') + ' ' + (v.apellidos||'') + '</span>';
+    }).join('');
+    return '<div class="registro-card ' + estadoCls + '">'
+      + '<div class="registro-header">'
+      + '<div><div class="registro-nombre">&#128100; ' + (r.huesped||r.reservaId||'—') + '</div>'
+      + '<div class="registro-meta">' + (r.apartamento||'—') + ' · ' + (r.entrada||'') + ' → ' + (r.salida||'') + '</div>'
+      + '<div class="registro-meta" style="margin-top:2px">Registrado el ' + (r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES') : '—') + '</div></div>'
+      + '<span class="registro-badge ' + estadoCls + '">' + estadoTxt + '</span>'
+      + '</div>'
+      + '<div class="registro-viajeros">' + chips + '</div>'
+      + '<div class="registro-actions">'
+      + '<button class="btn-pdf" onclick='generarPDF(' + JSON.stringify(r).replace(/'/g, '\'') + ')'>&#128196; Descargar PDF</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// GENERAR PDF
+// ═══════════════════════════════════════════════
+function generarPDF(registro) {
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">';
+  html += '<style>';
+  html += 'body{font-family:Arial,sans-serif;font-size:11px;color:#000;margin:20px}';
+  html += 'h1{font-size:14px;text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:12px}';
+  html += 'h2{font-size:12px;background:#eee;padding:5px 8px;margin:12px 0 6px}';
+  html += '.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:8px}';
+  html += '.field{margin-bottom:4px}.label{font-size:9px;font-weight:bold;color:#555;text-transform:uppercase}';
+  html += '.value{border-bottom:1px solid #999;min-height:16px;padding:2px 0;font-size:11px}';
+  html += '.firma-box{border:1px solid #000;height:60px;margin-top:4px;display:flex;align-items:center;justify-content:center}';
+  html += '.firma-img{max-height:55px;max-width:200px}';
+  html += '.footer{margin-top:20px;font-size:9px;color:#666;border-top:1px solid #ccc;padding-top:8px}';
+  html += '.viajero-block{border:1px solid #ccc;border-radius:4px;padding:10px;margin-bottom:10px;page-break-inside:avoid}';
+  html += '</style></head><body>';
+
+  html += '<h1>PARTE DE ENTRADA DE VIAJEROS<br>';
+  html += '<span style="font-size:11px;font-weight:normal">Real Decreto 933/2021 &bull; SES.HOSPEDAJES</span></h1>';
+
+  html += '<h2>DATOS DEL ALOJAMIENTO</h2>';
+  html += '<div class="grid">';
+  html += field('Establecimiento', 'Apartamentos Llorca Benidorm');
+  html += field('Apartamento', registro.apartamento || '—');
+  html += field('Fecha de entrada', registro.entrada || '—');
+  html += field('Fecha de salida', registro.salida || '—');
+  html += field('Hora de llegada', registro.horaLlegada || '—');
+  html += field('Titular de la reserva', registro.huesped || '—');
+  html += field('Código de reserva', registro.reservaId || '—');
+  html += field('Fecha de registro', registro.fecha ? new Date(registro.fecha).toLocaleDateString('es-ES') : '—');
+  html += '</div>';
+
+  (registro.viajeros || []).forEach(function(v, i) {
+    html += '<div class="viajero-block">';
+    html += '<h2 style="margin:0 0 8px">VIAJERO ' + (i+1) + (v.parentesco ? ' &bull; ' + v.parentesco : '') + '</h2>';
+    html += '<div class="grid">';
+    html += field('Nombre', v.nombre);
+    html += field('Apellidos', v.apellidos);
+    html += field('Tipo de documento', v.tipoDoc);
+    html += field('Nº de documento', v.numDoc);
+    html += field('Nº de soporte', v.soporte || '—');
+    html += field('Fecha de nacimiento', v.nacimiento);
+    html += field('Fecha de expedición', v.expedicion || '—');
+    html += field('Sexo', v.sexo);
+    html += field('Nacionalidad', v.nacionalidad);
+    html += field('País de residencia', v.pais);
+    html += field('Dirección', v.direccion);
+    html += field('Teléfono', v.telefono || '—');
+    html += field('Email', v.email || '—');
+    html += '</div>';
+    html += '<div class="label" style="margin-top:8px">FIRMA DEL VIAJERO</div>';
+    html += '<div class="firma-box">';
+    if (v.firma && v.firma.startsWith('data:')) {
+      html += '<img class="firma-img" src="' + v.firma + '">';
+    } else {
+      html += '<span style="color:#999;font-size:9px">Sin firma digital</span>';
+    }
+    html += '</div>';
+    html += '</div>';
+  });
+
+  html += '<div class="footer">';
+  html += 'Titular responsable: Pepe Llorca &bull; ';
+  html += 'Datos tratados conforme al RD 933/2021 y RGPD &bull; ';
+  html += 'Conservación: 3 años &bull; ';
+  html += 'Comunicado a SES.HOSPEDAJES en plazo legal &bull; ';
+  html += 'Generado el ' + new Date().toLocaleString('es-ES');
+  html += '</div></body></html>';
+
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.onload = function() { win.print(); };
+}
+
+function field(label, value) {
+  return '<div class="field"><div class="label">' + label + '</div><div class="value">' + (value || '—') + '</div></div>';
 }
 
 // ═══════════════════════════════════════════════
