@@ -851,10 +851,100 @@ async function syncDrive() {
     renderHoy();
     renderStatsCard();
 
+    // Cargar mensajes enviados y check-ins desde Google Sheets
+    cargarDesdeMaestro();
+
   } catch(e) {
     setSyncState('error', 'Error al conectar con Drive');
     showToast('Error al leer Drive: ' + e.message, 'error');
   }
+}
+
+async function cargarDesdeMaestro() {
+  const SHEET_ID = '1CQqpTvIeCo4aBP1D9FY13CHSbwd43b2RSAb0qdBbxk8';
+  if (!accessToken) return;
+
+  try {
+    // 1. Cargar MensajesAirbnb → actualizar cache de msgs enviados
+    const rMsgs = await fetch(
+      'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID + '/values/MensajesAirbnb!A2:D500',
+      { headers: { Authorization: 'Bearer ' + accessToken } }
+    );
+    if (rMsgs.ok) {
+      const dMsgs = await rMsgs.json();
+      const rows = dMsgs.values || [];
+      const cache = {};
+      rows.forEach(function(row) {
+        const key = row[0] || '';    // MSG|reservaId|tipo
+        const fecha = row[1] || '';
+        if (key.startsWith('MSG|')) {
+          const parts = key.split('|');
+          if (parts.length >= 3) {
+            cache[parts[1] + '_' + parts[2]] = fecha;
+          }
+        }
+      });
+      // Fusionar con localStorage (no sobreescribir lo local si es más reciente)
+      const local = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
+      const merged = Object.assign({}, cache, local);
+      localStorage.setItem('bnd_msgs', JSON.stringify(merged));
+      // Resetear cache en memoria
+      if (typeof _msgsCache !== 'undefined') window._msgsCache = merged;
+    }
+  } catch(e) { console.log('Error cargando MensajesAirbnb:', e.message); }
+
+  try {
+    // 2. Cargar CheckIns → actualizar registros locales
+    const rCI = await fetch(
+      'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID + '/values/CheckIns!A2:V500',
+      { headers: { Authorization: 'Bearer ' + accessToken } }
+    );
+    if (rCI.ok) {
+      const dCI = await rCI.json();
+      const rows = dCI.values || [];
+      // Headers fijos: fecha,reservaId,huesped,apartamento,entrada,salida,horaLlegada,
+      //               parentesco,nombre,apellidos,tipoDoc,numDoc,soporte,nacimiento,
+      //               expedicion,sexo,nacionalidad,direccion,pais,telefono,email,firma
+      const registros = {};
+      rows.forEach(function(row) {
+        if (!row || row.length < 4) return;
+        const rid = row[1] || '';
+        if (!rid) return;
+        if (!registros[rid]) {
+          registros[rid] = {
+            reservaId:   rid,
+            huesped:     row[2] || '',
+            apartamento: row[3] || '',
+            entrada:     row[4] || '',
+            salida:      row[5] || '',
+            horaLlegada: row[6] || '',
+            fecha:       row[0] || '',
+            viajeros: []
+          };
+        }
+        registros[rid].viajeros.push({
+          parentesco:  row[7]  || '',
+          nombre:      row[8]  || '',
+          apellidos:   row[9]  || '',
+          tipoDoc:     row[10] || '',
+          numDoc:      row[11] || '',
+          soporte:     row[12] || '',
+          nacimiento:  row[13] || '',
+          expedicion:  row[14] || '',
+          sexo:        row[15] || '',
+          nacionalidad:row[16] || '',
+          direccion:   row[17] || '',
+          pais:        row[18] || '',
+          telefono:    row[19] || '',
+          email:       row[20] || '',
+          firma:       row[21] || ''
+        });
+      });
+      const lista = Object.values(registros);
+      localStorage.setItem('bnd_checkins', JSON.stringify(lista));
+      console.log('CheckIns cargados desde Sheets:', lista.length, 'registros');
+    }
+  } catch(e) { console.log('Error cargando CheckIns:', e.message); }
 }
 
 function setSyncState(state, text) {
@@ -1533,7 +1623,7 @@ function renderMensajesAirbnb() {
 
     // MSG 1: Bienvenida (5-7 dias antes)
     if (diasLlegada >= 5 && diasLlegada <= 7) {
-      msgs.push({ tipo: 'bienvenida', reservaId: r.id, sub: 'Enviar ahora \u00B7 llegan en ' + diasLlegada + ' d\u00EDas', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'bienvenida', sub: 'Enviar ahora \u00B7 llegan en ' + diasLlegada + ' d\u00EDas', huesped: r.huesped, apto: apto.alias,
         texto: 'Buenos d\u00EDas ' + nombre + ',\n\n'
           + 'Nos alegramos de que hay\u00E1is elegido nuestro apartamento para vuestras vacaciones en Benidorm!\n\n'
           + 'Os confirmamos vuestra reserva:\n'
@@ -1553,7 +1643,7 @@ function renderMensajesAirbnb() {
     if (diasLlegada === 1) {
       const checkins = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
       const tieneCI = checkins.some(function(c){ return c.reservaId === r.id; });
-      msgs.push({ tipo: 'confirmacion', reservaId: r.id, sub: 'Enviar hoy \u00B7 llegan ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'confirmacion', sub: 'Enviar hoy \u00B7 llegan ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
         texto: 'Hola ' + nombre + ',\n\n'
           + '\u00A1Ma\u00F1ana es el gran d\u00EDa!\n\n'
           + '\uD83D\uDC49 ' + persona + ' os estar\u00E1 esperando en la puerta para la entrega de llaves. \u00BFSobre qu\u00E9 hora llegar\u00E9is?\n\n'
@@ -1569,7 +1659,7 @@ function renderMensajesAirbnb() {
 
     // MSG 3: Despedida dia anterior a salida
     if (diasSalida === 1) {
-      msgs.push({ tipo: 'despedida', reservaId: r.id, sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'despedida', sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
         texto: 'Hola ' + nombre + ',\n\n'
           + 'Ha sido un placer tenerte con nosotros en Benidorm!\n\n'
           + 'Esperamos que hayas disfrutado de tu estancia y que todo haya sido de tu agrado.\n\n'
@@ -1607,7 +1697,7 @@ function renderMensajesAirbnb() {
       + '</div>'
       + '<div style="font-size:.75rem;color:var(--gris-4);margin-bottom:8px">' + msg.sub + '</div>'
       + '<div class="msg-texto" id="msg-texto-' + i + '">' + msg.texto + '</div>'
-      + '<button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')" data-rid="' + (msg.reservaId||'') + '" data-tipo="' + msg.tipo + '" data-huesped="' + msg.huesped + '">'
+      + '<button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')">'
       + '&#128203; Copiar mensaje</button>'
       + '</div>';
   });
@@ -1632,28 +1722,24 @@ function toggleMensajes(forceOpen) {
 }
 
 function copiarMensaje(i) {
-  const el  = document.getElementById('msg-texto-' + i);
+  const el = document.getElementById('msg-texto-' + i);
   const btn = document.getElementById('btn-copiar-' + i);
   if (!el || !btn) return;
-  const rid     = btn.dataset.rid     || '';
-  const tipo    = btn.dataset.tipo    || '';
-  const huesped = btn.dataset.huesped || '';
-  const texto   = el.textContent;
-  const done = function() {
-    console.log('copiarMensaje done - rid:', rid, 'tipo:', tipo, 'huesped:', huesped);
-    if (rid && tipo) setMsgEnviado(rid, tipo, huesped);
-    else console.warn('copiarMensaje: rid o tipo vacíos - data-rid:', btn.dataset.rid, 'data-tipo:', btn.dataset.tipo);
+  navigator.clipboard.writeText(el.textContent).then(() => {
     btn.textContent = '\u2713 Copiado';
     btn.classList.add('copiado');
-    // Actualizar pestaña Reservas si está activa
-    if (typeof renderGestion === 'function') renderGestion();
-    setTimeout(function() { btn.innerHTML = '\uD83D\uDCCB Copiar mensaje'; btn.classList.remove('copiado'); }, 2500);
-  };
-  navigator.clipboard.writeText(texto).then(done).catch(function() {
-    const ta = document.createElement('textarea');
-    ta.value = texto; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); ta.remove();
-    done();
+    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
+  }).catch(() => {
+    // Fallback para Safari
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    btn.textContent = '\u2713 Copiado';
+    btn.classList.add('copiado');
+    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
   });
 }
 
@@ -1912,12 +1998,8 @@ function renderRegistros(lista) {
 // GENERAR PDF
 // ===============================================
 function generarPDF(idx) {
-  var registro = typeof idx === 'number' ? todosLosRegistros[idx] : idx;
+  var registro = todosLosRegistros[idx];
   if (!registro) { showToast('Registro no encontrado', 'error'); return; }
-  generarPDFDesdeRegistro(registro);
-}
-
-function generarPDFDesdeRegistro(registro) {
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">';
   html += '<style>';
   html += 'body{font-family:Arial,sans-serif;font-size:11px;color:#000;margin:20px}';
@@ -1937,7 +2019,7 @@ function generarPDFDesdeRegistro(registro) {
 
   html += '<h2>DATOS DEL ALOJAMIENTO</h2>';
   html += '<div class="grid">';
-  html += field('Establecimiento', 'Vicenta Mar\u00EDa Beltr\u00E1n SL');
+  html += field('Establecimiento', 'Apartamentos Llorca Benidorm');
   html += field('Apartamento', registro.apartamento || '\u2014');
   html += field('Fecha de entrada', registro.entrada || '\u2014');
   html += field('Fecha de salida', registro.salida || '\u2014');
@@ -1984,16 +2066,10 @@ function generarPDFDesdeRegistro(registro) {
   html += 'Generado el ' + new Date().toLocaleString('es-ES');
   html += '</div></body></html>';
 
-  // Abrir en nueva ventana (desktop) o descargar (móvil/Safari)
-  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'parte-entrada-' + (registro.huesped || 'viajero').replace(/\s+/g, '-') + '.html';
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.onload = function() { win.print(); };
 }
 
 function field(label, value) {
@@ -2007,14 +2083,15 @@ function field(label, value) {
 function getMsgEnviado(rid, tipo) {
   try { return (JSON.parse(localStorage.getItem('bnd_msgs')||'{}'))[rid+'_'+tipo]||null; } catch(e){return null;}
 }
-function setMsgEnviado(rid, tipo, huesped) {
+function setMsgEnviado(rid, tipo) {
   try {
     var fecha = new Date().toLocaleDateString('es-ES');
     var d = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
     d[rid + '_' + tipo] = fecha;
     localStorage.setItem('bnd_msgs', JSON.stringify(d));
-    // Si no viene huesped como parámetro, buscarlo en _gLista
-    if (!huesped && window._gLista) {
+    // Guardar también en Google Sheets via Apps Script
+    var huesped = '';
+    if (window._gLista) {
       var r = window._gLista.find(function(x){ return x.id === rid; });
       if (r) huesped = r.huesped || '';
     }
@@ -2023,7 +2100,7 @@ function setMsgEnviado(rid, tipo, huesped) {
       action: 'guardarEnviado',
       key: 'MSG|' + rid + '|' + tipo,
       fecha: fecha,
-      huesped: huesped || '',
+      huesped: huesped,
       tipo: tipo
     });
     window[cb] = function(r) { delete window[cb]; var s = document.getElementById('j_' + cb); if (s) s.remove(); };
@@ -2181,7 +2258,7 @@ function pdfG(i){
   var r=(window._gLista||[])[i]; if(!r) return;
   var ci=getCIReserva(r.id);
   if(!ci){showToast('Sin documentaci\u00f3n para esta reserva','error');return;}
-  generarPDFDesdeRegistro(ci);
+  generarPDF(ci);
 }
 // ===============================================
 // RENDIMIENTO
