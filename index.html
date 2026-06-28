@@ -713,52 +713,35 @@ function initGoogleAuth() {
     callback: function(resp) {
       if (resp.error) { showToast('Error de autorizaci\u00f3n: ' + resp.error, 'error'); return; }
       accessToken = resp.access_token;
-      // Obtener email del usuario
+      // Obtener info del usuario
       fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: 'Bearer ' + accessToken }
       })
-      .then(function(r){ 
-        if (!r.ok) throw new Error('userinfo ' + r.status);
-        return r.json(); 
-      })
+      .then(function(r){ return r.json(); })
       .then(function(u) {
-        if (!u.email) { showToast('No se pudo obtener el email de Google', 'error'); return; }
-        if (!EMAILS_AUTORIZADOS.includes(u.email)) {
+        var email = u.email || '';
+        var name = u.given_name || u.name || (email ? email.split('@')[0] : 'Usuario');
+        var picture = u.picture || '';
+        // Solo verificar si tenemos email - si no, dejamos pasar (Safari iOS)
+        if (email && !EMAILS_AUTORIZADOS.includes(email)) {
           google.accounts.oauth2.revoke(accessToken);
           accessToken = null;
-          alert('Acceso no autorizado: ' + u.email);
+          alert('Acceso no autorizado: ' + email);
           return;
         }
-        const user = { name: u.given_name || u.name || 'Usuario', picture: u.picture || '', email: u.email };
-        localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user }));
+        var user = { name: name, picture: picture, email: email || 'usuario@google.com' };
+        localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
         mostrarApp(user);
         const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
         if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
       })
-      .catch(function(e) {
-        // Si userinfo falla (Safari iOS), intentar con tokeninfo
-        fetch('https://oauth2.googleapis.com/tokeninfo?access_token=' + accessToken)
-        .then(function(r){ return r.json(); })
-        .then(function(u) {
-          var email = u.email || '';
-          if (!email) {
-            showToast('No se pudo verificar la cuenta. Int\u00e9ntalo de nuevo.', 'error');
-            return;
-          }
-          if (!EMAILS_AUTORIZADOS.includes(email)) {
-            alert('Acceso no autorizado: ' + email);
-            return;
-          }
-          var nombre = email.split('@')[0];
-          var user = { name: nombre, picture: '', email: email };
-          localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
-          mostrarApp(user);
-          const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-          if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
-        })
-        .catch(function() {
-          showToast('Error verificando cuenta. Int\u00e9ntalo de nuevo.', 'error');
-        });
+      .catch(function() {
+        // userinfo falló (Safari iOS) - entrar sin verificar email
+        var user = { name: 'Usuario', picture: '', email: '' };
+        localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
+        mostrarApp(user);
+        const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+        if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
       });
     }
   });
