@@ -1995,10 +1995,31 @@ function getMsgEnviado(rid, tipo) {
 }
 function setMsgEnviado(rid, tipo) {
   try {
-    var d=JSON.parse(localStorage.getItem('bnd_msgs')||'{}');
-    d[rid+'_'+tipo]=new Date().toLocaleDateString('es-ES');
-    localStorage.setItem('bnd_msgs',JSON.stringify(d));
-  } catch(e){}
+    var fecha = new Date().toLocaleDateString('es-ES');
+    var d = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
+    d[rid + '_' + tipo] = fecha;
+    localStorage.setItem('bnd_msgs', JSON.stringify(d));
+    // Guardar también en Google Sheets via Apps Script
+    var huesped = '';
+    if (window._gLista) {
+      var r = window._gLista.find(function(x){ return x.id === rid; });
+      if (r) huesped = r.huesped || '';
+    }
+    var cb = 'env_' + Date.now();
+    var payload = JSON.stringify({
+      action: 'guardarEnviado',
+      key: 'MSG|' + rid + '|' + tipo,
+      fecha: fecha,
+      huesped: huesped,
+      tipo: tipo
+    });
+    window[cb] = function(r) { delete window[cb]; var s = document.getElementById('j_' + cb); if (s) s.remove(); };
+    var s = document.createElement('script');
+    s.id = 'j_' + cb;
+    s.onerror = function() { delete window[cb]; s.remove(); };
+    s.src = APPS_SCRIPT_URL + '?callback=' + cb + '&data=' + encodeURIComponent(payload);
+    document.head.appendChild(s);
+  } catch(e) { console.log('Error setMsgEnviado:', e.message); }
 }
 function getCIReserva(rid) {
   try { return (JSON.parse(localStorage.getItem('bnd_checkins')||'[]')).find(function(c){return c.reservaId===rid;})||null; } catch(e){return null;}
