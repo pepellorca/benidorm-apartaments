@@ -741,28 +741,23 @@ function initGoogleAuth() {
         .then(function(r){ return r.json(); })
         .then(function(u) {
           var email = u.email || '';
-          if (!email || !EMAILS_AUTORIZADOS.includes(email)) {
-            // Último recurso: confiar en el token si viene de OAuth correcto
-            // y mostrar la app con usuario genérico
-            if (!email) {
-              var user = { name: 'Usuario', picture: '', email: EMAILS_AUTORIZADOS[0] };
-              localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
-              mostrarApp(user);
-              const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-              if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
-            } else {
-              alert('Acceso no autorizado: ' + email);
-            }
+          if (!email) {
+            showToast('No se pudo verificar la cuenta. Int\u00e9ntalo de nuevo.', 'error');
             return;
           }
-          var user = { name: email.split('@')[0], picture: '', email: email };
+          if (!EMAILS_AUTORIZADOS.includes(email)) {
+            alert('Acceso no autorizado: ' + email);
+            return;
+          }
+          var nombre = email.split('@')[0];
+          var user = { name: nombre, picture: '', email: email };
           localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
           mostrarApp(user);
           const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
           if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
         })
         .catch(function() {
-          showToast('Error verificando cuenta: ' + e.message, 'error');
+          showToast('Error verificando cuenta. Int\u00e9ntalo de nuevo.', 'error');
         });
       });
     }
