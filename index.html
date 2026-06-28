@@ -586,7 +586,15 @@
         <button class="btn" onclick="syncDrive()" id="btn-sync-main">&#8635; Sincronizar con Drive</button>
       </div>
 
-
+      <div class="card">
+        <div class="card-title">&#128247; Clave OpenAI (OCR documentos)</div>
+        <div id="ocr-key-status" style="font-size:.85rem;margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="password" id="ocr-key-input" placeholder="sk-proj-..." style="flex:1;border:2px solid var(--gris-3);border-radius:8px;padding:8px 12px;font-size:.85rem;outline:none;min-width:0">
+          <button class="btn btn-sm" onclick="guardarClaveOCR()">Guardar</button>
+        </div>
+        <p style="font-size:.75rem;color:var(--gris-4);margin-top:8px">&#128274; Se guarda solo en este dispositivo, nunca en GitHub.</p>
+      </div>
 
       <div class="card" id="stats-card" style="display:none">
         <div class="card-title">Reservas cargadas</div>
@@ -637,7 +645,7 @@
 // ===============================================
 const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
 const DRIVE_FOLDER_ID = '1wIxPwPH3GulG6wZe_cV956LXxajd8au8'; // Carpeta "Airbnb CSV" fija
-const OPENAI_API_KEY = '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';
+const OPENAI_API_KEY = ''; // Clave gestionada via localStorage
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFeO9_K7kRvbK8Fap1i5t0MvpmzVoaXsy7rrdfR4vp-6sTRvhiPJ4Mcouf9He-Ae7-DA/exec';
 const EMAILS_AUTORIZADOS = [
   'pepe.llorca@gmail.com',
@@ -863,7 +871,17 @@ function showView(id) {
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
 
-  if (id === 'drive') actualizarEstadoApiKey();
+  if (id === 'drive') {
+    actualizarEstadoApiKey();
+    // Mostrar estado clave OCR
+    const keyStatus = document.getElementById('ocr-key-status');
+    if (keyStatus) {
+      const k = localStorage.getItem('bnd_openai_key');
+      keyStatus.innerHTML = k
+        ? '<span style="color:var(--verde)">&#10003; Clave configurada</span>'
+        : '<span style="color:var(--coral)">&#9888; Sin clave \u2014 el OCR no funcionar\u00E1</span>';
+    }
+  }
   if (id === 'gestion') renderGestion();
   if (id === 'rendimiento') renderRendimiento();
   if (id === 'checkin')    renderCheckinSelector();
@@ -1315,9 +1333,22 @@ function guardarApiKey() {
   if (pendingOcrCallback) { pendingOcrCallback(); pendingOcrCallback = null; }
 }
 
+function guardarClaveOCR() {
+  const input = document.getElementById('ocr-key-input');
+  const key = input ? input.value.trim() : '';
+  if (!key || !key.startsWith('sk-')) {
+    showToast('Clave no v\u00E1lida. Debe empezar por sk-', 'error');
+    return;
+  }
+  localStorage.setItem('bnd_openai_key', key);
+  if (input) input.value = '';
+  const keyStatus = document.getElementById('ocr-key-status');
+  if (keyStatus) keyStatus.innerHTML = '<span style="color:var(--verde)">&#10003; Clave configurada</span>';
+  showToast('\u2713 Clave guardada en este dispositivo', 'success');
+}
+
 function getOpenAIKey() {
-  // Siempre usar la clave del código para evitar claves antiguas del localStorage
-  return OPENAI_API_KEY || localStorage.getItem('bnd_openai_key') || '';
+  return localStorage.getItem('bnd_openai_key') || '';
 }
 
 function pedirApiKeyYContinuar(callback) {
