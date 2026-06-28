@@ -637,7 +637,7 @@
 // ===============================================
 const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
 const DRIVE_FOLDER_ID = '1wIxPwPH3GulG6wZe_cV956LXxajd8au8'; // Carpeta "Airbnb CSV" fija
-const OPENAI_API_KEY = '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';
+const OPENAI_API_KEY = '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';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFeO9_K7kRvbK8Fap1i5t0MvpmzVoaXsy7rrdfR4vp-6sTRvhiPJ4Mcouf9He-Ae7-DA/exec';
 const EMAILS_AUTORIZADOS = [
   'pepe.llorca@gmail.com',
@@ -1316,7 +1316,8 @@ function guardarApiKey() {
 }
 
 function getOpenAIKey() {
-  return OPENAI_API_KEY || '';
+  // Siempre usar la clave del código para evitar claves antiguas del localStorage
+  return OPENAI_API_KEY || localStorage.getItem('bnd_openai_key') || '';
 }
 
 function pedirApiKeyYContinuar(callback) {
@@ -1383,9 +1384,7 @@ async function procesarFotoDocumento(event, n) {
   } catch(e) {
     if (preview) preview.style.display = 'none';
     if (status)  status.style.display = 'none';
-    const msg = e.message || 'Error desconocido';
-    console.error('OCR error:', e);
-    showToast('Error OCR: ' + msg, 'error');
+    showToast('Error al leer el documento: ' + e.message, 'error');
   }
 }
 
