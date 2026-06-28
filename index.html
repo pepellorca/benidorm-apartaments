@@ -1413,8 +1413,15 @@ async function procesarFotoDocumento(event, n) {
     }
 
     const data = await resp.json();
-    const clean = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim();
-    const campos = JSON.parse(clean);
+    const rawText = data.choices[0].message.content.trim();
+    let campos;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('Sin JSON');
+      campos = JSON.parse(jsonMatch[0]);
+    } catch(parseErr) {
+      throw new Error('No se pudieron leer los datos. Int\u00E9ntalo con una foto m\u00E1s clara.');
+    }
 
     rellenarViajero(n, campos);
 
