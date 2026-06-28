@@ -655,7 +655,7 @@ const EMAILS_AUTORIZADOS = [
   'pere.llorca@gmail.com',
   'domingo.llorca@gmail.com',
 ];
-const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+const SCOPES = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets.readonly';
 
 const APTOS = [
   { key: 'gran', label: 'Gran Apartamento en el Centro de Benidorm', alias: 'Tomas Ortu\u00F1o', idx: 0,
@@ -863,9 +863,10 @@ async function syncDrive() {
 async function cargarDesdeMaestro() {
   const SHEET_ID = '1CQqpTvIeCo4aBP1D9FY13CHSbwd43b2RSAb0qdBbxk8';
   if (!accessToken) return;
+  console.log('Cargando desde Maestro...');
 
   try {
-    // 1. Cargar MensajesAirbnb → actualizar cache de msgs enviados
+    // 1. Cargar MensajesAirbnb
     const rMsgs = await fetch(
       'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID + '/values/MensajesAirbnb!A2:D500',
       { headers: { Authorization: 'Bearer ' + accessToken } }
@@ -875,26 +876,25 @@ async function cargarDesdeMaestro() {
       const rows = dMsgs.values || [];
       const cache = {};
       rows.forEach(function(row) {
-        const key = row[0] || '';    // MSG|reservaId|tipo
+        const key = row[0] || '';
         const fecha = row[1] || '';
         if (key.startsWith('MSG|')) {
           const parts = key.split('|');
-          if (parts.length >= 3) {
-            cache[parts[1] + '_' + parts[2]] = fecha;
-          }
+          if (parts.length >= 3) cache[parts[1] + '_' + parts[2]] = fecha;
         }
       });
-      // Fusionar con localStorage (no sobreescribir lo local si es más reciente)
       const local = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
       const merged = Object.assign({}, cache, local);
       localStorage.setItem('bnd_msgs', JSON.stringify(merged));
-      // Resetear cache en memoria
-      if (typeof _msgsCache !== 'undefined') window._msgsCache = merged;
+      window._msgsCache = merged;
+      console.log('MensajesAirbnb cargados:', rows.length, 'filas');
+    } else {
+      console.log('Error MensajesAirbnb:', rMsgs.status, await rMsgs.text());
     }
   } catch(e) { console.log('Error cargando MensajesAirbnb:', e.message); }
 
   try {
-    // 2. Cargar CheckIns → actualizar registros locales
+    // 2. Cargar CheckIns
     const rCI = await fetch(
       'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID + '/values/CheckIns!A2:V500',
       { headers: { Authorization: 'Bearer ' + accessToken } }
@@ -902,9 +902,6 @@ async function cargarDesdeMaestro() {
     if (rCI.ok) {
       const dCI = await rCI.json();
       const rows = dCI.values || [];
-      // Headers fijos: fecha,reservaId,huesped,apartamento,entrada,salida,horaLlegada,
-      //               parentesco,nombre,apellidos,tipoDoc,numDoc,soporte,nacimiento,
-      //               expedicion,sexo,nacionalidad,direccion,pais,telefono,email,firma
       const registros = {};
       rows.forEach(function(row) {
         if (!row || row.length < 4) return;
@@ -912,37 +909,24 @@ async function cargarDesdeMaestro() {
         if (!rid) return;
         if (!registros[rid]) {
           registros[rid] = {
-            reservaId:   rid,
-            huesped:     row[2] || '',
-            apartamento: row[3] || '',
-            entrada:     row[4] || '',
-            salida:      row[5] || '',
-            horaLlegada: row[6] || '',
-            fecha:       row[0] || '',
-            viajeros: []
+            reservaId: rid, huesped: row[2]||'', apartamento: row[3]||'',
+            entrada: row[4]||'', salida: row[5]||'', horaLlegada: row[6]||'',
+            fecha: row[0]||'', viajeros: []
           };
         }
         registros[rid].viajeros.push({
-          parentesco:  row[7]  || '',
-          nombre:      row[8]  || '',
-          apellidos:   row[9]  || '',
-          tipoDoc:     row[10] || '',
-          numDoc:      row[11] || '',
-          soporte:     row[12] || '',
-          nacimiento:  row[13] || '',
-          expedicion:  row[14] || '',
-          sexo:        row[15] || '',
-          nacionalidad:row[16] || '',
-          direccion:   row[17] || '',
-          pais:        row[18] || '',
-          telefono:    row[19] || '',
-          email:       row[20] || '',
-          firma:       row[21] || ''
+          parentesco: row[7]||'', nombre: row[8]||'', apellidos: row[9]||'',
+          tipoDoc: row[10]||'', numDoc: row[11]||'', soporte: row[12]||'',
+          nacimiento: row[13]||'', expedicion: row[14]||'', sexo: row[15]||'',
+          nacionalidad: row[16]||'', direccion: row[17]||'', pais: row[18]||'',
+          telefono: row[19]||'', email: row[20]||'', firma: row[21]||''
         });
       });
       const lista = Object.values(registros);
       localStorage.setItem('bnd_checkins', JSON.stringify(lista));
-      console.log('CheckIns cargados desde Sheets:', lista.length, 'registros');
+      console.log('CheckIns cargados:', lista.length, 'registros');
+    } else {
+      console.log('Error CheckIns:', rCI.status, await rCI.text());
     }
   } catch(e) { console.log('Error cargando CheckIns:', e.message); }
 }
