@@ -775,7 +775,13 @@ async function ocrDoc(event) {
     if (sexoEl && campos.sexo) sexoEl.value = campos.sexo;
 
     if (status) status.style.display = 'none';
-    alert(t('ocr_ok') || 'Datos le\u00EDdos. Revisa y confirma.');
+    // Mostrar mensaje de éxito sin popup
+    const statusEl = document.getElementById('ocr-status-' + n);
+    if (statusEl) {
+      statusEl.style.display = 'flex';
+      statusEl.innerHTML = '<span style="color:#166534;font-size:.82rem">&#10003; Datos leídos — revisa y confirma</span>';
+      setTimeout(function(){ statusEl.style.display = 'none'; statusEl.innerHTML = '<div class="ocr-spinner"></div><span>Leyendo documento...</span>'; }, 3000);
+    }
   } catch(e) {
     if (status) status.style.display = 'none';
     alert('Error al leer el documento: ' + e.message);
