@@ -586,16 +586,7 @@
         <button class="btn" onclick="syncDrive()" id="btn-sync-main">&#8635; Sincronizar con Drive</button>
       </div>
 
-      <div class="card">
-        <div class="card-title">&#128247; Clave OpenAI (OCR documentos)</div>
-        <div id="ocr-key-status" style="font-size:.85rem;margin-bottom:12px"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input type="password" id="ocr-key-input" placeholder="sk-proj-..." style="flex:1;border:2px solid var(--gris-3);border-radius:8px;padding:8px 12px;font-size:.85rem;outline:none;min-width:0">
-          <button class="btn btn-sm" onclick="guardarClaveOCR()">Guardar</button>
-        </div>
-        <p style="font-size:.75rem;color:var(--gris-4);margin-top:8px">&#128274; Se guarda solo en este dispositivo, nunca en GitHub.</p>
-        <button onclick="eliminarClaveOCR()" style="margin-top:8px;background:none;border:none;color:var(--coral);font-size:.78rem;cursor:pointer;padding:0">&#10005; Eliminar clave guardada</button>
-      </div>
+
 
       <div class="card" id="stats-card" style="display:none">
         <div class="card-title">Reservas cargadas</div>
@@ -646,7 +637,7 @@
 // ===============================================
 const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
 const DRIVE_FOLDER_ID = '1wIxPwPH3GulG6wZe_cV956LXxajd8au8'; // Carpeta "Airbnb CSV" fija
-const OPENAI_API_KEY = ''; // Clave gestionada via localStorage
+const OPENAI_API_KEY = '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';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFeO9_K7kRvbK8Fap1i5t0MvpmzVoaXsy7rrdfR4vp-6sTRvhiPJ4Mcouf9He-Ae7-DA/exec';
 const EMAILS_AUTORIZADOS = [
   'pepe.llorca@gmail.com',
@@ -845,6 +836,7 @@ async function syncDrive() {
     ));
 
     setSyncState('ok', `${reservas.length} reservas \u2022 Actualizado ${new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}`);
+    cargarEnviadosDesdeSheets();
     showToast(`\u2713 ${reservas.length} reservas cargadas desde Drive`, 'success');
     renderHoy();
     renderStatsCard();
@@ -872,10 +864,7 @@ function showView(id) {
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
 
-  if (id === 'drive') {
-    actualizarEstadoApiKey();
-    actualizarEstadoClaveOCR();
-  }
+  if (id === 'drive') actualizarEstadoApiKey();
   if (id === 'gestion') renderGestion();
   if (id === 'rendimiento') renderRendimiento();
   if (id === 'checkin')    renderCheckinSelector();
@@ -1327,38 +1316,8 @@ function guardarApiKey() {
   if (pendingOcrCallback) { pendingOcrCallback(); pendingOcrCallback = null; }
 }
 
-function guardarClaveOCR() {
-  const input = document.getElementById('ocr-key-input');
-  const key = input ? input.value.trim() : '';
-  if (!key || !key.startsWith('sk-')) {
-    showToast('Clave no v\u00E1lida. Debe empezar por sk-', 'error');
-    return;
-  }
-  localStorage.setItem('bnd_openai_key', key);
-  if (input) input.value = '';
-  actualizarEstadoClaveOCR();
-  showToast('\u2713 Clave guardada en este dispositivo', 'success');
-}
-
-function eliminarClaveOCR() {
-  localStorage.removeItem('bnd_openai_key');
-  actualizarEstadoClaveOCR();
-  showToast('Clave eliminada', 'success');
-}
-
-function actualizarEstadoClaveOCR() {
-  const keyStatus = document.getElementById('ocr-key-status');
-  if (!keyStatus) return;
-  const k = localStorage.getItem('bnd_openai_key');
-  if (k && k.startsWith('sk-')) {
-    keyStatus.innerHTML = '<span style="color:var(--verde)">&#10003; Clave configurada (' + k.substring(0,12) + '...)</span>';
-  } else {
-    keyStatus.innerHTML = '<span style="color:var(--coral)">&#9888; Sin clave \u2014 el OCR no funcionar\u00E1</span>';
-  }
-}
-
 function getOpenAIKey() {
-  return localStorage.getItem('bnd_openai_key') || '';
+  return localStorage.getItem('bnd_openai_key') || OPENAI_API_KEY || '';
 }
 
 function pedirApiKeyYContinuar(callback) {
@@ -1413,15 +1372,8 @@ async function procesarFotoDocumento(event, n) {
     }
 
     const data = await resp.json();
-    const rawText = data.choices[0].message.content.trim();
-    let campos;
-    try {
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('Sin JSON');
-      campos = JSON.parse(jsonMatch[0]);
-    } catch(parseErr) {
-      throw new Error('No se pudieron leer los datos. Int\u00E9ntalo con una foto m\u00E1s clara.');
-    }
+    const clean = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim();
+    const campos = JSON.parse(clean);
 
     rellenarViajero(n, campos);
 
@@ -1546,7 +1498,7 @@ function renderMensajesAirbnb() {
 
     // MSG 1: Bienvenida (5-7 dias antes)
     if (diasLlegada >= 5 && diasLlegada <= 7) {
-      msgs.push({ tipo: 'bienvenida', sub: 'Enviar ahora \u00B7 llegan en ' + diasLlegada + ' d\u00EDas', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'bienvenida', reservaId: r.id, sub: 'Enviar ahora \u00B7 llegan en ' + diasLlegada + ' d\u00EDas', huesped: r.huesped, apto: apto.alias,
         texto: 'Buenos d\u00EDas ' + nombre + ',\n\n'
           + 'Nos alegramos de que hay\u00E1is elegido nuestro apartamento para vuestras vacaciones en Benidorm!\n\n'
           + 'Os confirmamos vuestra reserva:\n'
@@ -1566,7 +1518,7 @@ function renderMensajesAirbnb() {
     if (diasLlegada === 1) {
       const checkins = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
       const tieneCI = checkins.some(function(c){ return c.reservaId === r.id; });
-      msgs.push({ tipo: 'confirmacion', sub: 'Enviar hoy \u00B7 llegan ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'confirmacion', reservaId: r.id, sub: 'Enviar hoy \u00B7 llegan ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
         texto: 'Hola ' + nombre + ',\n\n'
           + '\u00A1Ma\u00F1ana es el gran d\u00EDa!\n\n'
           + '\uD83D\uDC49 ' + persona + ' os estar\u00E1 esperando en la puerta para la entrega de llaves. \u00BFSobre qu\u00E9 hora llegar\u00E9is?\n\n'
@@ -1582,7 +1534,7 @@ function renderMensajesAirbnb() {
 
     // MSG 3: Despedida dia anterior a salida
     if (diasSalida === 1) {
-      msgs.push({ tipo: 'despedida', sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'despedida', reservaId: r.id, sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
         texto: 'Hola ' + nombre + ',\n\n'
           + 'Ha sido un placer tenerte con nosotros en Benidorm!\n\n'
           + 'Esperamos que hayas disfrutado de tu estancia y que todo haya sido de tu agrado.\n\n'
@@ -1620,7 +1572,7 @@ function renderMensajesAirbnb() {
       + '</div>'
       + '<div style="font-size:.75rem;color:var(--gris-4);margin-bottom:8px">' + msg.sub + '</div>'
       + '<div class="msg-texto" id="msg-texto-' + i + '">' + msg.texto + '</div>'
-      + '<button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')">'
+      + '<button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')" data-rid="' + (msg.reservaId||'') + '" data-tipo="' + msg.tipo + '" data-huesped="' + msg.huesped + '">'
       + '&#128203; Copiar mensaje</button>'
       + '</div>';
   });
@@ -1645,24 +1597,27 @@ function toggleMensajes(forceOpen) {
 }
 
 function copiarMensaje(i) {
-  const el = document.getElementById('msg-texto-' + i);
+  const el  = document.getElementById('msg-texto-' + i);
   const btn = document.getElementById('btn-copiar-' + i);
   if (!el || !btn) return;
-  navigator.clipboard.writeText(el.textContent).then(() => {
+  // Recuperar reservaId y tipo del dataset del botón
+  const rid  = btn.dataset.rid  || '';
+  const tipo = btn.dataset.tipo || '';
+  const huesped = btn.dataset.huesped || '';
+  const texto = el.textContent;
+  const done = function() {
+    if (rid && tipo) setMsgEnviado(rid, tipo, huesped);
     btn.textContent = '\u2713 Copiado';
     btn.classList.add('copiado');
-    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
-  }).catch(() => {
-    // Fallback para Safari
-    const range = document.createRange();
-    range.selectNode(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    document.execCommand('copy');
-    window.getSelection().removeAllRanges();
-    btn.textContent = '\u2713 Copiado';
-    btn.classList.add('copiado');
-    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
+    // Actualizar también la pestaña Reservas si está visible
+    if (document.getElementById('view-gestion') && document.getElementById('view-gestion').classList.contains('active')) renderGestion();
+    setTimeout(function() { btn.innerHTML = '\uD83D\uDCCB Copiar mensaje'; btn.classList.remove('copiado'); }, 2500);
+  };
+  navigator.clipboard.writeText(texto).then(done).catch(function() {
+    const ta = document.createElement('textarea');
+    ta.value = texto; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    done();
   });
 }
 
@@ -2003,15 +1958,77 @@ function field(label, value) {
 // ===============================================
 // GESTION FUSIONADA
 // ===============================================
-function getMsgEnviado(rid, tipo) {
-  try { return (JSON.parse(localStorage.getItem('bnd_msgs')||'{}'))[rid+'_'+tipo]||null; } catch(e){return null;}
+// Cache de mensajes enviados - se sincroniza desde Sheets al cargar
+var _msgsCache = null;
+
+function _getMsgsCache() {
+  if (_msgsCache) return _msgsCache;
+  try { _msgsCache = JSON.parse(localStorage.getItem('bnd_msgs') || '{}'); } 
+  catch(e) { _msgsCache = {}; }
+  return _msgsCache;
 }
-function setMsgEnviado(rid, tipo) {
+
+function getMsgEnviado(rid, tipo) {
+  return _getMsgsCache()[rid + '_' + tipo] || null;
+}
+
+function setMsgEnviado(rid, tipo, huesped) {
+  var fecha = new Date().toLocaleDateString('es-ES');
+  var cache = _getMsgsCache();
+  cache[rid + '_' + tipo] = fecha;
+  localStorage.setItem('bnd_msgs', JSON.stringify(cache));
+  // Guardar en Sheets via Apps Script (JSONP)
+  guardarEnviadoSheets(rid, tipo, fecha, huesped || '');
+}
+
+function guardarEnviadoSheets(rid, tipo, fecha, huesped) {
   try {
-    var d=JSON.parse(localStorage.getItem('bnd_msgs')||'{}');
-    d[rid+'_'+tipo]=new Date().toLocaleDateString('es-ES');
-    localStorage.setItem('bnd_msgs',JSON.stringify(d));
-  } catch(e){}
+    var cb = 'env_' + Date.now();
+    var payload = JSON.stringify({
+      action: 'guardarEnviado',
+      key: 'MSG|' + rid + '|' + tipo,
+      fecha: fecha,
+      detalle: tipo + ' - ' + huesped
+    });
+    window[cb] = function(r) { delete window[cb]; var s=document.getElementById('j_'+cb); if(s) s.remove(); };
+    var s = document.createElement('script');
+    s.id = 'j_' + cb;
+    s.src = APPS_SCRIPT_URL + '?callback=' + cb + '&data=' + encodeURIComponent(payload);
+    s.onerror = function() { delete window[cb]; s.remove(); };
+    document.head.appendChild(s);
+  } catch(e) { console.log('Error guardando en Sheets:', e.message); }
+}
+
+function cargarEnviadosDesdeSheets() {
+  if (!accessToken) return;
+  // Leer pestaña Enviados del Maestro
+  var cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+  var sheetId = cfg.sheetsMaestroId || '';
+  if (!sheetId) return;
+  fetch('https://sheets.googleapis.com/v4/spreadsheets/' + sheetId + '/values/Enviados!A2:C500', {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var rows = data.values || [];
+    var cache = {};
+    rows.forEach(function(row) {
+      var key = row[0] || '';
+      var fecha = row[1] || '';
+      // Solo procesar claves de mensajes
+      if (key.startsWith('MSG|')) {
+        var parts = key.split('|');
+        if (parts.length >= 3) {
+          var rid = parts[1];
+          var tipo = parts[2];
+          cache[rid + '_' + tipo] = fecha;
+        }
+      }
+    });
+    _msgsCache = cache;
+    localStorage.setItem('bnd_msgs', JSON.stringify(cache));
+  })
+  .catch(function(e) { console.log('Error cargando enviados:', e.message); });
 }
 function getCIReserva(rid) {
   try { return (JSON.parse(localStorage.getItem('bnd_checkins')||'[]')).find(function(c){return c.reservaId===rid;})||null; } catch(e){return null;}
