@@ -1533,7 +1533,7 @@ function renderMensajesAirbnb() {
 
     // MSG 1: Bienvenida (5-7 dias antes)
     if (diasLlegada >= 5 && diasLlegada <= 7) {
-      msgs.push({ tipo: 'bienvenida', sub: 'Enviar ahora \u00B7 llegan en ' + diasLlegada + ' d\u00EDas', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'bienvenida', reservaId: r.id, sub: 'Enviar ahora \u00B7 llegan en ' + diasLlegada + ' d\u00EDas', huesped: r.huesped, apto: apto.alias,
         texto: 'Buenos d\u00EDas ' + nombre + ',\n\n'
           + 'Nos alegramos de que hay\u00E1is elegido nuestro apartamento para vuestras vacaciones en Benidorm!\n\n'
           + 'Os confirmamos vuestra reserva:\n'
@@ -1553,7 +1553,7 @@ function renderMensajesAirbnb() {
     if (diasLlegada === 1) {
       const checkins = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
       const tieneCI = checkins.some(function(c){ return c.reservaId === r.id; });
-      msgs.push({ tipo: 'confirmacion', sub: 'Enviar hoy \u00B7 llegan ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'confirmacion', reservaId: r.id, sub: 'Enviar hoy \u00B7 llegan ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
         texto: 'Hola ' + nombre + ',\n\n'
           + '\u00A1Ma\u00F1ana es el gran d\u00EDa!\n\n'
           + '\uD83D\uDC49 ' + persona + ' os estar\u00E1 esperando en la puerta para la entrega de llaves. \u00BFSobre qu\u00E9 hora llegar\u00E9is?\n\n'
@@ -1569,7 +1569,7 @@ function renderMensajesAirbnb() {
 
     // MSG 3: Despedida dia anterior a salida
     if (diasSalida === 1) {
-      msgs.push({ tipo: 'despedida', sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
+      msgs.push({ tipo: 'despedida', reservaId: r.id, sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
         texto: 'Hola ' + nombre + ',\n\n'
           + 'Ha sido un placer tenerte con nosotros en Benidorm!\n\n'
           + 'Esperamos que hayas disfrutado de tu estancia y que todo haya sido de tu agrado.\n\n'
@@ -1607,7 +1607,7 @@ function renderMensajesAirbnb() {
       + '</div>'
       + '<div style="font-size:.75rem;color:var(--gris-4);margin-bottom:8px">' + msg.sub + '</div>'
       + '<div class="msg-texto" id="msg-texto-' + i + '">' + msg.texto + '</div>'
-      + '<button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')">'
+      + '<button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')" data-rid="' + (msg.reservaId||'') + '" data-tipo="' + msg.tipo + '" data-huesped="' + msg.huesped + '">'
       + '&#128203; Copiar mensaje</button>'
       + '</div>';
   });
@@ -1632,24 +1632,26 @@ function toggleMensajes(forceOpen) {
 }
 
 function copiarMensaje(i) {
-  const el = document.getElementById('msg-texto-' + i);
+  const el  = document.getElementById('msg-texto-' + i);
   const btn = document.getElementById('btn-copiar-' + i);
   if (!el || !btn) return;
-  navigator.clipboard.writeText(el.textContent).then(() => {
+  const rid     = btn.dataset.rid     || '';
+  const tipo    = btn.dataset.tipo    || '';
+  const huesped = btn.dataset.huesped || '';
+  const texto   = el.textContent;
+  const done = function() {
+    if (rid && tipo) setMsgEnviado(rid, tipo, huesped);
     btn.textContent = '\u2713 Copiado';
     btn.classList.add('copiado');
-    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
-  }).catch(() => {
-    // Fallback para Safari
-    const range = document.createRange();
-    range.selectNode(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    document.execCommand('copy');
-    window.getSelection().removeAllRanges();
-    btn.textContent = '\u2713 Copiado';
-    btn.classList.add('copiado');
-    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
+    // Actualizar pestaña Reservas si está activa
+    if (typeof renderGestion === 'function') renderGestion();
+    setTimeout(function() { btn.innerHTML = '\uD83D\uDCCB Copiar mensaje'; btn.classList.remove('copiado'); }, 2500);
+  };
+  navigator.clipboard.writeText(texto).then(done).catch(function() {
+    const ta = document.createElement('textarea');
+    ta.value = texto; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    done();
   });
 }
 
