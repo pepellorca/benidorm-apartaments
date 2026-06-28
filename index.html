@@ -1640,7 +1640,9 @@ function copiarMensaje(i) {
   const huesped = btn.dataset.huesped || '';
   const texto   = el.textContent;
   const done = function() {
+    console.log('copiarMensaje done - rid:', rid, 'tipo:', tipo, 'huesped:', huesped);
     if (rid && tipo) setMsgEnviado(rid, tipo, huesped);
+    else console.warn('copiarMensaje: rid o tipo vacíos - data-rid:', btn.dataset.rid, 'data-tipo:', btn.dataset.tipo);
     btn.textContent = '\u2713 Copiado';
     btn.classList.add('copiado');
     // Actualizar pestaña Reservas si está activa
@@ -1995,15 +1997,14 @@ function field(label, value) {
 function getMsgEnviado(rid, tipo) {
   try { return (JSON.parse(localStorage.getItem('bnd_msgs')||'{}'))[rid+'_'+tipo]||null; } catch(e){return null;}
 }
-function setMsgEnviado(rid, tipo) {
+function setMsgEnviado(rid, tipo, huesped) {
   try {
     var fecha = new Date().toLocaleDateString('es-ES');
     var d = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
     d[rid + '_' + tipo] = fecha;
     localStorage.setItem('bnd_msgs', JSON.stringify(d));
-    // Guardar también en Google Sheets via Apps Script
-    var huesped = '';
-    if (window._gLista) {
+    // Si no viene huesped como parámetro, buscarlo en _gLista
+    if (!huesped && window._gLista) {
       var r = window._gLista.find(function(x){ return x.id === rid; });
       if (r) huesped = r.huesped || '';
     }
@@ -2012,7 +2013,7 @@ function setMsgEnviado(rid, tipo) {
       action: 'guardarEnviado',
       key: 'MSG|' + rid + '|' + tipo,
       fecha: fecha,
-      huesped: huesped,
+      huesped: huesped || '',
       tipo: tipo
     });
     window[cb] = function(r) { delete window[cb]; var s = document.getElementById('j_' + cb); if (s) s.remove(); };
