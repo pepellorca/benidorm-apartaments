@@ -594,6 +594,7 @@
           <button class="btn btn-sm" onclick="guardarClaveOCR()">Guardar</button>
         </div>
         <p style="font-size:.75rem;color:var(--gris-4);margin-top:8px">&#128274; Se guarda solo en este dispositivo, nunca en GitHub.</p>
+        <button onclick="eliminarClaveOCR()" style="margin-top:8px;background:none;border:none;color:var(--coral);font-size:.78rem;cursor:pointer;padding:0">&#10005; Eliminar clave guardada</button>
       </div>
 
       <div class="card" id="stats-card" style="display:none">
@@ -873,14 +874,7 @@ function showView(id) {
 
   if (id === 'drive') {
     actualizarEstadoApiKey();
-    // Mostrar estado clave OCR
-    const keyStatus = document.getElementById('ocr-key-status');
-    if (keyStatus) {
-      const k = localStorage.getItem('bnd_openai_key');
-      keyStatus.innerHTML = k
-        ? '<span style="color:var(--verde)">&#10003; Clave configurada</span>'
-        : '<span style="color:var(--coral)">&#9888; Sin clave \u2014 el OCR no funcionar\u00E1</span>';
-    }
+    actualizarEstadoClaveOCR();
   }
   if (id === 'gestion') renderGestion();
   if (id === 'rendimiento') renderRendimiento();
@@ -1342,9 +1336,25 @@ function guardarClaveOCR() {
   }
   localStorage.setItem('bnd_openai_key', key);
   if (input) input.value = '';
-  const keyStatus = document.getElementById('ocr-key-status');
-  if (keyStatus) keyStatus.innerHTML = '<span style="color:var(--verde)">&#10003; Clave configurada</span>';
+  actualizarEstadoClaveOCR();
   showToast('\u2713 Clave guardada en este dispositivo', 'success');
+}
+
+function eliminarClaveOCR() {
+  localStorage.removeItem('bnd_openai_key');
+  actualizarEstadoClaveOCR();
+  showToast('Clave eliminada', 'success');
+}
+
+function actualizarEstadoClaveOCR() {
+  const keyStatus = document.getElementById('ocr-key-status');
+  if (!keyStatus) return;
+  const k = localStorage.getItem('bnd_openai_key');
+  if (k && k.startsWith('sk-')) {
+    keyStatus.innerHTML = '<span style="color:var(--verde)">&#10003; Clave configurada (' + k.substring(0,12) + '...)</span>';
+  } else {
+    keyStatus.innerHTML = '<span style="color:var(--coral)">&#9888; Sin clave \u2014 el OCR no funcionar\u00E1</span>';
+  }
 }
 
 function getOpenAIKey() {
