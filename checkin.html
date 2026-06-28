@@ -866,11 +866,14 @@ function enviarFormulario() {
     viajeros: viajeros
   };
 
-  // Enviar via JSONP
-  const cb = 'cb_' + Date.now();
-  window[cb] = function(resp) {
-    delete window[cb];
-    document.getElementById('jsonp-' + cb)?.remove();
+  // Enviar via fetch POST
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(resp) {
     if (resp && resp.ok) {
       showScreen('screen-success');
     } else {
@@ -878,16 +881,11 @@ function enviarFormulario() {
       btn.querySelector('span:last-child').textContent = t('btn_submit');
       alert(t('error_envio'));
     }
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-' + cb;
-  s.src = APPS_SCRIPT_URL + '?callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(payload));
-  s.onerror = function() {
-    delete window[cb]; s.remove();
-    // Asumir éxito si hay error de CORS (el servidor procesó pero no puede responder)
+  })
+  .catch(function() {
+    // Si hay error de red asumir éxito (Apps Script procesó pero CORS bloquea respuesta)
     showScreen('screen-success');
-  };
-  document.head.appendChild(s);
+  });
 }
 </script>
 </body>
