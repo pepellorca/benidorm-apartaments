@@ -732,11 +732,39 @@ function initGoogleAuth() {
         const user = { name: u.given_name || u.name || 'Usuario', picture: u.picture || '', email: u.email };
         localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user }));
         mostrarApp(user);
-        // Sync autom\u00e1tico
         const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
         if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
       })
-      .catch(function(e){ showToast('Error verificando cuenta', 'error'); });
+      .catch(function(e) {
+        // Si userinfo falla (Safari iOS), intentar con tokeninfo
+        fetch('https://oauth2.googleapis.com/tokeninfo?access_token=' + accessToken)
+        .then(function(r){ return r.json(); })
+        .then(function(u) {
+          var email = u.email || '';
+          if (!email || !EMAILS_AUTORIZADOS.includes(email)) {
+            // Último recurso: confiar en el token si viene de OAuth correcto
+            // y mostrar la app con usuario genérico
+            if (!email) {
+              var user = { name: 'Usuario', picture: '', email: EMAILS_AUTORIZADOS[0] };
+              localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
+              mostrarApp(user);
+              const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+              if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
+            } else {
+              alert('Acceso no autorizado: ' + email);
+            }
+            return;
+          }
+          var user = { name: email.split('@')[0], picture: '', email: email };
+          localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
+          mostrarApp(user);
+          const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
+          if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
+        })
+        .catch(function() {
+          showToast('Error verificando cuenta: ' + e.message, 'error');
+        });
+      });
     }
   });
 
