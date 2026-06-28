@@ -717,12 +717,16 @@ function initGoogleAuth() {
       fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: 'Bearer ' + accessToken }
       })
-      .then(function(r){ return r.json(); })
+      .then(function(r){ 
+        if (!r.ok) throw new Error('userinfo ' + r.status);
+        return r.json(); 
+      })
       .then(function(u) {
+        if (!u.email) { showToast('No se pudo obtener el email de Google', 'error'); return; }
         if (!EMAILS_AUTORIZADOS.includes(u.email)) {
           google.accounts.oauth2.revoke(accessToken);
           accessToken = null;
-          alert('Acceso no autorizado.');
+          alert('Acceso no autorizado: ' + u.email);
           return;
         }
         const user = { name: u.given_name || u.name || 'Usuario', picture: u.picture || '', email: u.email };
@@ -753,6 +757,8 @@ function initGoogleAuth() {
 }
 
 function signIn() {
+  // Limpiar token guardado para forzar login limpio
+  localStorage.removeItem('bnd_token');
   if (!tokenClient) {
     showToast('Cargando Google... int\u00e9ntalo en un segundo', 'error');
     setTimeout(function(){
