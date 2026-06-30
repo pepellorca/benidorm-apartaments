@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apartamentos Benidorm</title>
+<title>Apartamentos Turísticos Benidorm</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Aptos Benidorm">
+<meta name="apple-mobile-web-app-title" content="Apartamentos Turísticos Benidorm">
 <meta name="theme-color" content="#023E8A">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
@@ -180,8 +180,31 @@
   .event-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 8px; background: var(--gris-1); border-left: 4px solid var(--gris-3); cursor: pointer; transition: transform .15s; }
   .event-item:hover { transform: translateX(2px); }
   .event-item.llegada  { border-color: var(--verde); background: #F0FFF4; }
+  .event-item.llegada-hoy { border-color: var(--verde); background: #F0FFF4; }
+  .event-item.llegada-manana { border-color: var(--mar); background: #EFF9FF; }
+  .llegada-estado { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:.7rem; font-weight:700; margin-top:4px; }
+  .llegada-estado.hoy { background:#DCFCE7; color:#166534; }
+  .llegada-estado.manana { background:#DBEAFE; color:#1E40AF; }
   .event-item.salida   { border-color: var(--coral); background: #FFF5F5; }
   .event-item.limpieza { border-color: var(--sol);   background: #FFFBEB; }
+  .event-item.limpieza-aviso { border-color: var(--sol); background: #FFFBEB; }
+  .event-item.limpieza-curso { border-color: #F97316; background: #FFF7ED; }
+  .event-item.limpieza-verificar { border-color: var(--mar); background: #EFF9FF; }
+  .limpieza-estado { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:.7rem; font-weight:700; margin-top:4px; }
+  .limpieza-estado.aviso { background:#FEF3C7; color:#92400E; }
+  .limpieza-estado.curso { background:#FFEDD5; color:#9A3412; }
+  .limpieza-estado.verificar { background:#DBEAFE; color:#1E40AF; }
+
+  .event-item.limpieza-limpio { border-color: var(--verde); background:#F0FFF4; }
+  .limpieza-estado.limpio { background:#DCFCE7; color:#166534; }
+  .event-actions { margin-left:auto; display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .btn-operativo { border:none; border-radius:7px; padding:7px 10px; font-size:.74rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .btn-operativo.clean { background:#166534; color:#fff; }
+  .btn-operativo.undo { background:#E2E8F0; color:#475569; }
+  .btn-operativo.hour { background:#DBEAFE; color:#1E40AF; }
+  .hora-chip { display:inline-flex; align-items:center; gap:4px; background:#E0F2FE; color:#075985; border-radius:20px; padding:3px 9px; font-size:.72rem; font-weight:700; margin-top:5px; }
+  .hora-chip.pending { background:#F1F5F9; color:#64748B; }
+  .operativo-meta { font-size:.72rem; color:var(--gris-4); margin-top:4px; }
   .event-icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
   .event-body { flex: 1; min-width: 0; }
   .event-name { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -191,6 +214,67 @@
   .apto-tag-1 { color: #7C3AED; }
   .empty-state { text-align: center; padding: 24px 16px; color: var(--gris-4); font-size: .85rem; }
   .empty-state .emoji { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+
+  /* PREPARACIÓN DE APARTAMENTOS */
+  .prep-section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+  .prep-section-title h2 { font-family:var(--font-disp); font-size:1.05rem; color:var(--mar-deep); }
+  .prep-section-title span { font-size:.72rem; color:var(--gris-4); }
+  .prep-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+  .prep-card { background:#fff; border-radius:12px; box-shadow:var(--shadow); border:2px solid var(--gris-2); overflow:hidden; }
+  .prep-card.preparado { border-color:var(--verde); }
+  .prep-card.cambio, .prep-card.limpieza { border-color:#F97316; }
+  .prep-card.verificar { border-color:var(--sol); }
+  .prep-card.ocupado { border-color:var(--coral); }
+  .prep-card.pendiente, .prep-card.proxima { border-color:var(--mar); }
+  .prep-card.libre { border-color:var(--gris-3); }
+  .prep-head { padding:14px 15px 10px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .prep-apto { font-family:var(--font-disp); font-size:1rem; color:var(--mar-deep); font-weight:700; }
+  .prep-status { flex-shrink:0; border-radius:20px; padding:4px 9px; font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
+  .prep-status.preparado { background:#DCFCE7; color:#166534; }
+  .prep-status.cambio, .prep-status.limpieza { background:#FFEDD5; color:#9A3412; }
+  .prep-status.verificar { background:#FEF3C7; color:#92400E; }
+  .prep-status.ocupado { background:#FEE2E2; color:#991B1B; }
+  .prep-status.pendiente, .prep-status.proxima { background:#DBEAFE; color:#1E40AF; }
+  .prep-status.libre { background:#F1F5F9; color:#475569; }
+  .prep-summary { padding:0 15px 13px; display:grid; gap:8px; }
+  .prep-info { background:var(--gris-1); border-radius:8px; padding:9px 10px; font-size:.78rem; color:var(--gris-4); line-height:1.45; }
+  .prep-info strong { color:var(--gris-5); }
+  .prep-info.current { border-left:4px solid var(--coral); }
+  .prep-info.next { border-left:4px solid var(--mar); }
+  .prep-turnover { margin:0 15px 10px; background:#FFF7ED; border:1px solid #FDBA74; color:#9A3412; border-radius:8px; padding:8px 10px; font-size:.76rem; font-weight:700; }
+  .prep-progress-wrap { padding:0 15px 12px; }
+  .prep-progress-meta { display:flex; justify-content:space-between; gap:8px; font-size:.72rem; color:var(--gris-4); margin-bottom:5px; }
+  .prep-progress { height:7px; background:var(--gris-2); border-radius:999px; overflow:hidden; }
+  .prep-progress > span { display:block; height:100%; background:var(--mar); border-radius:999px; transition:width .25s ease; }
+  .prep-card.preparado .prep-progress > span { background:var(--verde); }
+  .prep-toggle { width:100%; border:0; border-top:1px solid var(--gris-2); background:#fff; color:var(--mar); font-weight:700; font-size:.78rem; padding:10px 14px; cursor:pointer; }
+  .prep-toggle:hover { background:var(--gris-1); }
+  .prep-detail { display:none; border-top:1px solid var(--gris-2); padding:5px 14px 13px; }
+  .prep-detail.open { display:block; }
+  .prep-check { display:flex; align-items:center; gap:9px; padding:10px 0; border-bottom:1px solid var(--gris-2); }
+  .prep-check:last-of-type { border-bottom:0; }
+  .prep-check-icon { width:25px; height:25px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:.78rem; font-weight:800; }
+  .prep-check.done .prep-check-icon { background:#DCFCE7; color:#166534; }
+  .prep-check.pending .prep-check-icon { background:#FEF3C7; color:#92400E; }
+  .prep-check.blocked .prep-check-icon { background:#F1F5F9; color:#64748B; }
+  .prep-check-body { flex:1; min-width:0; }
+  .prep-check-name { font-size:.82rem; font-weight:700; color:var(--gris-5); }
+  .prep-check-note { font-size:.7rem; color:var(--gris-4); margin-top:2px; line-height:1.35; }
+  .prep-check-action { border:0; border-radius:7px; padding:6px 8px; font-size:.68rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .prep-check-action.primary { background:var(--mar); color:#fff; }
+  .prep-check-action.clean { background:#166534; color:#fff; }
+  .prep-check-action.undo { background:#E2E8F0; color:#475569; }
+  .prep-check-action:disabled { opacity:.45; cursor:not-allowed; }
+  .prep-footer { display:flex; gap:7px; flex-wrap:wrap; padding-top:9px; }
+  .prep-footer button { border:1px solid var(--gris-3); background:#fff; color:var(--gris-5); border-radius:7px; padding:7px 10px; font-size:.72rem; font-weight:700; cursor:pointer; }
+  .prep-footer button:hover { border-color:var(--mar); color:var(--mar); }
+  @media(max-width:700px){
+    .prep-grid { grid-template-columns:1fr; }
+    .prep-section-title { align-items:flex-end; }
+    .prep-head { padding:13px 13px 9px; }
+    .prep-summary, .prep-progress-wrap { padding-left:13px; padding-right:13px; }
+    .prep-check { align-items:flex-start; }
+  }
 
   /* CHECK-IN */
   .checkin-selector select { border: 2px solid var(--gris-3); border-radius: 8px; padding: 9px 13px; font-size: .88rem; color: var(--gris-5); background: #fff; outline: none; transition: border-color .2s; width: 100%; }
@@ -230,6 +314,19 @@
   .modal-body { font-size: .88rem; color: var(--gris-4); line-height: 1.6; margin-bottom: 16px; }
   .modal-body strong { color: var(--gris-5); }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* Vista previa del parte de viajeros dentro de la propia aplicación. */
+  .pdf-preview-overlay { position: fixed; inset: 0; z-index: 500; background: #eef3f6; display: none; flex-direction: column; }
+  .pdf-preview-overlay.open { display: flex; }
+  .pdf-preview-toolbar { min-height: 64px; padding: 10px 14px; background: #fff; border-bottom: 1px solid var(--gris-2); display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+  .pdf-preview-title { font-family: var(--font-disp); color: var(--mar-deep); font-weight: 700; font-size: .95rem; }
+  .pdf-preview-actions { display: flex; gap: 8px; align-items: center; }
+  .pdf-preview-frame { flex: 1; width: 100%; border: 0; background: #fff; }
+  @media (max-width: 560px) {
+    .pdf-preview-toolbar { align-items: stretch; flex-direction: column; }
+    .pdf-preview-actions { width: 100%; }
+    .pdf-preview-actions .btn { flex: 1; padding: 10px 8px; font-size: .78rem; }
+  }
 
   /* TOAST */
   .toast { position: fixed; bottom: 24px; right: 24px; z-index: 1000; background: var(--gris-5); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: .88rem; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.2); transform: translateY(80px); opacity: 0; transition: all .3s; pointer-events: none; }
@@ -281,10 +378,15 @@
 
   /* GESTION */
   .gest-card { background: #fff; border-radius: var(--r); box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden; border-left: 5px solid var(--gris-3); }
-  .gest-card.ocupado { border-color: var(--coral); }
-  .gest-card.checkin { border-color: var(--mar); }
-  .gest-card.libre   { border-color: var(--verde); }
-  .gest-card.pasada  { border-color: var(--gris-3); opacity: .8; }
+  .gest-card.confirmada { border-color: var(--verde); }
+  .gest-card.ocupado   { border-color: var(--coral); }
+  .gest-card.salida    { border-color: var(--sol); }
+  .gest-card.completada{ border-color: var(--mar); opacity: .92; }
+  .gest-status { display:inline-flex; align-items:center; margin-left:6px; padding:2px 8px; border-radius:20px; font-size:.7rem; font-weight:700; white-space:nowrap; }
+  .gest-status.confirmada { background:#DCFCE7; color:#166534; }
+  .gest-status.ocupado    { background:#FEE2E2; color:#991B1B; }
+  .gest-status.salida     { background:#FEF3C7; color:#92400E; }
+  .gest-status.completada { background:#DBEAFE; color:#1E40AF; }
   .gest-header { padding: 14px 16px 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; cursor: pointer; }
   .gest-nombre { font-weight: 700; font-size: .92rem; color: var(--gris-5); }
   .gest-meta   { font-size: .78rem; color: var(--gris-4); margin-top: 2px; }
@@ -336,6 +438,9 @@
   .msg-tipo.bienvenida { background: #DCFCE7; color: #166534; }
   .msg-tipo.despedida  { background: #FEF9C3; color: #854D0E; }
   .msg-texto { background: var(--gris-1); border-radius: 8px; padding: 12px 14px; font-size: .83rem; line-height: 1.7; color: var(--gris-5); white-space: pre-wrap; border-left: 3px solid var(--mar); margin-bottom: 10px; }
+  .msg-texto a { color: var(--mar-deep); font-weight: 700; text-decoration: underline; word-break: break-all; }
+  .msg-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .btn-abrir-checkin { background:#fff; color:var(--mar); border:2px solid var(--mar); border-radius:6px; padding:6px 12px; font-size:.8rem; font-weight:700; text-decoration:none; }
   .btn-copiar { background: var(--mar); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: .8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background .2s; }
   .btn-copiar:hover { background: var(--mar-deep); }
   .btn-copiar.copiado { background: var(--verde); }
@@ -378,6 +483,9 @@
     .cal-day { min-height: 55px; }
     .res-bar { font-size: .6rem; }
     .summary-strip { grid-template-columns: repeat(2,1fr); }
+    .event-item { flex-wrap:wrap; }
+    .event-actions { width:100%; justify-content:flex-end; }
+    .btn-operativo { padding:7px 12px; }
   }
 
   /* HEADER RESPONSIVE */
@@ -394,13 +502,78 @@
   /* CALENDARIO - días intermedios más opacos */
   .res-bar.medio { opacity: .8; }
   .res-bar.salida-dia { background: #E63946 !important; color: #fff !important; font-weight: 700; }
+
+
+/* Avisos compactos de la pantalla Hoy */
+.avisos-importantes { margin: 18px 0 22px; }
+.aviso-operativo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin: 10px 0;
+  border: 1px solid var(--gris-2);
+  border-left: 5px solid #f59e0b;
+  border-radius: 14px;
+  background: #fffaf0;
+  box-shadow: 0 5px 16px rgba(15, 23, 42, .05);
+}
+.aviso-operativo.urgente { border-left-color: var(--coral); background: #fff5f5; }
+.aviso-operativo.pendiente { border-left-color: #f59e0b; background: #fffaf0; }
+.aviso-operativo-icon { font-size: 1.45rem; flex: 0 0 auto; }
+.aviso-operativo-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.aviso-operativo-body strong { color: var(--azul-oscuro); font-size: .94rem; }
+.aviso-operativo-body span { color: var(--gris); font-size: .82rem; line-height: 1.35; }
+@media (max-width: 640px) {
+  .aviso-operativo { align-items: flex-start; flex-wrap: wrap; }
+  .aviso-operativo .btn-operativo { margin-left: 42px; }
+}
+
+
+  /* PLANIFICACIÓN MENSUAL DE LIMPIEZAS */
+  .cleaning-page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:16px; }
+  .cleaning-page-head h2 { font-family:var(--font-disp); font-size:1.3rem; color:var(--mar-deep); margin:0 0 4px; }
+  .cleaning-page-head p { margin:0; color:var(--gris-4); font-size:.82rem; line-height:1.4; }
+  .cleaning-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .cleaning-month-input { border:2px solid var(--gris-3); border-radius:9px; padding:8px 10px; font-size:.9rem; color:var(--gris-5); background:#fff; min-height:40px; }
+  .cleaning-rule-note { background:#FFF7ED; border:1px solid #FDBA74; border-left:5px solid #EA580C; border-radius:12px; padding:12px 14px; margin-bottom:16px; color:#9A3412; font-size:.82rem; line-height:1.45; }
+  .cleaning-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+  .cleaning-summary-card { background:#fff; border:1px solid var(--gris-2); border-radius:12px; padding:12px; box-shadow:0 4px 14px rgba(15,23,42,.04); }
+  .cleaning-summary-card strong { display:block; font-size:1.25rem; color:var(--mar-deep); margin-bottom:2px; }
+  .cleaning-summary-card span { color:var(--gris-4); font-size:.73rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .cleaning-list { display:grid; gap:12px; }
+  .cleaning-card { background:#fff; border:1px solid var(--gris-2); border-left:5px solid var(--mar); border-radius:14px; padding:15px 16px; box-shadow:0 5px 16px rgba(15,23,42,.05); }
+  .cleaning-card.same-day { border-left-color:var(--coral); background:#FFF7F7; }
+  .cleaning-card.done { border-left-color:var(--verde); }
+  .cleaning-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
+  .cleaning-card-date { font-weight:800; color:var(--gris-5); font-size:.98rem; text-transform:capitalize; }
+  .cleaning-card-apto { color:var(--mar); font-weight:700; font-size:.84rem; margin-top:3px; }
+  .cleaning-state { font-size:.7rem; font-weight:800; border-radius:999px; padding:4px 9px; white-space:nowrap; background:#FEF3C7; color:#92400E; }
+  .cleaning-state.done { background:#DCFCE7; color:#166534; }
+  .cleaning-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+  .cleaning-field { background:var(--gris-1); border-radius:9px; padding:9px 10px; min-width:0; }
+  .cleaning-field small { display:block; color:var(--gris-4); font-size:.66rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px; }
+  .cleaning-field div { color:var(--gris-5); font-size:.8rem; line-height:1.35; overflow-wrap:anywhere; }
+  .cleaning-alert { margin-top:10px; border-radius:9px; padding:9px 11px; background:#FEE2E2; color:#991B1B; font-size:.79rem; font-weight:700; line-height:1.4; }
+  .cleaning-standard-note { margin-top:10px; color:var(--gris-4); font-size:.76rem; }
+  .cleaning-empty { background:#fff; border:1px dashed var(--gris-3); border-radius:14px; padding:28px 18px; text-align:center; color:var(--gris-4); }
+  .cleaning-last-pdf { margin-top:14px; font-size:.78rem; color:var(--gris-4); }
+  .cleaning-last-pdf a { color:var(--mar); font-weight:700; text-decoration:none; }
+  @media(max-width:720px) {
+    .cleaning-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .cleaning-grid { grid-template-columns:1fr; }
+    .cleaning-page-head .btn { width:100%; justify-content:center; }
+    .cleaning-controls { display:grid; grid-template-columns:auto 1fr auto; }
+    .cleaning-month-input { width:100%; min-width:0; }
+  }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <header>
-  <div class="logo"><img src="icon.png" style="width:28px;height:28px;border-radius:6px;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'"> <span class="logo-text">Apartamentos Benidorm</span></div>
+  <div class="logo"><img src="icon.png" style="width:28px;height:28px;border-radius:6px;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'"> <span class="logo-text">Apartamentos Turísticos Benidorm</span></div>
   <div class="header-right" style="position:relative">
     <div class="header-meta">
       <strong id="header-date"></strong>
@@ -422,7 +595,7 @@
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <span class="login-icon">&#127944;</span>
-    <h1>Apartamentos Benidorm</h1>
+    <h1>Apartamentos Turísticos Benidorm</h1>
     <p>Gesti&#243;n de reservas, check-ins y limpiezas.<br>Inicia sesi&#243;n con tu cuenta de Google para acceder.</p>
     <div id="google-signin-btn" style="display:flex;justify-content:center;margin-bottom:12px"></div>
     <button class="btn-google" onclick="signIn()" id="btn-signin-fallback">
@@ -446,6 +619,7 @@
   <nav>
     <button class="active" onclick="showView('hoy')" id="tab-hoy">&#128203; Hoy</button>
     <button onclick="showView('calendario')" id="tab-calendario">&#128197; Calendario</button>
+    <button onclick="showView('limpiezas')" id="tab-limpiezas">&#129529; Limpiezas</button>
     <button onclick="showView('checkin')" id="tab-checkin">&#128273; Check&#8209;in</button>
     <button onclick="showView('gestion')" id="tab-gestion">&#128222; Reservas</button>
     <button onclick="showView('rendimiento')" id="tab-rendimiento">&#128200; Rendimiento</button>
@@ -456,18 +630,8 @@
     <!-- HOY -->
     <div class="view active" id="view-hoy">
       <div id="estado-aptos-block"></div>
-      <div id="mensajes-airbnb-block"></div>
-      <div class="today-grid">
-        <div><div class="card-title">&#128994; Llegadas hoy</div><div class="event-list" id="list-llegadas-hoy"></div></div>
-        <div><div class="card-title">&#128308; Salidas hoy</div><div class="event-list" id="list-salidas-hoy"></div></div>
-      </div>
-      <div style="height:16px"></div>
-      <div class="today-grid">
-        <div><div class="card-title">&#128994; Llegadas ma&#241;ana</div><div class="event-list" id="list-llegadas-manana"></div></div>
-        <div><div class="card-title">&#129529; Limpiezas ma&#241;ana</div><div class="event-list" id="list-limpiezas-manana"></div></div>
-      </div>
-      <div style="height:16px"></div>
       <div id="alertas-block"></div>
+      <div id="mensajes-airbnb-block"></div>
     </div>
 
     <!-- CALENDARIO -->
@@ -488,6 +652,32 @@
         <div class="legend-item"><div class="legend-dot" style="background:var(--sol)"></div> Limpieza</div>
       </div>
       <div id="calendarios"></div>
+    </div>
+
+    <!-- LIMPIEZAS MENSUALES -->
+    <div class="view" id="view-limpiezas">
+      <div class="cleaning-page-head">
+        <div>
+          <h2>&#129529; Planificaci&#243;n mensual de limpiezas</h2>
+          <p>Selecciona el mes, revisa las salidas programadas y descarga el PDF para la empresa de limpieza.</p>
+        </div>
+        <button class="btn" id="btn-cleaning-pdf" onclick="descargarPdfLimpiezas()">&#11015;&#65039; Descargar PDF</button>
+      </div>
+
+      <div class="cleaning-controls">
+        <button class="btn btn-ghost btn-sm" onclick="cambiarMesPlanLimpiezas(-1)">&#8592;</button>
+        <input type="month" id="cleaning-month" class="cleaning-month-input" onchange="cambiarMesPlanDesdeSelector()">
+        <button class="btn btn-ghost btn-sm" onclick="cambiarMesPlanLimpiezas(1)">&#8594;</button>
+      </div>
+
+      <div class="cleaning-rule-note">
+        <strong>Horario operativo:</strong> salida antes de las <strong>11:00</strong> y entrada a partir de las <strong>14:00</strong>.
+        Todas las limpiezas deben realizarse en la fecha indicada. Los cambios de hu&#233;sped el mismo d&#237;a aparecen destacados.
+      </div>
+
+      <div id="cleaning-summary" class="cleaning-summary"></div>
+      <div id="cleaning-list" class="cleaning-list"></div>
+      <div id="cleaning-last-pdf" class="cleaning-last-pdf"></div>
     </div>
 
     <!-- CHECK-IN -->
@@ -599,14 +789,9 @@
       </div>
 
       <div class="card">
-        <div class="card-title">&#128247; Clave OpenAI (OCR documentos)</div>
-        <div id="ocr-key-status" style="font-size:.85rem;margin-bottom:12px"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input type="password" id="ocr-key-input" placeholder="sk-proj-..." style="flex:1;border:2px solid var(--gris-3);border-radius:8px;padding:8px 12px;font-size:.85rem;outline:none;min-width:0">
-          <button class="btn btn-sm" onclick="guardarClaveOCR()">Guardar</button>
-        </div>
-        <p style="font-size:.75rem;color:var(--gris-4);margin-top:8px">&#128274; Se guarda solo en este dispositivo, nunca en GitHub.</p>
-        <button onclick="eliminarClaveOCR()" style="margin-top:8px;background:none;border:none;color:var(--coral);font-size:.78rem;cursor:pointer;padding:0">&#10005; Eliminar clave guardada</button>
+        <div class="card-title">&#128247; OCR de documentos</div>
+        <div id="ocr-key-status" style="font-size:.85rem;margin-bottom:8px"><span style="color:var(--verde)">&#10003; OCR protegido mediante Apps Script</span></div>
+        <p style="font-size:.78rem;color:var(--gris-4)">La clave de IA se guarda en las Propiedades del script y nunca se publica en GitHub ni en el navegador.</p>
       </div>
     </div>
   </main>
@@ -624,6 +809,18 @@
   </div>
 </div>
 
+
+<!-- Vista previa del parte de entrada. Permanece dentro de la app para poder volver. -->
+<div class="pdf-preview-overlay" id="modal-pdf-preview" role="dialog" aria-modal="true" aria-label="Vista previa del parte de entrada">
+  <div class="pdf-preview-toolbar">
+    <div class="pdf-preview-title">&#128196; Parte de entrada de viajeros</div>
+    <div class="pdf-preview-actions">
+      <button class="btn btn-ghost btn-sm" onclick="cerrarVistaPreviaPdf()">&#8592; Volver a la app</button>
+      <button class="btn btn-sm" onclick="imprimirVistaPreviaPdf()">Compartir / Guardar PDF</button>
+    </div>
+  </div>
+  <iframe class="pdf-preview-frame" id="pdf-preview-frame" title="Parte de entrada de viajeros"></iframe>
+</div>
 
 <!-- API Key Modal -->
 <div class="modal-overlay" id="modal-apikey">
@@ -653,22 +850,24 @@
 // ===============================================
 const CLIENT_ID = '1089794111861-0aom7g1gph610kf1i22s7rbkcktq9dgs.apps.googleusercontent.com';
 const DRIVE_FOLDER_ID = '1wIxPwPH3GulG6wZe_cV956LXxajd8au8'; // Carpeta "Airbnb CSV" fija
-const OPENAI_API_KEY = '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';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFeO9_K7kRvbK8Fap1i5t0MvpmzVoaXsy7rrdfR4vp-6sTRvhiPJ4Mcouf9He-Ae7-DA/exec';
+const OPENAI_API_KEY = ''; // Nunca publiques una clave de OpenAI en el HTML
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ7eog7rWAciUQD46krqZj2CIir37YGnxkv3U8CcxC6D2Pkg1cYGjVtSKH2XftADPmXg/exec';
+const PUBLIC_CHECKIN_BASE_URL = 'https://pepellorca.github.io/Apartamentos-Turisticos/checkin.html';
+// Sustituye el valor anterior por la URL /exec de la NUEVA implementación antes de publicar.
 const EMAILS_AUTORIZADOS = [
   'pepe.llorca@gmail.com',
   'pere.llorca@gmail.com',
   'domingo.llorca@gmail.com',
 ];
-const SCOPES = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets.readonly';
+const SCOPES = 'openid email profile https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets.readonly';
 
 const APTOS = [
   { key: 'gran', label: 'Gran Apartamento en el Centro de Benidorm', alias: 'Tomas Ortu\u00F1o', idx: 0,
     maps: 'https://maps.app.goo.gl/CXoHPcBD3x7Di4MV9', direccion: 'Calle de Tom\u00E1s Ortu\u00F1o, 17',
-    wifi: 'MOVISTAR_56C0', wifiPass: '2QMDSAqHtHMUVFs9dCyx', checkin: '14:00', checkout: '11:00' },
+    wifi: '', wifiPass: '', checkin: '14:00', checkout: '11:00' },
   { key: 'moderno', label: 'Moderno Apartamento en el Cora\u00F3n de Benidorm', alias: 'Buen Retiro', idx: 1,
     maps: 'https://maps.app.goo.gl/nPFYHVeKhoU3QcMV8', direccion: 'Ctra. del Buen Retiro, 3',
-    wifi: 'MOVISTAR_B5E4', wifiPass: '804BA3FF3168FB1E319D', checkin: '14:00', checkout: '11:00' },
+    wifi: '', wifiPass: '', checkin: '14:00', checkout: '11:00' },
 ];
 
 let reservas = [];
@@ -676,9 +875,18 @@ let tokenClient = null;
 let accessToken = null;
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
+let cleaningMonth = new Date().getMonth();
+let cleaningYear = new Date().getFullYear();
 let viajeroCount = 0;
 let selectedReservaId = null;
 let modalReservaId = null;
+let maestroAptos = {}; // Datos fijos leídos desde la pestaña Maestro
+let maestroSyncTimer = null;
+let mensajesBackendSyncEnCurso = false;
+let estadoBackendSyncEnCurso = false;
+let estadoReservas = {};
+let currentUser = {name:'Usuario', email:''};
+let preparacionExpandida = {};
 
 // ===============================================
 // CLOCK
@@ -732,16 +940,12 @@ function initGoogleAuth() {
         var user = { name: name, picture: picture, email: email || 'usuario@google.com' };
         localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
         mostrarApp(user);
-        const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-        if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
       })
       .catch(function() {
         // userinfo falló (Safari iOS) - entrar sin verificar email
         var user = { name: 'Usuario', picture: '', email: '' };
         localStorage.setItem('bnd_token', JSON.stringify({ token: accessToken, expiry: Date.now() + 55*60*1000, user: user }));
         mostrarApp(user);
-        const cfg = JSON.parse(localStorage.getItem('bnd_config') || '{}');
-        if (cfg.folderId || DRIVE_FOLDER_ID) setTimeout(syncDrive, 800);
       });
     }
   });
@@ -776,6 +980,7 @@ function signIn() {
 }
 
 function mostrarApp(user) {
+  currentUser = user || {name:'Usuario', email:''};
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('user-badge').style.display = 'flex';
@@ -793,7 +998,12 @@ function mostrarApp(user) {
   } else {
     setSyncState('error', 'Sin datos \u2022 pulsa Actualizar');
   }
-  setTimeout(syncDrive, 800);
+  // Drive y Google Sheets se sincronizan de forma independiente.
+  // Así, un fallo en los CSV no impide cargar check-ins y comunicaciones.
+  setTimeout(function() {
+    syncDrive();
+    iniciarSincronizacionMensajes();
+  }, 500);
 }
 
 function toggleUserMenu() {
@@ -814,6 +1024,7 @@ document.addEventListener('click', function(e) {
 function signOut() {
   if (accessToken) { try { google.accounts.oauth2.revoke(accessToken); } catch(e){} }
   accessToken = null;
+  if (maestroSyncTimer) { clearInterval(maestroSyncTimer); maestroSyncTimer = null; }
   localStorage.removeItem('bnd_token');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
@@ -845,19 +1056,50 @@ async function syncDrive() {
   try {
     // Listar archivos CSV en la carpeta
     const resp = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime)`,
+      `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime)&pageSize=1000&orderBy=modifiedTime+desc`,
       { headers: { Authorization: 'Bearer ' + accessToken } }
     );
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || ('Google Drive devolvió el error ' + resp.status));
+    }
+
     const data = await resp.json();
-    const files = (data.files || []).filter(f =>
-      f.name.toLowerCase().endsWith('.csv') || f.name.toLowerCase().endsWith('.xlsx')
+    const allCsv = (data.files || [])
+      .filter(f => f.name.toLowerCase().endsWith('.csv'))
+      .sort((a,b) => new Date(b.modifiedTime) - new Date(a.modifiedTime));
+
+    const csvBaseName = name => String(name || '').toLowerCase().trim().replace(/\.csv$/i, '');
+
+    // Seleccionar exactamente los dos informes complementarios de Airbnb.
+    // Se admite el sufijo que añade el navegador cuando descarga una copia: " (1)".
+    const upcomingCandidates = allCsv.filter(f =>
+      /^airbnb-upcoming-all(?: \(\d+\))?$/.test(csvBaseName(f.name))
+    );
+    const completedCandidates = allCsv.filter(f =>
+      csvBaseName(f.name).startsWith('airbnb-completed-from-01.01.26-to-')
     );
 
-    if (!files.length) {
-      setSyncState('error', 'No se encontraron CSV en la carpeta');
-      showToast('No hay CSV en la carpeta de Drive', 'error');
+    const latestUpcoming = upcomingCandidates[0] || null;
+    const latestCompleted = completedCandidates[0] || null;
+
+    const faltan = [];
+    if (!latestUpcoming) faltan.push('airbnb-upcoming-all.csv');
+    if (!latestCompleted) faltan.push('airbnb-completed-from-01.01.26-to-[FECHA].csv');
+    if (faltan.length) {
+      const mensaje = 'Falta en Drive: ' + faltan.join(' y ');
+      setSyncState('error', mensaje);
+      showToast(mensaje, 'error');
+      // El maestro sigue sincronizándose aunque falte un CSV.
+      await cargarDesdeMaestro();
+      await cargarMensajesDesdeBackend(true);
+      await cargarEstadoReservasBackend(true);
       return;
     }
+
+    // Primero reservas pendientes de cobro; después, reservas ya cobradas.
+    // procesarCSVTexts elimina duplicados por código de confirmación.
+    const files = [latestUpcoming, latestCompleted];
 
     // Mostrar archivos encontrados
     document.getElementById('drive-files-list').innerHTML =
@@ -882,11 +1124,11 @@ async function syncDrive() {
 
     setSyncState('ok', `${reservas.length} reservas \u2022 Actualizado ${new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})}`);
     showToast(`\u2713 ${reservas.length} reservas cargadas desde Drive`, 'success');
+    await cargarDesdeMaestro();
+    await cargarMensajesDesdeBackend(true);
+    await cargarEstadoReservasBackend(true);
     renderHoy();
     renderStatsCard();
-
-    // Cargar mensajes enviados y check-ins desde Google Sheets
-    cargarDesdeMaestro();
 
   } catch(e) {
     setSyncState('error', 'Error al conectar con Drive');
@@ -895,70 +1137,350 @@ async function syncDrive() {
 }
 
 async function cargarDesdeMaestro() {
-  const SHEET_ID = '1CQqpTvIeCo4aBP1D9FY13CHSbwd43b2RSAb0qdBbxk8';
-  if (!accessToken) return;
+  const SHEET_ID = '1Y3Fhv_f0rOTr5OJXp9EBusXucm2irHLJobEgceK5820';
+  if (!accessToken) return { maestro: 0, mensajes: 0, checkins: 0 };
 
-  try {
-    // 1. Cargar MensajesAirbnb
-    const rMsgs = await fetch(
-      'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID + '/values/MensajesAirbnb!A2:D500',
-      { headers: { Authorization: 'Bearer ' + accessToken } }
-    );
-    if (rMsgs.ok) {
-      const dMsgs = await rMsgs.json();
-      const rows = dMsgs.values || [];
-      const cache = {};
-      rows.forEach(function(row) {
-        const key = row[0] || '';
-        const fecha = row[1] || '';
-        if (key.startsWith('MSG|')) {
-          const parts = key.split('|');
-          if (parts.length >= 3) cache[parts[1] + '_' + parts[2]] = fecha;
-        }
-      });
-      const local = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
-      const merged = Object.assign({}, cache, local);
-      localStorage.setItem('bnd_msgs', JSON.stringify(merged));
-      window._msgsCache = merged;
-      console.log('MensajesAirbnb:', Object.keys(cache).length, 'entradas');
-    }
-  } catch(e) { console.log('Error MensajesAirbnb:', e.message); }
+  const errores = [];
+  let maestroCargado = 0, mensajesCargados = 0, checkinsCargados = 0;
 
-  try {
-    // 2. Cargar CheckIns
-    const rCI = await fetch(
-      'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID + '/values/CheckIns!A2:V500',
-      { headers: { Authorization: 'Bearer ' + accessToken } }
-    );
-    if (rCI.ok) {
-      const dCI = await rCI.json();
-      const rows = dCI.values || [];
-      const registros = {};
-      rows.forEach(function(row) {
-        if (!row || row.length < 4) return;
-        const rid = row[1] || '';
-        if (!rid) return;
-        if (!registros[rid]) {
-          registros[rid] = {
-            reservaId: rid, huesped: row[2]||'', apartamento: row[3]||'',
-            entrada: row[4]||'', salida: row[5]||'', horaLlegada: row[6]||'',
-            fecha: row[0]||'', viajeros: []
-          };
-        }
-        registros[rid].viajeros.push({
-          parentesco: row[7]||'', nombre: row[8]||'', apellidos: row[9]||'',
-          tipoDoc: row[10]||'', numDoc: row[11]||'', soporte: row[12]||'',
-          nacimiento: row[13]||'', expedicion: row[14]||'', sexo: row[15]||'',
-          nacionalidad: row[16]||'', direccion: row[17]||'', pais: row[18]||'',
-          telefono: row[19]||'', email: row[20]||'', firma: row[21]||''
-        });
-      });
-      const lista = Object.values(registros);
-      localStorage.setItem('bnd_checkins', JSON.stringify(lista));
-      console.log('CheckIns:', lista.length, 'registros');
+  const leerRango = async function(rango) {
+    const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID
+      + '/values/' + encodeURIComponent(rango);
+    const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+    if (!resp.ok) {
+      const detail = await resp.text();
+      throw new Error(rango + ': HTTP ' + resp.status + ' ' + detail.slice(0, 160));
     }
-  } catch(e) { console.log('Error CheckIns:', e.message); }
+    return (await resp.json()).values || [];
+  };
+
+  const aObjetos = function(values) {
+    if (!values || !values.length) return [];
+    const headers = values[0].map(norm);
+    return values.slice(1).filter(r => r.some(v => String(v || '').trim() !== '')).map(function(row) {
+      const obj = {};
+      headers.forEach(function(h, i) { if (h) obj[h] = row[i] ?? ''; });
+      return obj;
+    });
+  };
+
+  // 1. Datos fijos de apartamentos.
+  try {
+    const rows = aObjetos(await leerRango('Maestro!A1:M100'));
+    const cache = {};
+    rows.forEach(function(o) {
+      const nombre = o['apartamento'] || '';
+      const alias = o['alias'] || '';
+      const idxApto = aptoIdx(nombre || alias);
+      cache[idxApto] = {
+        apartamento: nombre,
+        alias: alias,
+        'direccion': o['direccion'] || '',
+        'google maps': o['google maps'] || '',
+        'maps': o['google maps'] || '',
+        'wifi': o['wifi'] || '',
+        'contrasena': o['contrasena'] || '',
+        'check-in': o['check-in'] || '14:00',
+        'check-out': o['check-out'] || '11:00',
+        'persona de limpieza': o['persona de limpieza'] || '',
+        'email de limpieza': o['email de limpieza'] || '',
+        'plantilla llegada': o['plantilla llegada'] || '',
+        'procedimientos': o['procedimientos'] || '',
+        'persona entrada': o['persona entrada'] || 'Mi padre, Domingo',
+        'telefono contacto': o['telefono contacto'] || ''
+      };
+    });
+    maestroAptos = cache;
+    maestroCargado = Object.keys(cache).length;
+    localStorage.setItem('bnd_maestro', JSON.stringify(cache));
+  } catch(e) {
+    errores.push(e.message);
+    try { maestroAptos = JSON.parse(localStorage.getItem('bnd_maestro') || '{}'); } catch(_) {}
+  }
+
+  // 2. Comunicaciones marcadas como enviadas.
+  try {
+    const rows = aObjetos(await leerRango('MensajesAirbnb!A1:D1000'));
+    const cacheSheets = {};
+    rows.forEach(function(o) {
+      const key = o['key'] || o['clave'] || '';
+      const fecha = o['fecha'] || '';
+      if (String(key).startsWith('MSG|')) {
+        const parts = String(key).split('|');
+        if (parts.length >= 3) cacheSheets[parts[1] + '_' + parts[2]] = fecha;
+      }
+    });
+    const local = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
+    const merged = Object.assign({}, local, cacheSheets); // Sheets prevalece.
+    localStorage.setItem('bnd_msgs', JSON.stringify(merged));
+    window._msgsCache = merged;
+    mensajesCargados = Object.keys(cacheSheets).length;
+  } catch(e) { errores.push(e.message); }
+
+  // 3. Registros de viajeros. Se leen por nombre de cabecera, no por posición fija.
+  try {
+    const rows = aObjetos(await leerRango('CheckIns!A1:W2000'));
+    const registros = {};
+    rows.forEach(function(o) {
+      const rid = o['reserva'] || o['reservaid'] || '';
+      if (!rid) return;
+      if (!registros[rid]) {
+        registros[rid] = {
+          id: rid, reservaId: rid,
+          huesped: o['huesped'] || '', apartamento: o['apartamento'] || '',
+          entrada: o['entrada'] || '', salida: o['salida'] || '',
+          horaLlegada: normalizarHoraCliente(o['hora llegada'] || ''), fecha: o['fecha'] || '', viajeros: []
+        };
+      }
+      const viajeroRaw = o['viajero'] || '';
+      registros[rid].viajeros.push({
+        numero: !isNaN(Number(viajeroRaw)) ? Number(viajeroRaw) : registros[rid].viajeros.length + 1,
+        parentesco: o['parentesco'] || (isNaN(Number(viajeroRaw)) ? viajeroRaw : ''),
+        nombre: o['nombre'] || '', apellidos: o['apellidos'] || '',
+        tipoDoc: o['tipo doc'] || '', numDoc: o['nº doc'] || o['num doc'] || '',
+        soporte: o['nº soporte'] || o['num soporte'] || '', nacimiento: o['nacimiento'] || '',
+        expedicion: o['expedicion'] || '', sexo: o['sexo'] || '', nacionalidad: o['nacionalidad'] || '',
+        direccion: o['direccion'] || '', pais: o['pais'] || '', telefono: o['telefono'] || '',
+        email: o['email'] || '', firma: o['firma'] || ''
+      });
+    });
+    const lista = Object.values(registros);
+    localStorage.setItem('bnd_checkins', JSON.stringify(lista));
+    todosLosRegistros = lista;
+    checkinsCargados = lista.length;
+  } catch(e) { errores.push(e.message); }
+
+  renderHoy();
+  if (document.getElementById('view-gestion')?.classList.contains('active')) renderGestion();
+  if (document.getElementById('view-limpiezas')?.classList.contains('active')) renderPlanLimpiezasMensual();
+
+  if (errores.length) {
+    setSyncState('error', 'Drive sincronizado · error parcial en el maestro');
+    showToast('Google Sheets: ' + errores.join(' | '), 'error');
+  }
+  return { maestro: maestroCargado, mensajes: mensajesCargados, checkins: checkinsCargados, errores };
 }
+
+async function cargarMensajesDesdeBackend(silent) {
+  if (mensajesBackendSyncEnCurso) return;
+  mensajesBackendSyncEnCurso = true;
+  try {
+    const url = APPS_SCRIPT_URL + '?action=getMensajesEnviados';
+    const resp = await jsonpRequest(url, 15000);
+    if (!resp || !resp.ok) throw new Error(resp?.error || 'No se pudieron leer los mensajes enviados');
+
+    const remoto = {};
+    (resp.mensajes || []).forEach(function(item) {
+      const key = String(item.key || '');
+      const parts = key.split('|');
+      if (parts.length >= 3 && parts[0] === 'MSG') remoto[parts[1] + '_' + parts[2]] = item.fecha || '';
+    });
+
+    const local = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
+    const merged = Object.assign({}, local, remoto);
+    localStorage.setItem('bnd_msgs', JSON.stringify(merged));
+    window._msgsCache = merged;
+    renderMensajesAirbnb();
+    if (document.getElementById('view-gestion')?.classList.contains('active')) renderGestion();
+    return merged;
+  } catch (e) {
+    if (!silent) showToast('No se pudieron sincronizar los mensajes: ' + e.message, 'error');
+    return null;
+  } finally {
+    mensajesBackendSyncEnCurso = false;
+  }
+}
+
+function actorActual() {
+  return (currentUser && (currentUser.name || currentUser.email)) || 'Usuario';
+}
+
+async function cargarEstadoReservasBackend(silent) {
+  if (estadoBackendSyncEnCurso) return estadoReservas;
+  estadoBackendSyncEnCurso = true;
+  try {
+    const resp = await jsonpRequest(APPS_SCRIPT_URL + '?action=getEstadoReservas', 15000);
+    if (!resp || !resp.ok) throw new Error(resp?.error || 'No se pudo leer el estado operativo');
+    const map = {};
+    (resp.estados || []).forEach(function(item) {
+      if (item && item.reserva) map[String(item.reserva)] = item;
+    });
+    estadoReservas = map;
+    localStorage.setItem('bnd_estado_reservas', JSON.stringify(map));
+    renderHoy();
+    if (document.getElementById('view-gestion')?.classList.contains('active')) renderGestion();
+    if (document.getElementById('view-limpiezas')?.classList.contains('active')) renderPlanLimpiezasMensual();
+    return map;
+  } catch (e) {
+    try { estadoReservas = JSON.parse(localStorage.getItem('bnd_estado_reservas') || '{}'); } catch(_e) {}
+    if (!silent) showToast('No se pudo sincronizar el estado operativo: ' + e.message, 'error');
+    return estadoReservas;
+  } finally {
+    estadoBackendSyncEnCurso = false;
+  }
+}
+
+function getEstadoReserva(rid) {
+  return estadoReservas[String(rid || '')] || {};
+}
+
+function aplicarEstadoBackendLocal(rid, nuevoEstado) {
+  const key = String(rid || '');
+  const previo = estadoReservas[key] || {};
+  const ci = getCIReserva(key);
+  const merged = Object.assign({}, previo, nuevoEstado || {});
+  if (merged.horaLlegada) merged.horaLlegada = normalizarHoraCliente(merged.horaLlegada);
+  if (previo.checkinRecibido || ci) {
+    merged.checkinRecibido = true;
+    merged.checkinViajeros = Number(previo.checkinViajeros || (ci && ci.viajeros ? ci.viajeros.length : (ci ? 1 : 0))) || 0;
+    merged.checkinFecha = previo.checkinFecha || (ci && ci.fecha) || '';
+  }
+  estadoReservas[key] = merged;
+  return merged;
+}
+
+function normalizarHoraCliente(value) {
+  if (value === null || value === undefined || value === '') return '';
+  if (value instanceof Date && !isNaN(value.getTime())) {
+    return String(value.getUTCHours()).padStart(2,'0') + ':' + String(value.getUTCMinutes()).padStart(2,'0');
+  }
+  const text = String(value).trim();
+
+  // Google Sheets puede serializar las horas como fechas de 1899. En ese
+  // caso la hora correcta está en los componentes UTC del valor serial.
+  if (/1899|1900|GMT[+-]\d{4}/i.test(text)) {
+    const historical = new Date(text);
+    if (!isNaN(historical.getTime())) {
+      return String(historical.getUTCHours()).padStart(2,'0') + ':' + String(historical.getUTCMinutes()).padStart(2,'0');
+    }
+  }
+
+  const direct = text.match(/(?:^|\s)([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?(?:\s|$)/);
+  if (direct) return String(direct[1]).padStart(2,'0') + ':' + direct[2];
+
+  const numeric = Number(text.replace(',', '.'));
+  if (Number.isFinite(numeric) && numeric >= 0 && numeric < 1) {
+    const minutes = Math.round(numeric * 24 * 60) % (24 * 60);
+    return String(Math.floor(minutes / 60)).padStart(2,'0') + ':' + String(minutes % 60).padStart(2,'0');
+  }
+  return text;
+}
+
+function horaLlegadaReserva(rid) {
+  const estado = getEstadoReserva(rid);
+  if (estado.horaLlegada) return normalizarHoraCliente(estado.horaLlegada);
+  const ci = getCIReserva(rid);
+  return normalizarHoraCliente(ci?.horaLlegada || '');
+}
+
+function fechaHoraCorta(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (isNaN(d)) return String(value);
+  return d.toLocaleString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+}
+
+function reservaLimpiezaParaLlegada(arrival) {
+  return reservas
+    .filter(function(r){ return r.aptoIdx === arrival.aptoIdx && r.id !== arrival.id && r.salida <= arrival.entrada; })
+    .sort(function(a,b){ return b.salida - a.salida; })[0] || null;
+}
+
+async function guardarHoraLlegadaBackend(r, hora, origen) {
+  const apto = APTOS[r.aptoIdx] || APTOS[0];
+  const payload = {
+    action:'setHoraLlegada', reservaId:r.id, huesped:r.huesped || '', apartamento:apto.alias || '',
+    entrada:fmtDate(r.entrada), salida:fmtDate(r.salida), horaLlegada:hora,
+    actor:actorActual(), origen:origen || 'Aplicación'
+  };
+  const resp = await jsonpRequest(APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload)), 20000);
+  if (!resp || !resp.ok) throw new Error(resp?.error || 'No se pudo guardar la hora');
+  if (resp.estado) aplicarEstadoBackendLocal(r.id, resp.estado);
+  localStorage.setItem('bnd_estado_reservas', JSON.stringify(estadoReservas));
+  return resp;
+}
+
+async function cambiarHoraLlegada(rid) {
+  const r = reservas.find(function(x){ return x.id === rid; });
+  if (!r) return;
+  const actual = horaLlegadaReserva(rid) || '14:00';
+  const hora = prompt('Hora aproximada de llegada (HH:MM)', actual);
+  if (hora === null) return;
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) {
+    showToast('Formato de hora no válido. Usa HH:MM', 'error');
+    return;
+  }
+  try {
+    await guardarHoraLlegadaBackend(r, hora, 'Aplicación');
+    showToast('✓ Hora de llegada guardada y sincronizada', 'success');
+    renderHoy();
+    if (document.getElementById('view-gestion')?.classList.contains('active')) renderGestion();
+  } catch(e) { showToast('No se pudo guardar la hora: ' + e.message, 'error'); }
+}
+
+async function cambiarEstadoLimpieza(rid, estado, button) {
+  const r = reservas.find(function(x){ return x.id === rid; });
+  if (!r) return;
+  if (button) button.disabled = true;
+  const apto = APTOS[r.aptoIdx] || APTOS[0];
+  const payload = {
+    action:'setLimpiezaEstado', reservaId:r.id, huesped:r.huesped || '', apartamento:apto.alias || '',
+    entrada:fmtDate(r.entrada), salida:fmtDate(r.salida), estado:estado,
+    actor:actorActual(), origen:'Aplicación'
+  };
+  try {
+    const resp = await jsonpRequest(APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload)), 20000);
+    if (!resp || !resp.ok) throw new Error(resp?.error || 'No se pudo guardar el estado');
+    if (resp.estado) aplicarEstadoBackendLocal(r.id, resp.estado);
+    localStorage.setItem('bnd_estado_reservas', JSON.stringify(estadoReservas));
+    showToast(estado === 'limpio' ? '✓ Piso marcado como limpio' : 'Limpieza reabierta', 'success');
+    renderHoy();
+    if (document.getElementById('view-gestion')?.classList.contains('active')) renderGestion();
+  } catch(e) {
+    if (button) button.disabled = false;
+    showToast('No se pudo actualizar la limpieza: ' + e.message, 'error');
+  }
+}
+
+
+async function cambiarEstadoVerificacion(rid, estado, button) {
+  const r = reservas.find(function(x){ return x.id === rid; });
+  if (!r) return;
+  if (button) button.disabled = true;
+  const apto = APTOS[r.aptoIdx] || APTOS[0];
+  const payload = {
+    action:'setVerificacionEstado', reservaId:r.id, huesped:r.huesped || '', apartamento:apto.alias || '',
+    entrada:fmtDate(r.entrada), salida:fmtDate(r.salida), estado:estado,
+    actor:actorActual(), origen:'Aplicación'
+  };
+  try {
+    const resp = await jsonpRequest(APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload)), 20000);
+    if (!resp || !resp.ok) throw new Error(resp?.error || 'No se pudo guardar la verificación');
+    if (resp.estado) aplicarEstadoBackendLocal(r.id, resp.estado);
+    localStorage.setItem('bnd_estado_reservas', JSON.stringify(estadoReservas));
+    showToast(estado === 'verificado' ? '✓ Piso marcado como verificado' : 'Verificación reabierta', 'success');
+    renderHoy();
+    if (document.getElementById('view-gestion')?.classList.contains('active')) renderGestion();
+  } catch(e) {
+    if (button) button.disabled = false;
+    showToast('No se pudo actualizar la verificación: ' + e.message, 'error');
+  }
+}
+
+function iniciarSincronizacionMensajes() {
+  if (maestroSyncTimer) clearInterval(maestroSyncTimer);
+  maestroSyncTimer = setInterval(function() {
+    cargarMensajesDesdeBackend(true);
+    cargarEstadoReservasBackend(true);
+  }, 60000);
+}
+
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && document.getElementById('app')?.style.display !== 'none') {
+    cargarMensajesDesdeBackend(true);
+    cargarEstadoReservasBackend(true);
+  }
+});
 
 function setSyncState(state, text) {
   const dot  = document.getElementById('sync-dot');
@@ -976,6 +1498,7 @@ function showView(id) {
   document.getElementById('view-' + id).classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'calendario') renderCalendario();
+  if (id === 'limpiezas') renderPlanLimpiezasMensual();
 
   if (id === 'drive') { actualizarEstadoApiKey(); actualizarEstadoClaveOCR(); }
   if (id === 'gestion') renderGestion();
@@ -1060,6 +1583,7 @@ function loadFromStorage() {
     const raw = localStorage.getItem('bnd_reservas');
     if (raw) reservas = JSON.parse(raw).map(r=>({...r,entrada:new Date(r.entrada),salida:new Date(r.salida)}));
   } catch(e) {}
+  try { estadoReservas = JSON.parse(localStorage.getItem('bnd_estado_reservas') || '{}'); } catch(e) { estadoReservas = {}; }
 }
 
 function renderStatsCard() {
@@ -1081,79 +1605,374 @@ function renderStatsCard() {
 // ===============================================
 // VISTA HOY
 // ===============================================
+function inicioDia(value) {
+  const d = value ? new Date(value) : new Date();
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function diferenciaDias(desde, hasta) {
+  return Math.round((inicioDia(hasta) - inicioDia(desde)) / 86400000);
+}
+
+function etiquetaFechaLlegada(fecha, hoy) {
+  const dias = diferenciaDias(hoy, fecha);
+  if (dias === 0) return 'Llega hoy';
+  if (dias === 1) return 'Llega mañana';
+  return 'Llega el ' + fmtDate(fecha);
+}
+
+function togglePreparacion(aptoIdx) {
+  preparacionExpandida[aptoIdx] = !preparacionExpandida[aptoIdx];
+  renderEstadoAptos();
+}
+
+function checkPreparacionHtml_(opts) {
+  const clase = opts.done ? 'done' : (opts.blocked ? 'blocked' : 'pending');
+  const icono = opts.done ? '&#10003;' : (opts.blocked ? '&#8212;' : '&#9675;');
+  const accion = opts.action
+    ? '<button class="prep-check-action ' + (opts.actionClass || 'primary') + '" onclick="event.stopPropagation();' + opts.action + '">' + opts.actionLabel + '</button>'
+    : '';
+  return '<div class="prep-check ' + clase + '">'
+    + '<div class="prep-check-icon">' + icono + '</div>'
+    + '<div class="prep-check-body"><div class="prep-check-name">' + opts.name + '</div>'
+    + '<div class="prep-check-note">' + opts.note + '</div></div>'
+    + accion + '</div>';
+}
+
 function renderEstadoAptos() {
-  var hoy = new Date(); hoy.setHours(0,0,0,0);
-  var man = new Date(hoy); man.setDate(man.getDate()+1);
-  var kHoy = dateKey(hoy), kMan = dateKey(man);
-  var html = '<div class="estado-grid">';
+  const hoy = inicioDia();
+  const manana = new Date(hoy); manana.setDate(manana.getDate() + 1);
+  const kHoy = dateKey(hoy);
+  let html = '<div class="prep-section-title"><h2>&#127968; Preparación de apartamentos</h2><span>Estado compartido y sincronizado</span></div><div class="prep-grid">';
+
   APTOS.forEach(function(apto) {
-    var activa   = reservas.find(function(r){ return r.aptoIdx===apto.idx && r.entrada<=hoy && r.salida>hoy; });
-    var saleHoy  = reservas.find(function(r){ return r.aptoIdx===apto.idx && dateKey(r.salida)===kHoy; });
-    var llegaHoy = reservas.find(function(r){ return r.aptoIdx===apto.idx && dateKey(r.entrada)===kHoy; });
-    var llegaMan = reservas.find(function(r){ return r.aptoIdx===apto.idx && dateKey(r.entrada)===kMan; });
-    var colorClass = apto.idx===0 ? 'apto-tag-0' : 'apto-tag-1';
-    var estado, badge, detalle;
-    if (llegaHoy) {
-      estado='checkin'; badge='Check-in hoy';
-      detalle='<span class="estado-huesped">'+llegaHoy.huesped+'</span><br>Entrada hoy &bull; '+llegaHoy.noches+' noches hasta el '+fmtDate(llegaHoy.salida);
-    } else if (saleHoy) {
-      estado='limpieza'; badge='Sale hoy &bull; Limpiar';
-      detalle='<span class="estado-huesped">'+saleHoy.huesped+'</span> sale hoy antes de las 11:00'+(llegaMan ? '<br>&#9888; '+llegaMan.huesped+' entra ma&ntilde;ana' : '');
-    } else if (activa) {
-      var dias = Math.round((activa.salida-hoy)/86400000);
-      estado='ocupado'; badge='Ocupado';
-      detalle='<span class="estado-huesped">'+activa.huesped+'</span><br>Sale el '+fmtDate(activa.salida)+' &bull; '+dias+' d&iacute;a'+(dias!==1?'s':'')+' restante'+(dias!==1?'s':'');
-    } else if (llegaMan) {
-      estado='limpieza'; badge='Pendiente limpieza';
-      detalle='<span class="estado-huesped">'+llegaMan.huesped+'</span> entra ma&ntilde;ana<br>Preparar el apartamento hoy';
-    } else {
-      estado='libre'; badge='Libre';
-      var prox = reservas.filter(function(r){ return r.aptoIdx===apto.idx && r.entrada>hoy; }).sort(function(a,b){ return a.entrada-b.entrada; })[0];
-      detalle = prox ? 'Pr&oacute;xima entrada el '+fmtDate(prox.entrada)+' &bull; '+prox.huesped : 'Sin reservas pr&oacute;ximas';
+    const listaApto = reservas.filter(function(r){ return r.aptoIdx === apto.idx; }).sort(function(a,b){ return a.entrada - b.entrada; });
+    const actual = listaApto.filter(function(r){ return r.entrada < hoy && r.salida >= hoy; }).sort(function(a,b){ return b.entrada - a.entrada; })[0] || null;
+    const proxima = listaApto.filter(function(r){ return r.entrada >= hoy; })[0] || null;
+    const salidaHoy = actual && dateKey(actual.salida) === kHoy;
+    const cambioHoy = !!(actual && proxima && dateKey(actual.salida) === kHoy && dateKey(proxima.entrada) === kHoy);
+
+    if (!proxima) {
+      const estadoSalida = actual ? getEstadoReserva(actual.id) : {};
+      const salidaCompletada = !!(actual && salidaHoy && estadoSalida.limpiezaEstado === 'limpio');
+      const ocupadoReal = !!actual && !salidaCompletada;
+      const status = ocupadoReal ? 'ocupado' : 'libre';
+      const label = ocupadoReal ? 'Ocupado' : 'Libre';
+      const detalle = ocupadoReal
+        ? '<div class="prep-info current"><strong>Ocupado actualmente</strong><br>' + escapeHtmlClient(actual.huesped) + ' · sale ' + (salidaHoy ? 'hoy antes de las 11:00' : 'el ' + fmtDate(actual.salida)) + '</div>'
+        : (salidaCompletada
+          ? '<div class="prep-info"><strong>Salida completada</strong><br>' + escapeHtmlClient(actual.huesped) + ' · piso marcado como limpio.</div>'
+          : '<div class="prep-info"><strong>Actualmente libre</strong><br>Sin próximas reservas cargadas.</div>');
+      html += '<div class="prep-card ' + status + '"><div class="prep-head">'
+        + '<div class="prep-apto">' + escapeHtmlClient(apto.alias) + '</div>'
+        + '<span class="prep-status ' + status + '">' + label + '</span></div>'
+        + '<div class="prep-summary">' + detalle + '</div></div>';
+      return;
     }
-    // Emojis como entidades HTML
-    var iconos = { checkin:'&#128309;', ocupado:'&#128308;', limpieza:'&#128993;', libre:'&#128994;' };
-    html += '<div class="estado-card '+estado+'">'
-      +'<div class="estado-apto-nombre">&#127968; <span class="'+colorClass+'">'+apto.alias+'</span></div>'
-      +'<div class="estado-badge '+estado+'">'+iconos[estado]+' '+badge+'</div>'
-      +'<div class="estado-detalle">'+detalle+'</div>'
-      +'</div>';
+
+    const estadoProxima = getEstadoReserva(proxima.id);
+    const fuenteLimpieza = reservaLimpiezaParaLlegada(proxima);
+    const reservaLimpieza = fuenteLimpieza || proxima;
+    const estadoLimpieza = getEstadoReserva(reservaLimpieza.id);
+    const limpio = estadoLimpieza.limpiezaEstado === 'limpio';
+    const verificadoGuardado = estadoProxima.verificacionEstado === 'verificado';
+    const verificado = limpio && verificadoGuardado;
+    const ciLocal = getCIReserva(proxima.id);
+    const checkinRecibido = !!estadoProxima.checkinRecibido || !!ciLocal;
+    const viajeros = Number(estadoProxima.checkinViajeros || (ciLocal && ciLocal.viajeros ? ciLocal.viajeros.length : (ciLocal ? 1 : 0))) || 0;
+    const hora = horaLlegadaReserva(proxima.id);
+    const horaConocida = !!hora;
+    const completadas = [limpio, verificado, checkinRecibido, horaConocida].filter(Boolean).length;
+    const porcentaje = Math.round(completadas * 25);
+    const diasLlegada = diferenciaDias(hoy, proxima.entrada);
+    const puedeLimpiar = !fuenteLimpieza || fuenteLimpieza.salida <= hoy;
+    const urgente = diasLlegada <= 1;
+    if (preparacionExpandida[apto.idx] === undefined) preparacionExpandida[apto.idx] = urgente || cambioHoy;
+    const abierta = !!preparacionExpandida[apto.idx];
+
+    const actualSigueOcupado = !!actual && !(salidaHoy && limpio);
+    let status = 'proxima', label = 'Próxima reserva';
+    if (completadas === 4) { status = 'preparado'; label = 'Preparado'; }
+    else if (cambioHoy && !limpio) { status = 'cambio'; label = 'Cambio hoy'; }
+    else if (diasLlegada <= 1 && limpio && !verificado) { status = 'verificar'; label = 'Falta verificar'; }
+    else if (actualSigueOcupado) { status = 'ocupado'; label = 'Ocupado'; }
+    else if (diasLlegada <= 1 && !limpio && puedeLimpiar) { status = 'limpieza'; label = 'En limpieza'; }
+    else if (diasLlegada <= 1) { status = 'pendiente'; label = 'Pendiente'; }
+
+    let actualHtml = '';
+    if (actualSigueOcupado) {
+      actualHtml = '<div class="prep-info current"><strong>Ocupado actualmente</strong><br>'
+        + escapeHtmlClient(actual.huesped) + ' · sale ' + (salidaHoy ? 'hoy antes de las 11:00' : 'el ' + fmtDate(actual.salida)) + '</div>';
+    } else if (actual && salidaHoy && limpio) {
+      actualHtml = '<div class="prep-info"><strong>Salida completada</strong><br>'
+        + escapeHtmlClient(actual.huesped) + ' · limpieza terminada.</div>';
+    } else {
+      actualHtml = '<div class="prep-info"><strong>Actualmente libre</strong><br>Disponible hasta la próxima llegada.</div>';
+    }
+
+    const nextHtml = '<div class="prep-info next"><strong>Próxima llegada</strong><br>'
+      + escapeHtmlClient(proxima.huesped) + ' · ' + etiquetaFechaLlegada(proxima.entrada, hoy)
+      + (hora ? ' a las ' + escapeHtmlClient(hora) : ' · hora pendiente') + '</div>';
+
+    let turnoverHtml = '';
+    if (cambioHoy) {
+      turnoverHtml = '<div class="prep-turnover">&#9888; Cambio de huésped hoy · salida 11:00 → llegada ' + (hora || 'pendiente') + '</div>';
+    }
+
+    let notaLimpieza = 'Pendiente de completar';
+    let accionLimpieza = '', accionLimpiezaLabel = '', accionLimpiezaClass = 'clean';
+    if (limpio) {
+      notaLimpieza = 'Terminada' + (estadoLimpieza.limpiezaPor ? ' por ' + escapeHtmlClient(estadoLimpieza.limpiezaPor) : '')
+        + (estadoLimpieza.limpiezaFecha ? ' · ' + fechaHoraCorta(estadoLimpieza.limpiezaFecha) : '');
+      accionLimpieza = "cambiarEstadoLimpieza('" + reservaLimpieza.id + "','pendiente',this)";
+      accionLimpiezaLabel = 'Desmarcar'; accionLimpiezaClass = 'undo';
+    } else if (puedeLimpiar) {
+      notaLimpieza = fuenteLimpieza ? 'Pendiente desde la salida de ' + escapeHtmlClient(fuenteLimpieza.huesped) : 'Pendiente';
+      accionLimpieza = "cambiarEstadoLimpieza('" + reservaLimpieza.id + "','limpio',this)";
+      accionLimpiezaLabel = 'Marcar limpio';
+    } else {
+      notaLimpieza = 'Pendiente de la salida de ' + escapeHtmlClient(fuenteLimpieza.huesped) + ' · ' + fmtDate(fuenteLimpieza.salida);
+    }
+
+    let notaVerificacion = 'Pendiente de la limpieza';
+    let accionVerificacion = '', accionVerificacionLabel = '', accionVerificacionClass = 'primary';
+    if (verificado) {
+      notaVerificacion = 'Verificado' + (estadoProxima.verificacionPor ? ' por ' + escapeHtmlClient(estadoProxima.verificacionPor) : '')
+        + (estadoProxima.verificacionFecha ? ' · ' + fechaHoraCorta(estadoProxima.verificacionFecha) : '');
+      accionVerificacion = "cambiarEstadoVerificacion('" + proxima.id + "','pendiente',this)";
+      accionVerificacionLabel = 'Desmarcar'; accionVerificacionClass = 'undo';
+    } else if (limpio) {
+      notaVerificacion = verificadoGuardado ? 'Debe verificarse de nuevo' : 'Pendiente de comprobación final';
+      accionVerificacion = "cambiarEstadoVerificacion('" + proxima.id + "','verificado',this)";
+      accionVerificacionLabel = 'Marcar verificado';
+    }
+
+    const checks = checkPreparacionHtml_({
+      done:limpio, blocked:!limpio && !puedeLimpiar, name:'Limpieza terminada', note:notaLimpieza,
+      action:accionLimpieza, actionLabel:accionLimpiezaLabel, actionClass:accionLimpiezaClass
+    }) + checkPreparacionHtml_({
+      done:verificado, blocked:!limpio, name:'Verificación final', note:notaVerificacion,
+      action:accionVerificacion, actionLabel:accionVerificacionLabel, actionClass:accionVerificacionClass
+    }) + checkPreparacionHtml_({
+      done:checkinRecibido, blocked:false, name:'Check-in recibido',
+      note:checkinRecibido ? (viajeros ? viajeros + ' viajero' + (viajeros !== 1 ? 's' : '') + ' registrado' + (viajeros !== 1 ? 's' : '') : 'Registro recibido') : 'Pendiente del huésped'
+    }) + checkPreparacionHtml_({
+      done:horaConocida, blocked:false, name:'Hora de llegada', note:horaConocida ? 'Llegada prevista a las ' + escapeHtmlClient(hora) : 'Hora todavía pendiente',
+      action:"cambiarHoraLlegada('" + proxima.id + "')", actionLabel:'Cambiar hora', actionClass:'primary'
+    });
+
+    html += '<div class="prep-card ' + status + '">'
+      + '<div class="prep-head"><div class="prep-apto">' + escapeHtmlClient(apto.alias) + '</div><span class="prep-status ' + status + '">' + label + '</span></div>'
+      + '<div class="prep-summary">' + actualHtml + nextHtml + '</div>'
+      + turnoverHtml
+      + '<div class="prep-progress-wrap"><div class="prep-progress-meta"><span>Preparación</span><strong>' + completadas + ' de 4</strong></div>'
+      + '<div class="prep-progress"><span style="width:' + porcentaje + '%"></span></div></div>'
+      + '<button class="prep-toggle" onclick="togglePreparacion(' + apto.idx + ')">' + (abierta ? 'Ocultar preparación &#9650;' : 'Ver preparación &#9660;') + '</button>'
+      + '<div class="prep-detail ' + (abierta ? 'open' : '') + '">' + checks
+      + '<div class="prep-footer"><button onclick="openModal(\'' + proxima.id + '\')">Ver reserva</button></div></div>'
+      + '</div>';
   });
+
   html += '</div>';
-  var el = document.getElementById('estado-aptos-block');
+  const el = document.getElementById('estado-aptos-block');
   if (el) el.innerHTML = html;
 }
 
 function renderHoy() {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   const man = new Date(hoy); man.setDate(man.getDate()+1);
-  const kHoy=dateKey(hoy), kMan=dateKey(man);
+  const kHoy = dateKey(hoy), kMan = dateKey(man);
 
-  const llegadasHoy    = reservas.filter(r=>dateKey(r.entrada)===kHoy);
-  const salidasHoy     = reservas.filter(r=>dateKey(r.salida) ===kHoy);
-  const llegadasManana = reservas.filter(r=>dateKey(r.entrada)===kMan);
-  const salidasManana  = reservas.filter(r=>dateKey(r.salida) ===kMan);
-  const aptosSalidaMan = new Set(salidasManana.map(r=>r.aptoIdx));
-  const limpiezasMan   = [...salidasManana, ...llegadasManana.filter(r=>!aptosSalidaMan.has(r.aptoIdx))];
-
+  // La tarjeta de preparación concentra llegadas, salidas y limpieza.
   renderEstadoAptos();
 
-  renderEventList('list-llegadas-hoy',    llegadasHoy,    'llegada');
-  renderEventList('list-salidas-hoy',     salidasHoy,     'salida');
-  renderEventList('list-llegadas-manana', llegadasManana, 'llegada');
-  renderEventList('list-limpiezas-manana',limpiezasMan,   'limpieza');
+  // Solo se muestran avisos que requieren una acción. La información
+  // ordinaria ya está integrada en la tarjeta de cada apartamento.
+  const avisos = [];
+  reservas
+    .filter(function(r) {
+      const k = dateKey(r.entrada);
+      return k === kHoy || k === kMan;
+    })
+    .sort(function(a,b) { return a.entrada - b.entrada; })
+    .forEach(function(r) {
+      const esHoy = dateKey(r.entrada) === kHoy;
+      const apto = (APTOS[r.aptoIdx] || APTOS[0]).alias;
+      const estado = getEstadoReserva(r.id);
+      const ciLocal = getCIReserva(r.id);
+      const checkinRecibido = !!estado.checkinRecibido || !!ciLocal;
+      const hora = horaLlegadaReserva(r.id);
+      const fuenteLimpieza = reservaLimpiezaParaLlegada(r);
+      const reservaLimpieza = fuenteLimpieza || r;
+      const estadoLimpieza = getEstadoReserva(reservaLimpieza.id);
+      const limpio = estadoLimpieza.limpiezaEstado === 'limpio';
+      const verificado = limpio && estado.verificacionEstado === 'verificado';
+      const prefijo = esHoy ? 'Llega hoy' : 'Llega mañana';
+      const prioridad = esHoy ? 'urgente' : 'pendiente';
 
-  const alertas=[];
-  reservas.forEach(r=>{
-    const mismo=reservas.find(x=>x.id!==r.id&&x.aptoIdx===r.aptoIdx&&dateKey(x.entrada)===dateKey(r.salida));
-    if(mismo&&dateKey(r.salida)>=kHoy)
-      alertas.push(`&#128308; <strong>Turnover</strong>: ${APTOS[r.aptoIdx]?.alias} el ${fmtDate(r.salida)} \u2014 sale ${r.huesped}, entra ${mismo.huesped}`);
-  });
-  // Mensajes para Airbnb
+      if (!hora) {
+        avisos.push({
+          clase: prioridad,
+          icono: '&#128336;',
+          titulo: 'Falta la hora de llegada',
+          detalle: escapeHtmlClient(r.huesped) + ' · ' + escapeHtmlClient(apto) + ' · ' + prefijo.toLowerCase(),
+          accion: "cambiarHoraLlegada('" + r.id + "')",
+          boton: 'Añadir hora'
+        });
+      }
+
+      if (!checkinRecibido) {
+        avisos.push({
+          clase: prioridad,
+          icono: '&#128273;',
+          titulo: 'Check-in pendiente',
+          detalle: escapeHtmlClient(r.huesped) + ' · ' + escapeHtmlClient(apto) + ' · ' + prefijo.toLowerCase(),
+          accion: "openModal('" + r.id + "')",
+          boton: 'Ver reserva'
+        });
+      }
+
+      if (esHoy && !limpio) {
+        avisos.push({
+          clase: 'urgente',
+          icono: '&#129529;',
+          titulo: 'Piso pendiente de limpieza',
+          detalle: escapeHtmlClient(apto) + ' · llegada de ' + escapeHtmlClient(r.huesped) + (hora ? ' a las ' + escapeHtmlClient(hora) : ''),
+          accion: "cambiarEstadoLimpieza('" + reservaLimpieza.id + "','limpio',this)",
+          boton: 'Marcar limpio'
+        });
+      } else if (esHoy && limpio && !verificado) {
+        avisos.push({
+          clase: 'pendiente',
+          icono: '&#128269;',
+          titulo: 'Falta la verificación final',
+          detalle: escapeHtmlClient(apto) + ' · llegada de ' + escapeHtmlClient(r.huesped) + (hora ? ' a las ' + escapeHtmlClient(hora) : ''),
+          accion: "cambiarEstadoVerificacion('" + r.id + "','verificado',this)",
+          boton: 'Marcar verificado'
+        });
+      }
+    });
+
+  const alertasBlock = document.getElementById('alertas-block');
+  if (alertasBlock) {
+    alertasBlock.innerHTML = avisos.length
+      ? '<div class="avisos-importantes"><div class="prep-section-title"><h2>&#9888;&#65039; Avisos importantes</h2><span>Solo tareas que requieren atención</span></div>'
+        + avisos.map(function(a) {
+          return '<div class="aviso-operativo ' + a.clase + '">'
+            + '<div class="aviso-operativo-icon">' + a.icono + '</div>'
+            + '<div class="aviso-operativo-body"><strong>' + a.titulo + '</strong><span>' + a.detalle + '</span></div>'
+            + '<button class="btn-operativo hour" onclick="' + a.accion + '">' + a.boton + '</button>'
+            + '</div>';
+        }).join('') + '</div>'
+      : '';
+  }
+
+  // Los mensajes de Airbnb se mantienen con su flujo de copia y sincronización.
   renderMensajesAirbnb();
+}
 
-  document.getElementById('alertas-block').innerHTML = alertas.length ?
-    `<div class="card" style="border-left:4px solid var(--coral)"><div class="card-title">Alertas</div>${alertas.map(a=>`<div style="padding:8px 0;font-size:.85rem;border-bottom:1px solid var(--gris-2)">${a}</div>`).join('')}</div>` : '';
+function renderLlegadas(items) {
+  const el = document.getElementById('list-llegadas');
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state"><span class="emoji">&#127749;</span>Sin llegadas hoy ni ma&ntilde;ana</div>';
+    return;
+  }
+
+  const orden = { hoy:0, manana:1 };
+  items = items.slice().sort(function(a,b) {
+    if (orden[a.estado] !== orden[b.estado]) return orden[a.estado] - orden[b.estado];
+    return a.reserva.entrada - b.reserva.entrada;
+  });
+
+  const cfg = {
+    hoy: { clase:'llegada-hoy', badge:'hoy', icon:'&#128994;', titulo:'Llega hoy' },
+    manana: { clase:'llegada-manana', badge:'manana', icon:'&#128309;', titulo:'Llega ma&ntilde;ana' }
+  };
+
+  el.innerHTML = items.map(function(item) {
+    const r = item.reserva;
+    const apto = APTOS[r.aptoIdx] || APTOS[0];
+    const c = cfg[item.estado];
+    const hora = horaLlegadaReserva(r.id);
+    const horaHtml = hora
+      ? '<span class="hora-chip">&#128336; Llegada ' + hora + '</span>'
+      : '<span class="hora-chip pending">&#128336; Hora pendiente</span>';
+    return `<div class="event-item ${c.clase}" onclick="openModal('${r.id}')">`
+      + `<div class="event-icon">${c.icon}</div>`
+      + '<div class="event-body">'
+      + `<div class="event-name">${r.huesped}</div>`
+      + `<div class="event-meta">${apto.alias} &bull; ${r.noches} noches</div>`
+      + `<span class="llegada-estado ${c.badge}">${c.titulo}</span> ${horaHtml}`
+      + '</div>'
+      + `<div class="event-actions"><button class="btn-operativo hour" onclick="event.stopPropagation();cambiarHoraLlegada('${r.id}')">Cambiar hora</button></div>`
+      + '</div>';
+  }).join('');
+}
+
+function renderLimpiezas(items) {
+  const el = document.getElementById('list-limpiezas');
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state"><span class="emoji">&#10024;</span>Sin acciones de limpieza</div>';
+    return;
+  }
+
+  const orden = { curso:0, verificar:1, aviso:2 };
+  items = items.slice().sort(function(a,b) {
+    if (orden[a.estado] !== orden[b.estado]) return orden[a.estado] - orden[b.estado];
+    return a.reserva.aptoIdx - b.reserva.aptoIdx;
+  });
+
+  el.innerHTML = items.map(function(item) {
+    const r = item.reserva;
+    const apto = APTOS[r.aptoIdx] || APTOS[0];
+    let clase='', badge='', icon='', titulo='', detalle='', actionHtml='';
+
+    if (item.estado === 'aviso') {
+      clase='limpieza-aviso'; badge='aviso'; icon='&#128276;'; titulo='Avisar a limpieza';
+      detalle=r.huesped + ' sale ma&ntilde;ana &bull; confirmar limpieza';
+    } else if (item.estado === 'curso') {
+      const st = getEstadoReserva(r.id);
+      if (st.limpiezaEstado === 'limpio') {
+        clase='limpieza-limpio'; badge='limpio'; icon='&#9989;'; titulo='Piso limpio';
+        detalle='Limpieza terminada' + (st.limpiezaPor ? ' por ' + st.limpiezaPor : '') + (st.limpiezaFecha ? ' &bull; ' + fechaHoraCorta(st.limpiezaFecha) : '');
+        actionHtml='<button class="btn-operativo undo" onclick="event.stopPropagation();cambiarEstadoLimpieza(\''+r.id+'\',\'pendiente\',this)">Desmarcar</button>';
+      } else {
+        clase='limpieza-curso'; badge='curso'; icon='&#129529;'; titulo='Piso en limpieza';
+        detalle=r.huesped + ' sale hoy &bull; preparar el apartamento';
+        actionHtml='<button class="btn-operativo clean" onclick="event.stopPropagation();cambiarEstadoLimpieza(\''+r.id+'\',\'limpio\',this)">&#10003; Marcar limpio</button>';
+      }
+    } else {
+      const source = reservaLimpiezaParaLlegada(r);
+      const cleaningReservation = source || r;
+      const st = getEstadoReserva(cleaningReservation.id);
+      const llegadaSt = getEstadoReserva(r.id);
+      if (st.limpiezaEstado === 'limpio' && llegadaSt.verificacionEstado === 'verificado') {
+        clase='limpieza-limpio'; badge='limpio'; icon='&#9989;'; titulo='Piso verificado';
+        detalle=r.huesped + ' entra hoy' + (llegadaSt.verificacionPor ? ' &bull; verificado por ' + llegadaSt.verificacionPor : '');
+        actionHtml='<button class="btn-operativo undo" onclick="event.stopPropagation();cambiarEstadoVerificacion(\''+r.id+'\',\'pendiente\',this)">Desmarcar</button>';
+      } else if (st.limpiezaEstado === 'limpio') {
+        clase='limpieza-verificar'; badge='verificar'; icon='&#128269;'; titulo='Verificar limpieza piso';
+        detalle=r.huesped + ' entra hoy &bull; limpieza terminada';
+        actionHtml='<button class="btn-operativo hour" onclick="event.stopPropagation();cambiarEstadoVerificacion(\''+r.id+'\',\'verificado\',this)">&#10003; Marcar verificado</button>';
+      } else {
+        clase='limpieza-verificar'; badge='verificar'; icon='&#128269;'; titulo='Verificar limpieza piso';
+        detalle=r.huesped + ' entra hoy &bull; pendiente de limpieza';
+      }
+    }
+
+    return '<div class="event-item '+clase+'" onclick="openModal(\''+r.id+'\')">'
+      + '<div class="event-icon">'+icon+'</div>'
+      + '<div class="event-body">'
+      + '<div class="event-name">'+apto.alias+'</div>'
+      + '<div class="event-meta">'+detalle+'</div>'
+      + '<span class="limpieza-estado '+badge+'">'+titulo+'</span>'
+      + '</div>'
+      + (actionHtml ? '<div class="event-actions">'+actionHtml+'</div>' : '')
+      + '</div>';
+  }).join('');
 }
 
 function renderEventList(containerId, items, tipo) {
@@ -1264,6 +2083,201 @@ function renderCalGrid(year, month, hoy) {
   return html;
 }
 
+
+// ===============================================
+// PLANIFICACIÓN MENSUAL DE LIMPIEZAS
+// ===============================================
+function nombreMesEs(monthIndex) {
+  return ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][monthIndex] || '';
+}
+
+function fechaLimpiezaLarga(date) {
+  if (!date) return '';
+  return date.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+}
+
+function setSelectorMesLimpiezas() {
+  const input = document.getElementById('cleaning-month');
+  if (input) input.value = cleaningYear + '-' + String(cleaningMonth + 1).padStart(2, '0');
+}
+
+function cambiarMesPlanLimpiezas(delta) {
+  cleaningMonth += delta;
+  if (cleaningMonth > 11) { cleaningMonth = 0; cleaningYear++; }
+  if (cleaningMonth < 0) { cleaningMonth = 11; cleaningYear--; }
+  renderPlanLimpiezasMensual();
+}
+
+function cambiarMesPlanDesdeSelector() {
+  const value = document.getElementById('cleaning-month')?.value || '';
+  const match = value.match(/^(\d{4})-(\d{2})$/);
+  if (!match) return;
+  cleaningYear = Number(match[1]);
+  cleaningMonth = Number(match[2]) - 1;
+  renderPlanLimpiezasMensual();
+}
+
+function planLimpiezasDelMes(year, monthIndex) {
+  return reservas
+    .filter(function(reservation) {
+      return reservation.salida && reservation.salida.getFullYear() === year && reservation.salida.getMonth() === monthIndex;
+    })
+    .map(function(reservation) {
+      const nextReservation = reservas
+        .filter(function(candidate) {
+          return candidate.id !== reservation.id &&
+            candidate.aptoIdx === reservation.aptoIdx &&
+            inicioDia(candidate.entrada).getTime() >= inicioDia(reservation.salida).getTime();
+        })
+        .sort(function(a, b) { return a.entrada - b.entrada; })[0] || null;
+
+      const sameDay = !!nextReservation && dateKey(nextReservation.entrada) === dateKey(reservation.salida);
+      const nextHour = nextReservation ? horaLlegadaReserva(nextReservation.id) : '';
+      const state = getEstadoReserva(reservation.id);
+      const apartment = APTOS[reservation.aptoIdx] || APTOS[0];
+
+      return {
+        reservation:reservation,
+        apartment:apartment.alias,
+        sameDay:sameDay,
+        nextReservation:nextReservation,
+        nextHour:nextHour,
+        done:state.limpiezaEstado === 'limpio'
+      };
+    })
+    .sort(function(a, b) {
+      return (a.reservation.salida - b.reservation.salida) || a.apartment.localeCompare(b.apartment, 'es');
+    });
+}
+
+function textoProximaEntradaLimpieza(item) {
+  if (!item.nextReservation) return 'Sin próxima reserva confirmada';
+  if (item.sameDay) {
+    return 'Mismo día · entrada desde las 14:00' +
+      (item.nextHour ? '<br><strong>Llegada prevista: ' + escapeHtmlClient(item.nextHour) + '</strong>' : '');
+  }
+  return fmtDate(item.nextReservation.entrada) + ' · entrada desde las 14:00' +
+    (item.nextHour ? '<br>Llegada prevista: ' + escapeHtmlClient(item.nextHour) : '');
+}
+
+function renderPlanLimpiezasMensual() {
+  setSelectorMesLimpiezas();
+  const list = document.getElementById('cleaning-list');
+  const summary = document.getElementById('cleaning-summary');
+  if (!list || !summary) return;
+
+  const plan = planLimpiezasDelMes(cleaningYear, cleaningMonth);
+  const countTomas = plan.filter(function(item){ return item.reservation.aptoIdx === 0; }).length;
+  const countBuenRetiro = plan.filter(function(item){ return item.reservation.aptoIdx === 1; }).length;
+  const sameDay = plan.filter(function(item){ return item.sameDay; }).length;
+
+  summary.innerHTML = `
+    <div class="cleaning-summary-card"><strong>${plan.length}</strong><span>Total limpiezas</span></div>
+    <div class="cleaning-summary-card"><strong>${countTomas}</strong><span>Tomás Ortuño</span></div>
+    <div class="cleaning-summary-card"><strong>${countBuenRetiro}</strong><span>Buen Retiro</span></div>
+    <div class="cleaning-summary-card"><strong>${sameDay}</strong><span>Cambios mismo día</span></div>`;
+
+  if (!plan.length) {
+    list.innerHTML = '<div class="cleaning-empty">No hay limpiezas programadas para ' +
+      nombreMesEs(cleaningMonth) + ' de ' + cleaningYear + '.</div>';
+    renderUltimoPdfLimpiezas();
+    return;
+  }
+
+  list.innerHTML = plan.map(function(item) {
+    const reservation = item.reservation;
+    const stateClass = item.done ? 'done' : '';
+    const statusText = item.done ? 'Realizada' : 'Pendiente';
+    const available = item.sameDay
+      ? 'Desde 11:00<br><strong>Listo antes de 14:00</strong>'
+      : 'Desde 11:00';
+    const note = item.sameDay
+      ? '<div class="cleaning-alert">⚠ Salida y entrada el mismo día. El apartamento debe estar preparado antes de las 14:00.</div>'
+      : '<div class="cleaning-standard-note">Limpieza programada para la fecha indicada.</div>';
+
+    return `<article class="cleaning-card ${item.sameDay ? 'same-day' : ''} ${stateClass}">
+      <div class="cleaning-card-head">
+        <div>
+          <div class="cleaning-card-date">${escapeHtmlClient(fechaLimpiezaLarga(reservation.salida))}</div>
+          <div class="cleaning-card-apto">${escapeHtmlClient(item.apartment)}</div>
+        </div>
+        <span class="cleaning-state ${stateClass}">${statusText}</span>
+      </div>
+      <div class="cleaning-grid">
+        <div class="cleaning-field"><small>Disponible</small><div>${available}</div></div>
+        <div class="cleaning-field"><small>Próxima entrada</small><div>${textoProximaEntradaLimpieza(item)}</div></div>
+        <div class="cleaning-field"><small>Regla</small><div>La limpieza se realiza en la fecha de salida.</div></div>
+      </div>
+      ${note}
+    </article>`;
+  }).join('');
+
+  renderUltimoPdfLimpiezas();
+}
+
+function renderUltimoPdfLimpiezas() {
+  const container = document.getElementById('cleaning-last-pdf');
+  if (!container) return;
+  let last = null;
+  try { last = JSON.parse(localStorage.getItem('bnd_last_cleaning_pdf') || 'null'); } catch (_e) {}
+  if (!last) { container.innerHTML = ''; return; }
+
+  const key = cleaningYear + '-' + String(cleaningMonth + 1).padStart(2, '0');
+  if (last.monthKey !== key) { container.innerHTML = ''; return; }
+  const when = last.generatedAt ? new Date(last.generatedAt).toLocaleString('es-ES') : '';
+  container.innerHTML = 'Último PDF generado: <strong>' + escapeHtmlClient(when) + '</strong>' +
+    (last.driveUrl ? ' · <a href="' + escapeHtmlClient(last.driveUrl) + '" target="_blank" rel="noopener">Ver copia en Drive</a>' : '');
+}
+
+function descargarBase64ComoPdf(base64, fileName, mimeType) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const blob = new Blob([bytes], {type:mimeType || 'application/pdf'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName || 'Planificacion_limpiezas.pdf';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
+}
+
+async function descargarPdfLimpiezas() {
+  const button = document.getElementById('btn-cleaning-pdf');
+  if (button) { button.disabled = true; button.textContent = 'Generando PDF...'; }
+
+  try {
+    const payload = {
+      action:'generarPlanLimpiezasPdf',
+      year:cleaningYear,
+      month:cleaningMonth + 1,
+      actor:actorActual()
+    };
+    const response = await jsonpRequest(
+      APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload)),
+      60000
+    );
+    if (!response || !response.ok) throw new Error(response?.error || 'No se pudo generar el PDF');
+    if (!response.base64) throw new Error('Apps Script no devolvió el archivo PDF');
+
+    descargarBase64ComoPdf(response.base64, response.fileName, response.mimeType);
+    localStorage.setItem('bnd_last_cleaning_pdf', JSON.stringify({
+      monthKey:cleaningYear + '-' + String(cleaningMonth + 1).padStart(2, '0'),
+      generatedAt:response.generatedAt || new Date().toISOString(),
+      driveUrl:response.driveUrl || '',
+      fileName:response.fileName || ''
+    }));
+    renderUltimoPdfLimpiezas();
+    showToast('✓ PDF generado y descargado · ' + response.total + ' limpiezas', 'success');
+  } catch (error) {
+    showToast('No se pudo generar el PDF: ' + error.message, 'error');
+  } finally {
+    if (button) { button.disabled = false; button.innerHTML = '&#11015;&#65039; Descargar PDF'; }
+  }
+}
+
 // ===============================================
 // MODAL
 // ===============================================
@@ -1312,6 +2326,7 @@ function seleccionarReserva() {
       <div><span style="color:var(--gris-4);font-size:.72rem;display:block">NOCHES</span><strong>${r.noches}</strong></div>
     </div>`;
   block.style.display='block';
+  document.getElementById('ci-hora-llegada').value = horaLlegadaReserva(r.id) || '14:00';
   viajeroCount=0;
   document.getElementById('viajeros-container').innerHTML='';
   addViajero();
@@ -1371,7 +2386,7 @@ function guardarCheckin() {
     viajeros.push(v);n++;
   }
   if(!viajeros.length){showToast('A\u00F1ade al menos un viajero','error');return;}
-  const data={reservaId:r.id,huesped:r.huesped,apartamento:APTOS[r.aptoIdx]?.alias,entrada:fmtDate(r.entrada),salida:fmtDate(r.salida),horaLlegada,fechaRegistro:new Date().toISOString(),viajeros};
+  const data={reservaId:r.id,huesped:r.huesped,apartamento:APTOS[r.aptoIdx]?.alias,entrada:fmtDate(r.entrada),salida:fmtDate(r.salida),horaLlegada,actor:actorActual(),fechaRegistro:new Date().toISOString(),viajeros};
   // Guardar local como respaldo
   const prev=JSON.parse(localStorage.getItem('bnd_checkins')||'[]');
   const idx=prev.findIndex(c=>c.reservaId===id);
@@ -1451,11 +2466,7 @@ function eliminarClaveOCR() {
 
 function actualizarEstadoClaveOCR() {
   const el = document.getElementById('ocr-key-status');
-  if (!el) return;
-  const k = localStorage.getItem('bnd_openai_key');
-  el.innerHTML = (k && k.startsWith('sk-'))
-    ? '<span style="color:var(--verde)">&#10003; Clave configurada (' + k.substring(0,12) + '...)</span>'
-    : '<span style="color:var(--coral)">&#9888; Sin clave \u2014 el OCR no funcionar\u00E1</span>';
+  if (el) el.innerHTML = '<span style="color:var(--verde)">✓ OCR protegido mediante Apps Script</span>';
 }
 
 function pedirApiKeyYContinuar(callback) {
@@ -1469,59 +2480,28 @@ function pedirApiKeyYContinuar(callback) {
 async function procesarFotoDocumento(event, n) {
   const file = event.target.files[0];
   if (!file) return;
-
   const preview = document.getElementById('ocr-preview-' + n);
-  const status  = document.getElementById('ocr-status-' + n);
+  const status = document.getElementById('ocr-status-' + n);
   if (preview) { preview.src = URL.createObjectURL(file); preview.style.display = 'block'; }
-  if (status)  status.style.display = 'flex';
-
+  if (status) status.style.display = 'flex';
   try {
-    // Usar fileToBase64 sin comprimir (como en la versión que funcionaba)
     let base64;
-    try {
-      base64 = await comprimirImagen(file);
-    } catch(e) {
-      base64 = await fileToBase64(file);
-    }
-    const key = getOpenAIKey();
-    if (!key) { showToast('Clave OpenAI no configurada', 'error'); return; }
+    try { base64 = await comprimirImagen(file); }
+    catch(e) { base64 = await fileToBase64(file); }
 
-    const prompt = 'Analiza esta imagen de un documento de identidad (DNI espa\u00F1ol, pasaporte o NIE) y extrae los siguientes datos en formato JSON. Si un campo no es visible o no existe, pon null. Devuelve SOLO el JSON, sin texto adicional:\n{"nombre":"nombre de pila","apellidos":"apellidos completos","tipo_doc":"DNI | Pasaporte | NIE","num_doc":"n\u00FAmero del documento","num_soporte":"n\u00FAmero de soporte (solo DNI)","fecha_nacimiento":"YYYY-MM-DD","fecha_expedicion":"YYYY-MM-DD","sexo":"M | F","nacionalidad":"nacionalidad en espa\u00F1ol","pais":"pa\u00EDs de residencia"}';
-
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        max_tokens: 400,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            { type: 'image_url', image_url: { url: 'data:' + file.type + ';base64,' + base64, detail: 'high' } }
-          ]
-        }]
-      })
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:'ocr', mimeType:'image/jpeg', imageBase64:base64 })
     });
-
-    if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.error?.message || 'Error OpenAI ' + resp.status);
-    }
-
     const data = await resp.json();
-    const clean = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim();
-    const campos = JSON.parse(clean);
-
-    rellenarViajero(n, campos);
-
+    if (!data || !data.ok) throw new Error(data?.error || 'El OCR no respondió correctamente');
+    rellenarViajero(n, data.campos || {});
     if (preview) { URL.revokeObjectURL(preview.src); preview.style.display = 'none'; }
-    if (status)  status.style.display = 'none';
-    showToast('\u2713 Datos le\u00EDdos correctamente \u2014 revisa y confirma', 'success');
-
+    if (status) status.style.display = 'none';
+    showToast('✓ Datos leídos correctamente — revisa y confirma', 'success');
   } catch(e) {
     if (preview) preview.style.display = 'none';
-    if (status)  status.style.display = 'none';
+    if (status) status.style.display = 'none';
     showToast('Error al leer el documento: ' + e.message, 'error');
   }
 }
@@ -1610,114 +2590,145 @@ function mostrarConfigApiKey() {
 // ===============================================
 // MENSAJES PARA AIRBNB EN VISTA HOY
 // ===============================================
+function escapeHtmlClient(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function formatMensajeHtml(msg) {
+  let html = escapeHtmlClient(msg.texto);
+  if (msg.url) {
+    const safeUrl = escapeHtmlClient(msg.url);
+    html = html.replace(safeUrl, '<a href="' + safeUrl + '" target="_blank" rel="noopener">' + safeUrl + '</a>');
+  }
+  return html.replace(/\n/g, '<br>');
+}
+
 function renderMensajesAirbnb() {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   const msgs = [];
 
   reservas.forEach(function(r) {
     const diasLlegada = Math.round((r.entrada - hoy) / 86400000);
-    const diasSalida  = Math.round((r.salida  - hoy) / 86400000);
+    const diasSalida = Math.round((r.salida - hoy) / 86400000);
     const apto = APTOS[r.aptoIdx] || APTOS[0];
     const nombre = r.huesped.split(' ')[0];
     const m = getMaestroApto(r.aptoIdx);
-    const maps     = m['google maps'] || apto.maps || '';
-    const checkin  = m['check-in']  || apto.checkin  || '14:00';
+    const maps = m['google maps'] || apto.maps || '';
+    const direccion = m['direccion'] || apto.direccion || '';
+    const checkin = m['check-in'] || apto.checkin || '14:00';
     const checkout = m['check-out'] || apto.checkout || '11:00';
-    const persona  = m['persona entrada'] || 'Mi padre, Domingo';
-    const wifi     = m['wifi']       || apto.wifi    || '';
-    const pass     = m['contrasena'] || apto.wifiPass || '';
-    const url = 'https://pepellorca.github.io/benidorm-apartaments/checkin.html'
-      + '?r=' + encodeURIComponent(r.id)
-      + '&h=' + encodeURIComponent(r.huesped || '')
-      + '&a=' + encodeURIComponent(apto.alias || '')
-      + '&e=' + encodeURIComponent(fmtDate(r.entrada))
-      + '&s=' + encodeURIComponent(fmtDate(r.salida))
-      + '&n=' + encodeURIComponent(r.noches || '');
+    const persona = m['persona entrada'] || 'Mi padre, Domingo';
+    const wifi = m['wifi'] || apto.wifi || '';
+    const pass = m['contrasena'] || apto.wifiPass || '';
+    const url = buildCheckinUrl(r);
+    const mapsLinea = maps ? '📍 ' + maps + '\n\n' : '';
 
-    // MSG 1: Bienvenida (5-7 dias antes)
-    if (diasLlegada >= 5 && diasLlegada <= 7) {
-      msgs.push({ tipo: 'bienvenida', sub: 'Enviar ahora \u00B7 llegan en ' + diasLlegada + ' d\u00EDas', huesped: r.huesped, apto: apto.alias,
-        texto: 'Buenos d\u00EDas ' + nombre + ',\n\n'
-          + 'Nos alegramos de que hay\u00E1is elegido nuestro apartamento para vuestras vacaciones en Benidorm!\n\n'
-          + 'Os confirmamos vuestra reserva:\n'
-          + '\uD83D\uDCCD ' + apto.alias + (apto.direccion ? ' \u00B7 ' + apto.direccion : '') + '\n'
-          + '\uD83D\uDCC5 Entrada: ' + fmtDate(r.entrada) + ' \u00B7 Salida: ' + fmtDate(r.salida) + ' \u00B7 ' + r.noches + ' noches\n'
-          + '\uD83D\uDD50 Check-in a partir de las ' + checkin + '\n'
-          + '\uD83D\uDD50 Check-out antes de las ' + checkout + '\n\n'
-          + 'Para agilizar el check-in, pod\u00E9is rellenar vuestros datos con antelaci\u00F3n (solo tarda 2 minutos):\n'
-          + url + '\n\n'
-          + 'Cumplimos con la normativa de protecci\u00F3n de datos (RD 933/2021 y RGPD).\n\n'
-          + 'Cualquier duda estamos a vuestra disposici\u00F3n.\n'
-          + '\u00A1Hasta pronto!\nPepe'
+    if (diasLlegada >= 5 && diasLlegada <= 7 && !getMsgEnviado(r.id, 'bienvenida')) {
+      msgs.push({
+        rid:r.id, tipo:'bienvenida', url:url,
+        sub:'Enviar ahora · llegan en ' + diasLlegada + ' días',
+        huesped:r.huesped, apto:apto.alias,
+        texto:`Buenos días ${nombre},
+
+Nos alegramos de que hayáis elegido nuestro apartamento para vuestras vacaciones en Benidorm!
+
+Os confirmamos vuestra reserva:
+📍 ${apto.alias}${direccion ? ' · ' + direccion : ''}
+📅 Entrada: ${fmtDate(r.entrada)} · Salida: ${fmtDate(r.salida)} · ${r.noches} noches
+🕐 Check-in a partir de las ${checkin}
+🕐 Check-out antes de las ${checkout}
+
+👉 Pulsa este enlace para completar el check-in antes de vuestra llegada:
+${url}
+
+Cumplimos con la normativa de protección de datos (RD 933/2021 y RGPD).
+
+Cualquier duda estamos a vuestra disposición.
+¡Hasta pronto!
+Pepe`
       });
     }
 
-    // MSG 2: Confirmacion dia anterior a llegada
-    if (diasLlegada === 1) {
+    if (diasLlegada === 1 && !getMsgEnviado(r.id, 'confirmacion')) {
       const checkins = JSON.parse(localStorage.getItem('bnd_checkins') || '[]');
       const tieneCI = checkins.some(function(c){ return c.reservaId === r.id; });
-      msgs.push({ tipo: 'confirmacion', sub: 'Enviar hoy \u00B7 llegan ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
-        texto: 'Hola ' + nombre + ',\n\n'
-          + '\u00A1Ma\u00F1ana es el gran d\u00EDa!\n\n'
-          + '\uD83D\uDC49 ' + persona + ' os estar\u00E1 esperando en la puerta para la entrega de llaves. \u00BFSobre qu\u00E9 hora llegar\u00E9is?\n\n'
-          + (maps ? '\uD83D\uDCCD ' + maps + '\n\n' : '')
-          + '\uD83D\uDCF6 WiFi: ' + wifi + '\n'
-          + '\uD83D\uDD11 Contrase\u00F1a: ' + pass + '\n\n'
-          + (tieneCI
-              ? '\u2705 Hemos recibido vuestro registro de viajeros. \u00A1Gracias, todo en orden!'
-              : '\uD83D\uDCCB Recordad que a\u00FAn no hemos recibido el registro de viajeros. Pod\u00E9is completarlo aqu\u00ED:\n' + url)
-          + '\n\n\u00A1Hasta ma\u00F1ana!\nPepe'
+      const registroLinea = tieneCI
+        ? '✅ Hemos recibido vuestro registro de viajeros. ¡Gracias, todo en orden!'
+        : '📋 Aún no hemos recibido el registro de viajeros. Pulsa este enlace para completarlo:\n' + url;
+      msgs.push({
+        rid:r.id, tipo:'confirmacion', url:tieneCI ? '' : url,
+        sub:'Enviar hoy · llegan mañana', huesped:r.huesped, apto:apto.alias,
+        texto:`Hola ${nombre},
+
+¡Mañana es el gran día!
+
+👉 ${persona} os estará esperando en la puerta para la entrega de llaves. ¿Sobre qué hora llegaréis?
+
+${mapsLinea}📶 WiFi: ${wifi}
+🔑 Contraseña: ${pass}
+
+${registroLinea}
+
+¡Hasta mañana!
+Pepe`
       });
     }
 
-    // MSG 3: Despedida dia anterior a salida
-    if (diasSalida === 1) {
-      msgs.push({ tipo: 'despedida', sub: 'Enviar hoy \u00B7 salen ma\u00F1ana', huesped: r.huesped, apto: apto.alias,
-        texto: 'Hola ' + nombre + ',\n\n'
-          + 'Ha sido un placer tenerte con nosotros en Benidorm!\n\n'
-          + 'Esperamos que hayas disfrutado de tu estancia y que todo haya sido de tu agrado.\n\n'
-          + 'Si ha habido alguna cosa que no ha estado a la altura, me encantar\u00EDa saberlo para mejorarlo para pr\u00F3ximas visitas.\n\n'
-          + 'Recuerda que el check-out es ma\u00F1ana antes de las ' + checkout + '. Por favor, deja las llaves dentro del apartamento en el mueble de la entrada.\n\n'
-          + 'Si quer\u00E9is repetir, ya sab\u00E9is donde estamos \uD83D\uDE0A\n\n'
-          + '\u00A1Hasta pronto!\nPepe'
+    if (diasSalida === 1 && !getMsgEnviado(r.id, 'despedida')) {
+      msgs.push({
+        rid:r.id, tipo:'despedida', url:'',
+        sub:'Enviar hoy · salen mañana', huesped:r.huesped, apto:apto.alias,
+        texto:`Hola ${nombre},
+
+Ha sido un placer tenerte con nosotros en Benidorm!
+
+Esperamos que hayas disfrutado de tu estancia y que todo haya sido de tu agrado.
+
+Si ha habido alguna cosa que no ha estado a la altura, me encantaría saberlo para mejorarlo para próximas visitas.
+
+Recuerda que el check-out es mañana antes de las ${checkout}. Por favor, deja las llaves dentro del apartamento en el mueble de la entrada.
+
+Si queréis repetir, ya sabéis donde estamos 😊
+
+¡Hasta pronto!
+Pepe`
       });
     }
   });
 
+  window._todayMsgs = msgs;
   const block = document.getElementById('mensajes-airbnb-block');
   if (!msgs.length) { block.innerHTML = ''; return; }
 
   const cfg = {
-    bienvenida:   { icon: '\\uD83C\\uDF0A', label: 'Bienvenida',          cls: 'bienvenida' },
-    confirmacion: { icon: '\\uD83D\\uDCC5', label: 'Confirmaci\\u00F3n',  cls: 'bienvenida' },
-    despedida:    { icon: '\\uD83D\\uDC4B', label: 'Despedida',           cls: 'despedida'  }
+    bienvenida:{label:'Bienvenida', cls:'bienvenida'},
+    confirmacion:{label:'Confirmación', cls:'bienvenida'},
+    despedida:{label:'Despedida', cls:'despedida'}
   };
 
-  var html = '<div class="msg-panel">'
+  let html = '<div class="msg-panel">'
     + '<div class="msg-panel-header" onclick="toggleMensajes()">'
     + '<h3>&#9993;&#65039; Mensajes para Airbnb <span style="font-size:.78rem;opacity:.8;font-weight:400">(' + msgs.length + ' pendientes)</span></h3>'
-    + '<span class="msg-toggle-icon" id="msg-toggle-icon">&#9660;</span>'
-    + '</div>'
+    + '<span class="msg-toggle-icon" id="msg-toggle-icon">&#9660;</span></div>'
     + '<div class="msg-panel-body" id="msg-panel-body">';
 
   msgs.forEach(function(msg, i) {
-    var c = cfg[msg.tipo] || cfg.bienvenida;
+    const c = cfg[msg.tipo] || cfg.bienvenida;
     html += '<div class="msg-item">'
-      + '<div class="msg-item-header">'
-      + '<div class="msg-item-title">' + msg.huesped
-      + ' <span style="color:var(--gris-4);font-size:.8rem">&#183; ' + msg.apto + '</span></div>'
-      + '<span class="msg-tipo ' + c.cls + '">' + c.label + '</span>'
-      + '</div>'
-      + '<div style="font-size:.75rem;color:var(--gris-4);margin-bottom:8px">' + msg.sub + '</div>'
-      + '<div class="msg-texto" id="msg-texto-' + i + '">' + msg.texto + '</div>'
-      + '<button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')">'
-      + '&#128203; Copiar mensaje</button>'
-      + '</div>';
+      + '<div class="msg-item-header"><div class="msg-item-title">' + escapeHtmlClient(msg.huesped)
+      + ' <span style="color:var(--gris-4);font-size:.8rem">· ' + escapeHtmlClient(msg.apto) + '</span></div>'
+      + '<span class="msg-tipo ' + c.cls + '">' + c.label + '</span></div>'
+      + '<div style="font-size:.75rem;color:var(--gris-4);margin-bottom:8px">' + escapeHtmlClient(msg.sub) + '</div>'
+      + '<div class="msg-texto" id="msg-texto-' + i + '">' + formatMensajeHtml(msg) + '</div>'
+      + '<div class="msg-actions"><button class="btn-copiar" id="btn-copiar-' + i + '" onclick="copiarMensaje(' + i + ')">&#128203; Copiar y marcar enviado</button>'
+      + (msg.url ? '<a class="btn-abrir-checkin" href="' + escapeHtmlClient(msg.url) + '" target="_blank" rel="noopener">&#128279; Abrir check-in</a>' : '')
+      + '</div></div>';
   });
 
   html += '</div></div>';
   block.innerHTML = html;
-  // Cerrado por defecto
 }
 
 function toggleMensajes(forceOpen) {
@@ -1734,26 +2745,32 @@ function toggleMensajes(forceOpen) {
   }
 }
 
-function copiarMensaje(i) {
-  const el = document.getElementById('msg-texto-' + i);
-  const btn = document.getElementById('btn-copiar-' + i);
-  if (!el || !btn) return;
-  navigator.clipboard.writeText(el.textContent).then(() => {
-    btn.textContent = '\u2713 Copiado';
-    btn.classList.add('copiado');
-    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
-  }).catch(() => {
-    // Fallback para Safari
-    const range = document.createRange();
-    range.selectNode(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    document.execCommand('copy');
-    window.getSelection().removeAllRanges();
-    btn.textContent = '\u2713 Copiado';
-    btn.classList.add('copiado');
-    setTimeout(() => { btn.innerHTML = '\ud83d\udccb Copiar mensaje'; btn.classList.remove('copiado'); }, 2000);
+function copiarTextoPortapapeles(texto) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texto);
+  return new Promise(function(resolve, reject) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = texto; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); resolve();
+    } catch (e) { reject(e); }
   });
+}
+
+async function copiarMensaje(i) {
+  const msg = (window._todayMsgs || [])[i];
+  const btn = document.getElementById('btn-copiar-' + i);
+  if (!msg || !btn) return;
+  btn.disabled = true;
+  try {
+    await copiarTextoPortapapeles(msg.texto);
+    await guardarMensajeEnviado(msg.rid, msg.tipo, msg.huesped);
+    showToast('✓ Mensaje copiado y sincronizado', 'success');
+    renderMensajesAirbnb();
+    if (document.getElementById('view-gestion')?.classList.contains('active')) renderGestion();
+  } catch (e) {
+    btn.disabled = false;
+    showToast('Mensaje copiado, pero no se pudo sincronizar: ' + e.message, 'error');
+  }
 }
 
 // ===============================================
@@ -1765,47 +2782,79 @@ function copiarMensaje(i) {
 
 function getMaestroApto(aptoIdx) {
   var a = APTOS[aptoIdx] || {};
+  var d = maestroAptos[aptoIdx] || {};
   return {
-    'google maps':       a.maps      || '',
-    'maps':              a.maps      || '',
-    'direccion':         a.direccion || '',
-    'wifi':              a.wifi      || '',
-    'contrasena':        a.wifiPass  || '',
-    'check-in':          a.checkin   || '14:00',
-    'check-out':         a.checkout  || '11:00',
-    'persona entrada':   'Mi padre, Domingo',
-    'telefono contacto': '',
+    'google maps':       d['google maps'] || d.maps || a.maps || '',
+    'maps':              d.maps || d['google maps'] || a.maps || '',
+    'direccion':         d.direccion || a.direccion || '',
+    'wifi':              d.wifi || a.wifi || '',
+    'contrasena':        d.contrasena || a.wifiPass || '',
+    'check-in':          d['check-in'] || a.checkin || '14:00',
+    'check-out':         d['check-out'] || a.checkout || '11:00',
+    'persona entrada':   d['persona entrada'] || 'Mi padre, Domingo',
+    'telefono contacto': d['telefono contacto'] || '',
+    'persona de limpieza': d['persona de limpieza'] || '',
+    'email de limpieza': d['email de limpieza'] || '',
+    'procedimientos': d.procedimientos || '',
+    'plantilla llegada': d['plantilla llegada'] || ''
   };
 }
 
 // ===============================================
 // ENV\u00cdO A GOOGLE SHEETS
 // ===============================================
-function enviarASheets_(data) {
-  // Usamos un iframe oculto para enviar el POST sin problemas de CORS
-  const payload = encodeURIComponent(JSON.stringify(data));
-  const url = APPS_SCRIPT_URL + '?data=' + payload;
+function jsonpRequest(url, timeoutMs) {
+  return new Promise(function(resolve, reject) {
+    const cb = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+    const s = document.createElement('script');
+    let done = false;
+    let timer = null;
+    const finish = function(err, value) {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      try { delete window[cb]; } catch(e) { window[cb] = undefined; }
+      s.remove();
+      if (err) reject(err); else resolve(value);
+    };
+    window[cb] = function(resp) { finish(null, resp); };
+    s.onerror = function() { finish(new Error('No se pudo contactar con Apps Script')); };
+    s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + encodeURIComponent(cb);
+    document.head.appendChild(s);
+    timer = setTimeout(function() { finish(new Error('Tiempo de espera agotado')); }, timeoutMs || 12000);
+  });
+}
 
-  // Crear script tag JSONP
-  const cb = 'cb_' + Date.now();
-  window[cb] = function(resp) {
-    delete window[cb];
-    document.getElementById('jsonp-' + cb)?.remove();
-    if (resp && resp.ok) {
-      showToast('\u2713 Check-in guardado en Google Sheets', 'success');
-    } else {
-      showToast('\u2713 Guardado localmente', 'success');
-    }
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-' + cb;
-  s.src = APPS_SCRIPT_URL + '?callback=' + cb + '&data=' + payload;
-  s.onerror = function() {
-    delete window[cb];
-    s.remove();
-    showToast('\u2713 Guardado localmente (verificar conexi\u00F3n)', 'success');
-  };
-  document.head.appendChild(s);
+async function verificarCheckinGuardado_(reservaId) {
+  const url = APPS_SCRIPT_URL + '?action=getCheckinStatus&reservaId=' + encodeURIComponent(reservaId);
+  return jsonpRequest(url, 12000);
+}
+
+async function enviarASheets_(data) {
+  showToast('Guardando en Google Sheets...', '');
+
+  // POST evita el límite de longitud de una URL y no expone datos personales en la URL.
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action: 'checkin' }, data))
+    });
+  } catch(e) {
+    // Apps Script puede procesar el POST aunque el navegador bloquee la respuesta CORS.
+    console.warn('Respuesta POST no legible; se verificará el resultado:', e);
+  }
+
+  try {
+    await new Promise(function(resolve) { setTimeout(resolve, 1200); });
+    const estado = await verificarCheckinGuardado_(data.reservaId);
+    if (!estado || !estado.ok || !estado.exists) throw new Error('El registro no aparece en la hoja CheckIns');
+    showToast('✓ Check-in guardado y verificado en Google Sheets', 'success');
+    await cargarDesdeMaestro();
+    await cargarEstadoReservasBackend(true);
+  } catch(e) {
+    showToast('Guardado local, pero NO verificado en Sheets: ' + e.message, 'error');
+  }
 }
 
 // ===============================================
@@ -1874,14 +2923,7 @@ function copiarEnlaceReserva(i, btn) {
   const rid = ids[i];
   const r = reservas.find(function(x){ return x.id === rid; });
   if (!r) return;
-  const apto = APTOS[r.aptoIdx] || APTOS[0];
-  const url = 'https://pepellorca.github.io/benidorm-apartaments/checkin.html'
-    + '?r=' + encodeURIComponent(r.id)
-    + '&h=' + encodeURIComponent(r.huesped || '')
-    + '&a=' + encodeURIComponent(apto.alias || '')
-    + '&e=' + encodeURIComponent(fmtDate(r.entrada))
-    + '&s=' + encodeURIComponent(fmtDate(r.salida))
-    + '&n=' + encodeURIComponent(r.noches || '');
+  const url = buildCheckinUrl(r);
 
   navigator.clipboard.writeText(url).then(function() {
     btn.textContent = '\u2713 Copiado';
@@ -1936,7 +2978,7 @@ async function cargarRegistros() {
           apartamento: obj['apartamento'] || '',
           entrada: obj['entrada'] || '',
           salida: obj['salida'] || '',
-          horaLlegada: obj['hora llegada'] || '',
+          horaLlegada: normalizarHoraCliente(obj['hora llegada'] || ''),
           fecha: obj['fecha'] || '',
           viajeros: []
         };
@@ -2011,7 +3053,7 @@ function renderRegistros(lista) {
 // GENERAR PDF
 // ===============================================
 function generarPDF(idx) {
-  var registro = todosLosRegistros[idx];
+  var registro = (typeof idx === 'number') ? todosLosRegistros[idx] : idx;
   if (!registro) { showToast('Registro no encontrado', 'error'); return; }
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">';
   html += '<style>';
@@ -2032,11 +3074,11 @@ function generarPDF(idx) {
 
   html += '<h2>DATOS DEL ALOJAMIENTO</h2>';
   html += '<div class="grid">';
-  html += field('Establecimiento', 'Apartamentos Llorca Benidorm');
+  html += field('Establecimiento / titular', 'Vicenta María Beltran SL');
   html += field('Apartamento', registro.apartamento || '\u2014');
   html += field('Fecha de entrada', registro.entrada || '\u2014');
   html += field('Fecha de salida', registro.salida || '\u2014');
-  html += field('Hora de llegada', registro.horaLlegada || '\u2014');
+  html += field('Hora de llegada', normalizarHoraCliente(registro.horaLlegada) || '\u2014');
   html += field('Titular de la reserva', registro.huesped || '\u2014');
   html += field('C\u00f3digo de reserva', registro.reservaId || '\u2014');
   html += field('Fecha de registro', registro.fecha ? new Date(registro.fecha).toLocaleDateString('es-ES') : '\u2014');
@@ -2072,17 +3114,48 @@ function generarPDF(idx) {
   });
 
   html += '<div class="footer">';
-  html += 'Titular responsable: Pepe Llorca &bull; ';
+  html += 'Titular responsable: Vicenta María Beltran SL &bull; ';
   html += 'Datos tratados conforme al RD 933/2021 y RGPD &bull; ';
   html += 'Conservaci\u00f3n: 3 a\u00f1os &bull; ';
   html += 'Comunicado a SES.HOSPEDAJES en plazo legal &bull; ';
   html += 'Generado el ' + new Date().toLocaleString('es-ES');
   html += '</div></body></html>';
 
-  var win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  win.onload = function() { win.print(); };
+  abrirVistaPreviaPdf(html);
+}
+
+function abrirVistaPreviaPdf(html) {
+  var overlay = document.getElementById('modal-pdf-preview');
+  var frame = document.getElementById('pdf-preview-frame');
+  if (!overlay || !frame) {
+    showToast('No se pudo abrir la vista previa del documento', 'error');
+    return;
+  }
+  frame.srcdoc = html;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarVistaPreviaPdf() {
+  var overlay = document.getElementById('modal-pdf-preview');
+  var frame = document.getElementById('pdf-preview-frame');
+  if (overlay) overlay.classList.remove('open');
+  if (frame) frame.srcdoc = '';
+  document.body.style.overflow = '';
+}
+
+function imprimirVistaPreviaPdf() {
+  var frame = document.getElementById('pdf-preview-frame');
+  if (!frame || !frame.contentWindow) {
+    showToast('El documento todavía no está preparado', 'error');
+    return;
+  }
+  try {
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+  } catch (error) {
+    showToast('No se pudo abrir la opción de compartir o guardar: ' + error.message, 'error');
+  }
 }
 
 function field(label, value) {
@@ -2096,40 +3169,27 @@ function field(label, value) {
 function getMsgEnviado(rid, tipo) {
   try { return (JSON.parse(localStorage.getItem('bnd_msgs')||'{}'))[rid+'_'+tipo]||null; } catch(e){return null;}
 }
-function setMsgEnviado(rid, tipo) {
-  try {
-    var fecha = new Date().toLocaleDateString('es-ES');
-    var d = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
-    d[rid + '_' + tipo] = fecha;
-    localStorage.setItem('bnd_msgs', JSON.stringify(d));
-    // Guardar también en Google Sheets via Apps Script
-    var huesped = '';
-    if (window._gLista) {
-      var r = window._gLista.find(function(x){ return x.id === rid; });
-      if (r) huesped = r.huesped || '';
-    }
-    var cb = 'env_' + Date.now();
-    var payload = JSON.stringify({
-      action: 'guardarEnviado',
-      key: 'MSG|' + rid + '|' + tipo,
-      fecha: fecha,
-      huesped: huesped,
-      tipo: tipo
-    });
-    window[cb] = function(r) { delete window[cb]; var s = document.getElementById('j_' + cb); if (s) s.remove(); };
-    var s = document.createElement('script');
-    s.id = 'j_' + cb;
-    s.onerror = function() { delete window[cb]; s.remove(); };
-    s.src = APPS_SCRIPT_URL + '?callback=' + cb + '&data=' + encodeURIComponent(payload);
-    document.head.appendChild(s);
-  } catch(e) { console.log('Error setMsgEnviado:', e.message); }
+async function guardarMensajeEnviado(rid, tipo, huesped) {
+  const fecha = new Date().toISOString();
+  const reserva = reservas.find(function(r){ return r.id === rid; });
+  const apto = reserva ? (APTOS[reserva.aptoIdx] || APTOS[0]) : null;
+  const payload = {action:'guardarEnviado', key:'MSG|' + rid + '|' + tipo, fecha:fecha, huesped:huesped || '', tipo:tipo, actor:actorActual(), apartamento:apto?.alias || '', origen:'Aplicación'};
+  const url = APPS_SCRIPT_URL + '?action=guardarEnviado&data=' + encodeURIComponent(JSON.stringify(payload));
+  const resp = await jsonpRequest(url, 15000);
+  if (!resp || !resp.ok) throw new Error(resp?.error || 'Google Sheets no confirmó el guardado');
+
+  const data = JSON.parse(localStorage.getItem('bnd_msgs') || '{}');
+  data[rid + '_' + tipo] = resp.fecha || fecha;
+  localStorage.setItem('bnd_msgs', JSON.stringify(data));
+  window._msgsCache = data;
+  return resp;
 }
 function getCIReserva(rid) {
   try { return (JSON.parse(localStorage.getItem('bnd_checkins')||'[]')).find(function(c){return c.reservaId===rid;})||null; } catch(e){return null;}
 }
 function buildCheckinUrl(r) {
   var apto=APTOS[r.aptoIdx]||APTOS[0];
-  return 'https://pepellorca.github.io/benidorm-apartaments/checkin.html'
+  return PUBLIC_CHECKIN_BASE_URL
     +'?r='+encodeURIComponent(r.id)
     +'&h='+encodeURIComponent(r.huesped||'')
     +'&a='+encodeURIComponent(apto.alias||'')
@@ -2157,7 +3217,7 @@ function buildMsg(r, tipo) {
     +'\uD83D\uDCC5 Entrada: '+fmtDate(r.entrada)+' \u2192 '+fmtDate(r.salida)+' \u00B7 '+r.noches+' noches'+nl
     +'\u23F0 Check-in a partir de las '+ci_h+nl
     +'\u23F0 Check-out antes de las '+co_h+nl+nl
-    +'Para agilizar el check-in, pod\u00E9is rellenar vuestros datos con antelaci\u00F3n:'+nl
+    +'Para agilizar el check-in, pulsad este enlace y rellenad vuestros datos con antelaci\u00F3n:'+nl
     +url+nl+nl
     +'Cumplimos con la normativa de protecci\u00F3n de datos (RD 933/2021 y RGPD).'+nl+nl
     +'Cualquier duda estamos a vuestra disposici\u00F3n.'+nl
@@ -2198,19 +3258,24 @@ function renderGestion() {
     var apto=APTOS[r.aptoIdx]||APTOS[0];
     var cCls=r.aptoIdx===0?'apto-tag-0':'apto-tag-1';
     var dias=Math.round((r.entrada-hoy)/86400000);
-    var esOc=r.entrada<=hoy&&r.salida>hoy;
-    var esCI=dateKey(r.entrada)===dateKey(hoy);
-    var esPas=r.salida<hoy;
-    var sCls=esCI?'checkin':esOc?'ocupado':esPas?'pasada':'libre';
-    var sTxt=esCI?'Check-in hoy':esOc?'Ocupado':esPas?'Pasada':dias+' d\u00edas';
+    var kHoy=dateKey(hoy);
+    var esSalidaHoy=dateKey(r.salida)===kHoy;
+    var esOcupada=r.entrada<=hoy&&r.salida>hoy;
+    var esCompletada=r.salida<hoy;
+    var sCls=esSalidaHoy?'salida':esOcupada?'ocupado':esCompletada?'completada':'confirmada';
+    var sTxt=esSalidaHoy?'Sale hoy':esOcupada?'Piso ocupado':esCompletada?'Completada':'Confirmada';
     var m1=getMsgEnviado(r.id,'bienvenida');
     var m2=getMsgEnviado(r.id,'confirmacion');
     var m3=getMsgEnviado(r.id,'despedida');
     var ci=getCIReserva(r.id);
     var nV=ci&&ci.viajeros?ci.viajeros.length:ci?1:0;
+    var op=getEstadoReserva(r.id);
+    var horaOp=horaLlegadaReserva(r.id);
+    var limpio=op.limpiezaEstado==='limpio';
+    var puedeMarcarLimpieza=r.salida<=hoy;
     return '<div class="gest-card '+sCls+'">'
       +'<div class="gest-header" onclick="toggleGest('+i+')">'
-      +'<div><div class="gest-nombre">&#128100; '+r.huesped+' <span style="font-size:.72rem;font-weight:400;color:var(--gris-4)">'+sTxt+'</span></div>'
+      +'<div><div class="gest-nombre">&#128100; '+r.huesped+' <span class="gest-status '+sCls+'">'+sTxt+'</span></div>'
       +'<div class="gest-meta">'+fmtDate(r.entrada)+' \u2192 '+fmtDate(r.salida)+' \u00b7 '+r.noches+' noches \u00b7 '+r.importe+'\u20ac</div>'
       +'<div class="gest-meta '+cCls+'" style="margin-top:2px;font-weight:700">'+apto.alias+'</div></div>'
       +'<div style="display:flex;gap:3px;align-items:center;font-size:.85rem">'
@@ -2243,6 +3308,12 @@ function renderGestion() {
       +'<button class="btn-gc link" onclick="linkG('+i+',this)">&#128279; Enlace</button>'
       +'</div></div>'
       +(ci&&ci.viajeros?'<div class="gest-chips">'+ci.viajeros.map(function(v){return '<span class="gest-chip">'+(v.nombre||'')+' '+(v.apellidos||'')+'</span>';}).join('')+'</div>':'')
+      +'</div>'
+      +'<div class="gest-section"><div class="gest-stitle">&#9881; Operativa</div>'
+      +'<div class="gest-row"><div class="gest-label '+(horaOp?'done':'pend')+'">&#128336; Hora llegada: '+(horaOp||'pendiente')+'</div>'
+      +`<div class="gest-acts"><button class="btn-gc link" onclick="event.stopPropagation();cambiarHoraLlegada('${r.id}')">Cambiar</button></div></div>`
+      +'<div class="gest-row"><div class="gest-label '+(limpio?'done':'pend')+'">'+(limpio?'&#9989; Piso limpio'+(op.limpiezaPor?' · '+op.limpiezaPor:''):(puedeMarcarLimpieza?'&#129529; Limpieza pendiente':'&#128197; Limpieza al finalizar la estancia'))+'</div>'
+      +(puedeMarcarLimpieza?`<div class="gest-acts"><button class="btn-gc ${limpio?'link':'copy'}" onclick="event.stopPropagation();cambiarEstadoLimpieza('${r.id}','${limpio?'pendiente':'limpio'}',this)">${limpio?'Desmarcar':'Marcar limpio'}</button></div>`:'')+'</div>'
       +'</div></div></div>';
   }).join('');
 }
@@ -2254,13 +3325,21 @@ function toggleGest(i){
   b.style.display=open?'none':'block';
   if(t) t.innerHTML=open?'&#9660;':'&#9650;';
 }
-function copyMsgG(e,i,tipo){
+async function copyMsgG(e,i,tipo){
   e.stopPropagation();
   var r=(window._gLista||[])[i]; if(!r) return;
   var txt=buildMsg(r,tipo);
-  var btn=e.target;
-  var done=function(){setMsgEnviado(r.id,tipo);btn.textContent='\u2713 Enviado';btn.classList.add('done');showToast('\u2713 Mensaje copiado','success');renderGestion();};
-  navigator.clipboard.writeText(txt).then(done).catch(function(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();done();});
+  var btn=e.target; btn.disabled=true;
+  try {
+    await copiarTextoPortapapeles(txt);
+    await guardarMensajeEnviado(r.id,tipo,r.huesped||'');
+    showToast('✓ Mensaje copiado y sincronizado','success');
+    renderGestion();
+    renderMensajesAirbnb();
+  } catch(err) {
+    btn.disabled=false;
+    showToast('Mensaje copiado, pero no se pudo sincronizar: '+err.message,'error');
+  }
 }
 function linkG(i,btn){
   var r=(window._gLista||[])[i]; if(!r) return;
@@ -2457,6 +3536,13 @@ function exportarExcel() {
   XLSX.writeFile(wb, 'Apartamentos_Benidorm_' + anio + '.xlsx');
   showToast('\u2713 Excel descargado', 'success');
 }
+
+// Cerrar la vista previa con Escape en ordenadores.
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape' && document.getElementById('modal-pdf-preview')?.classList.contains('open')) {
+    cerrarVistaPreviaPdf();
+  }
+});
 
 // ===============================================
 // INIT
